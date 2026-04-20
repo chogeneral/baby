@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { communityBoardShortLabel } from "@/lib/communityBoard";
+import { usePathname, useRouter } from "next/navigation";
+import { useLayoutEffect, useState } from "react";
+import { communityBoardTitle } from "@/lib/communityBoard";
 import {
   communityRoomLabels,
   communityRoomPath,
@@ -12,17 +12,33 @@ import {
 } from "@/lib/communityRoom";
 import { clearLoginSession, readLoginSession } from "@/lib/loginSession";
 
+function readSessionNickname(): string | null {
+  const session = readLoginSession();
+  const nick = session?.nickname?.trim();
+  return nick || session?.email || null;
+}
+
+function readSessionRoomKind(): CommunityRoomKind | null {
+  const session = readLoginSession();
+  return getCommunityRoomFromBirthYears(session?.childBirthYears);
+}
+
 export function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+
+  /**
+   * lazy 초기화로 클라이언트 마운트 시 즉시 sessionStorage에서 읽어
+   * 새로고침 시 깜빡임(skeleton → 로그인 → 닉네임)을 방지한다.
+   */
   const [nickname, setNickname] = useState<string | null>(null);
-  /** 대표 연도가 있으면 그 나이에 맞는 방 하나만 네비에 노출한다 */
   const [myRoomKind, setMyRoomKind] = useState<CommunityRoomKind | null>(null);
 
-  useEffect(() => {
-    const session = readLoginSession();
-    setNickname(session?.nickname ?? session?.email ?? null);
-    setMyRoomKind(getCommunityRoomFromBirthYears(session?.childBirthYears));
-  }, []);
+  // pathname 변경(로그인·로그아웃 직후 등)에 맞춰 세션을 다시 읽는다
+  useLayoutEffect(() => {
+    setNickname(readSessionNickname());
+    setMyRoomKind(readSessionRoomKind());
+  }, [pathname]);
 
   function handleLogout() {
     clearLoginSession();
@@ -33,9 +49,10 @@ export function Navbar() {
   }
 
   const boardNavHref = myRoomKind ? communityRoomPath[myRoomKind] : "/community";
+  /** 대표 연도가 있으면 영아·토들러·유아 방 이름만, 없으면 브랜드명만(닉네임 표시 문구는 네비에 쓰지 않음) */
   const boardNavLabel = myRoomKind
     ? communityRoomLabels[myRoomKind].roomName
-    : communityBoardShortLabel;
+    : communityBoardTitle;
 
   return (
     <nav className="w-full bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
@@ -43,18 +60,24 @@ export function Navbar() {
         <Link href="/" className="text-lg font-bold text-indigo-600 tracking-tight">
           육아도사
         </Link>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-600">
-          <Link
-            href={boardNavHref}
-            title={
-              myRoomKind
-                ? `임금님 귀는 당나귀 귀 — ${communityRoomLabels[myRoomKind].roomName}(대표 연도 기준)`
-                : "임금님 귀는 당나귀 귀 — 마이페이지에서 대표 연도를 설정하면 맞는 방으로 안내돼요"
-            }
-            className="hover:text-gray-900 transition-colors text-indigo-600 font-medium"
-          >
-            {boardNavLabel}
-          </Link>
+        <div
+          suppressHydrationWarning
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-600"
+        >
+          {nickname && (
+            <Link
+              suppressHydrationWarning
+              href={boardNavHref}
+              title={
+                myRoomKind
+                  ? `${communityRoomLabels[myRoomKind].roomName}(대표 연도 기준)`
+                  : "마이페이지에서 대표 연도를 설정하면 맞는 방으로 안내돼요"
+              }
+              className="hover:text-gray-900 transition-colors text-indigo-600 font-medium"
+            >
+              {boardNavLabel}
+            </Link>
+          )}
           <Link href="/development" className="hover:text-gray-900 transition-colors">
             발달
           </Link>
@@ -74,7 +97,7 @@ export function Navbar() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-sm">
+      <div suppressHydrationWarning className="flex items-center gap-3 text-sm min-h-[2.25rem]">
         {nickname ? (
           <>
             <Link href="/mypage" className="text-gray-600 hover:text-gray-900 transition-colors">
