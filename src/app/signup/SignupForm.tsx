@@ -169,6 +169,7 @@ export function SignupForm() {
         childBirthYears: childBirthYears.map((y) => Number.parseInt(y, 10)),
       });
       router.push("/");
+      router.refresh();
     } finally {
       setIsSubmitting(false);
     }

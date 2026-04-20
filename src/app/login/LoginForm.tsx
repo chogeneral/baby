@@ -73,6 +73,7 @@ export function LoginForm() {
         childBirthYears: data.childBirthYears,
       });
       router.push("/");
+      router.refresh();
     } finally {
       setIsSubmitting(false);
     }

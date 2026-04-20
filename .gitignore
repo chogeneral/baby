@@ -1,8 +1,10 @@
 육아커뮤니티_기획명세서.pptx
 육아커뮤니티_기획및개발명세서.docx
 
-CLAUDE.local.md
-CLAUDE.md
+.claude/CLAUDE.local.md
+.claude/CLAUDE.md
+.claude/settings.json
+
 node_modules
 .next/
 tsconfig.tsbuildinfo
