@@ -1,0 +1,11 @@
+import type { Metadata } from "next";
+import { CommunityRoomBoard } from "@/components/CommunityRoomBoard";
+
+export const metadata: Metadata = {
+  title: "꼬꼬마(익명게시판)",
+  description: "전 연령 익명 육아 게시판 꼬꼬마 — 임금님 귀는 당나귀 귀",
+};
+
+export default function KokkomaRoomPage() {
+  return <CommunityRoomBoard roomKind="kokkoma" />;
+}
