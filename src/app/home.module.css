@@ -1,130 +1,245 @@
-/* 랜딩: 로그인으로 이어지는 첫 화면, 밝은 그라데이션으로 브랜드 톤을 맞춘다 */
+/**
+ * 홈(랜딩) 전용 스타일 — Parenting Nest 모킹과 맞춘 크림·테라코타·큰 라운드·소프트 섀도
+ * 클래스명은 camelCase로 통일해 JSX와 매칭을 쉽게 했다.
+ */
+
+/* 페이지 래퍼: 본문 전체를 크림 톤으로 깔고 히어로 그라데이션은 아래 섹션에서만 쓴다 */
 .homePage {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
   min-height: 100%;
-  padding: 2rem 1.25rem 3rem;
-  background: linear-gradient(180deg, #fff9f5 0%, #f0f9ff 50%, #faf5ff 100%);
+  background: var(--colorCream);
+  color: var(--colorCharcoal);
 }
 
-.homeInner {
+/* 섹션 공통 가로 폭 — 네비 max-w-6xl과 시각적으로 맞춘다 */
+.homeContainer {
   width: 100%;
-  max-width: 36rem;
-  text-align: center;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
 
-/* 메인에서 카드 그리드를 넓게 쓰기 위한 컨테이너 */
-.homeInnerWide {
-  width: 100%;
-  max-width: 56rem;
-  margin: 0 auto;
-  text-align: center;
+/* 히어로: 모킹의 연한 블루→핑크 그라데이션 배경 */
+.heroSection {
+  padding: 2.5rem 0 3.5rem;
+  background: linear-gradient(
+    165deg,
+    #e8f4fc 0%,
+    #faf9f6 38%,
+    #fceef3 100%
+  );
 }
 
-.homeTitle {
-  margin: 0;
-  font-size: clamp(1.875rem, 5vw, 2.5rem);
+/* 히어로 2열: 왼쪽 카피 / 오른쪽 이미지+후기 카드 */
+.heroGrid {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .heroGrid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 3rem;
+  }
+}
+
+/* 상단 작은 태그 — 세이지 톤 필로 환영 메시지를 부드럽게 강조 */
+.heroTag {
+  display: inline-block;
+  margin: 0 0 1rem;
+  padding: 0.4rem 1rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  color: #0f172a;
+  letter-spacing: 0.12em;
+  color: #fff;
+  background: linear-gradient(90deg, var(--colorSageDeep) 0%, var(--colorSage) 100%);
+  box-shadow: var(--shadowSoft);
 }
 
-.homeLead {
-  margin: 1rem 0 0;
+/* 메인 헤드라인 — 세리프(레이아웃의 Noto Serif KR)로 우아한 첫인상 */
+.heroTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4.5vw, 2.85rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--colorCharcoal);
+}
+
+/* 강조 구문: 테라코타로 모킹의 “grow together” 하이라이트와 동일한 역할 */
+.heroAccent {
+  color: var(--colorTerracotta);
+}
+
+.heroLead {
+  margin: 1.1rem 0 0;
+  max-width: 28rem;
   font-size: 1.0625rem;
   line-height: 1.65;
-  color: #64748b;
+  color: var(--colorMuted);
 }
 
-.homeActions {
-  margin-top: 2rem;
+/* CTA 버튼 줄: 주 버튼은 테라코타 그라데이션, 보조는 테두리만 */
+.heroActions {
+  margin-top: 1.75rem;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
   align-items: center;
 }
 
-/* 로그인만 메인 버튼으로 두고, 가입은 같은 세로 흐름에서 보조 선택으로 둔다 */
-.homeSignupHint {
+.heroPrimaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(
+    135deg,
+    var(--colorTerracotta) 0%,
+    var(--colorTerracottaDark) 100%
+  );
+  box-shadow: 0 8px 28px rgba(197, 123, 103, 0.35);
+  transition:
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease,
+    filter 0.2s ease;
+}
+
+.heroPrimaryButton:hover {
+  transform: translateY(var(--btnLiftY));
+  box-shadow: 0 14px 38px rgba(197, 123, 103, 0.45);
+  filter: brightness(1.04);
+}
+
+.heroPrimaryButton:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.heroSecondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--colorCharcoal);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(45, 41, 38, 0.14);
+  box-shadow: var(--shadowSoft);
+  transition:
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.heroSecondaryButton:hover {
+  transform: translateY(var(--btnLiftY));
+  box-shadow: var(--btnShadowHover);
+  background: #fff;
+  border-color: rgba(45, 41, 38, 0.22);
+}
+
+.heroSecondaryButton:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* 오른쪽 이미지 컬럼: 큰 라운드 + 이미지 비율 고정으로 레이아웃 안정화 */
+.heroImageColumn {
+  position: relative;
+  justify-self: center;
+  width: 100%;
+  max-width: 26rem;
+}
+
+@media (min-width: 900px) {
+  .heroImageColumn {
+    max-width: none;
+  }
+}
+
+/* next/image fill을 쓰므로 부모에 position:relative가 필요하다 */
+.heroImageFrame {
+  position: relative;
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(45, 41, 38, 0.12);
+  aspect-ratio: 4 / 5;
+}
+
+.heroImage {
+  object-fit: cover;
+}
+
+/* 이미지 위에 겹치는 후기 카드 — 모킹의 플로팅 카드 */
+.heroTestimonial {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadowSoft);
+}
+
+@media (min-width: 480px) {
+  .heroTestimonial {
+    left: auto;
+    right: 1rem;
+    max-width: 18rem;
+  }
+}
+
+.heroTestimonialQuote {
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #94a3b8;
+  color: var(--colorMuted);
 }
 
-/* 회원가입: 테두리형으로 로그인 버튼과 시각적 위계를 나눈다 */
-.homeSignupButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 10rem;
-  padding: 0.65rem 1.35rem;
-  border-radius: 9999px;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: #0284c7;
-  text-decoration: none;
-  background: rgba(255, 255, 255, 0.85);
-  border: 2px solid #bae6fd;
-  box-shadow: 0 1px 3px rgba(14, 165, 233, 0.12);
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.12s ease;
-}
-
-.homeSignupButton:hover {
-  background: #e0f2fe;
-  border-color: #7dd3fc;
-}
-
-.homeSignupButton:active {
-  transform: scale(0.98);
-}
-
-.homePrimaryLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 10rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-  text-decoration: none;
-  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 55%, #c084fc 100%);
-  box-shadow: 0 4px 16px rgba(129, 140, 248, 0.35);
-  transition:
-    transform 0.12s ease,
-    filter 0.12s ease;
-}
-
-.homePrimaryLink:hover {
-  filter: brightness(1.06);
-}
-
-.homePrimaryLink:active {
-  transform: scale(0.98);
-}
-
-.homeNote {
-  margin: 2rem 0 0;
+.heroTestimonialAuthor {
+  margin: 0.5rem 0 0;
   font-size: 0.8125rem;
-  color: #94a3b8;
+  font-weight: 600;
+  color: var(--colorCharcoal);
 }
 
-.homeLoggedInHint {
-  margin: 1.25rem 0 0;
-  font-size: 1rem;
-  color: #475569;
+/* 로그인 사용자 배너 — 히어로 아래에서 기존 맞춤 문구를 유지하되 카드 스타일만 톤에 맞춤 */
+.homeBanner {
+  margin: 1.5rem 0 0;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--colorCharcoal);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(45, 41, 38, 0.08);
+  border-radius: 20px;
+  box-shadow: var(--shadowSoft);
 }
 
 .homeInlineLink {
-  color: #0284c7;
+  color: var(--colorTerracottaDark);
   font-weight: 600;
   text-decoration: none;
 }
@@ -133,92 +248,453 @@
   text-decoration: underline;
 }
 
-/* 로그인 후 연령대별 추천 문구 — 연한 강조 박스로 한눈에 보이게 한다 */
-.homeBanner {
-  margin: 1.5rem 0 0;
-  padding: 1rem 1.25rem;
-  text-align: left;
+.homeLoggedInHint {
+  margin: 1rem 0 0;
   font-size: 0.9375rem;
-  line-height: 1.55;
-  color: #334155;
-  background: linear-gradient(135deg, #e0f2fe 0%, #fae8ff 100%);
-  border: 1px solid #bae6fd;
-  border-radius: 1rem;
+  color: var(--colorMuted);
 }
 
-.homeSectionTitle {
-  margin: 2rem 0 0;
+/* Weekly Best — 비대칭 그리드: 큰 피처 + 우측 상하 카드 */
+.weeklyBestSection {
+  padding: 2.5rem 0 3rem;
+}
+
+.sectionHeaderRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--colorCharcoal);
+}
+
+.sectionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--colorTerracotta);
+  text-decoration: none;
+  transition:
+    gap var(--btnHoverMs) var(--btnHoverEase),
+    transform var(--btnHoverMs) var(--btnHoverEase);
+}
+
+.sectionLink:hover {
+  gap: 0.5rem;
+  transform: translateX(3px);
+}
+
+.weeklyBestGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .weeklyBestGrid {
+    grid-template-columns: 1.4fr 1fr 1fr;
+    grid-template-rows: minmax(220px, 1fr) minmax(140px, auto);
+    grid-template-areas:
+      "feature article article"
+      "feature small quote";
+  }
+}
+
+.weeklyCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 1.25rem;
+  border-radius: var(--radiusCard);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  box-shadow: var(--shadowSoft);
+  transition:
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease;
+}
+
+.weeklyCard:hover {
+  transform: translateY(var(--btnLiftY));
+  box-shadow: var(--btnShadowHover);
+}
+
+.weeklyCardFeature {
+  grid-area: feature;
+  min-height: 280px;
+  padding: 0;
+  background: var(--colorTeal);
+}
+
+@media (min-width: 900px) {
+  .weeklyCardFeature {
+    min-height: 0;
+  }
+}
+
+.weeklyCardFeatureImage {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  opacity: 0.92;
+}
+
+.weeklyCardFeatureOverlay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  min-height: 260px;
+  padding: 1.5rem;
+  background: linear-gradient(
+    180deg,
+    rgba(45, 41, 38, 0) 35%,
+    rgba(45, 41, 38, 0.55) 100%
+  );
+}
+
+.weeklyTag {
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.weeklyCardTitleLight {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.weeklyCardMeta {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.weeklyCardArticle {
+  grid-area: article;
+  background: #fff;
+  border: 1px solid rgba(45, 41, 38, 0.08);
+}
+
+.weeklyBadge {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--colorTerracottaDark);
+  background: rgba(197, 123, 103, 0.12);
+}
+
+.weeklyCardTitleDark {
+  margin: 0;
+  font-family: var(--font-serif);
   font-size: 1.125rem;
   font-weight: 700;
-  color: #0f172a;
-  text-align: left;
+  color: var(--colorCharcoal);
 }
 
-/* 콘텐츠 카드: 모바일 1열, 넓은 화면에서 2~3열 */
-.mainCardGrid {
-  list-style: none;
-  margin: 1rem 0 0;
-  padding: 0;
+.weeklyAvatars {
+  margin-top: auto;
+  padding-top: 1rem;
+  display: flex;
+}
+
+.weeklyAvatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  margin-left: -0.5rem;
+  object-fit: cover;
+  background: #e8e4df;
+}
+
+.weeklyAvatar:first-child {
+  margin-left: 0;
+}
+
+.weeklyCardSmall {
+  grid-area: small;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #fff;
+  border: 1px solid rgba(45, 41, 38, 0.08);
+}
+
+.weeklySmallIcon {
+  font-size: 1.75rem;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.weeklySmallText {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--colorCharcoal);
+}
+
+.weeklyCardQuote {
+  grid-area: quote;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(
+    145deg,
+    var(--colorTerracotta) 0%,
+    var(--colorTerracottaDark) 100%
+  );
+  color: #fff;
+}
+
+.weeklyQuoteMark {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  line-height: 1;
+  opacity: 0.35;
+}
+
+.weeklyQuoteText {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* Trending Boards — 3열 카드 */
+.trendingSection {
+  padding: 0 0 3rem;
+}
+
+.trendingGrid {
   display: grid;
+  gap: 1.25rem;
   grid-template-columns: 1fr;
-  gap: 0.75rem;
-  text-align: left;
 }
 
-@media (min-width: 480px) {
-  .mainCardGrid {
+@media (min-width: 640px) {
+  .trendingGrid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (min-width: 900px) {
-  .mainCardGrid {
+@media (min-width: 1024px) {
+  .trendingGrid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-.mainCard {
+.trendingCard {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
   height: 100%;
-  padding: 1rem 1.1rem;
-  border-radius: 0.875rem;
+  border-radius: var(--radiusCard);
+  overflow: hidden;
   text-decoration: none;
   color: inherit;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  background: #fff;
+  border: 1px solid rgba(45, 41, 38, 0.08);
+  box-shadow: var(--shadowSoft);
   transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    transform 0.12s ease;
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease;
 }
 
-.mainCard:hover {
-  border-color: #7dd3fc;
-  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.12);
+.trendingCard:hover {
+  transform: translateY(calc(var(--btnLiftY) * 1.1));
+  box-shadow: var(--btnShadowHover);
 }
 
-.mainCard:active {
-  transform: scale(0.99);
+/* fill 이미지 기준점 — aspect-ratio로 카드 상단 높이를 통일한다 */
+.trendingImageWrap {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
 }
 
-/* 현재 아이 연령대와 맞는 카드만 살짝 강조 */
-.mainCardHighlight {
-  border-color: #38bdf8;
-  background: linear-gradient(165deg, #f0f9ff 0%, #fdf4ff 100%);
-  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.2);
+.trendingImage {
+  object-fit: cover;
 }
 
-.mainCardTitle {
-  font-size: 1rem;
+.trendingBody {
+  padding: 1.1rem 1.25rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.trendingMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #8a847d;
+}
+
+.trendingHash {
+  font-weight: 600;
+  color: var(--colorTeal);
+}
+
+.trendingCardTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--colorCharcoal);
 }
 
-.mainCardDesc {
+.trendingCardDesc {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--colorMuted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 새로 온 분들을 위한 CTA — 살짝 어두운 크림 배경 */
+.nestCtaSection {
+  padding: 2.75rem 0 3.25rem;
+  background: var(--colorCreamMuted);
+}
+
+.nestCtaInner {
+  text-align: center;
+}
+
+.nestLogoRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.nestLogoText {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--colorCharcoal);
+}
+
+.nestCtaGrid {
+  display: grid;
+  gap: 1rem;
+  max-width: 42rem;
+  margin: 0 auto;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 560px) {
+  .nestCtaGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.nestCtaCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radiusPill);
+  text-align: left;
+  text-decoration: none;
+  color: var(--colorCharcoal);
+  background: #fff;
+  border: 1px solid rgba(45, 41, 38, 0.08);
+  box-shadow: var(--shadowSoft);
+  transition:
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease;
+}
+
+.nestCtaCard:hover {
+  transform: translateY(var(--btnLiftY));
+  box-shadow: var(--btnShadowHover);
+}
+
+.nestCtaIcon {
+  font-size: 1.35rem;
+}
+
+.nestCtaLabel {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* 푸터 — 최소한의 링크 줄 */
+.siteFooter {
+  padding: 2rem 0 2.5rem;
+  border-top: 1px solid rgba(45, 41, 38, 0.08);
+}
+
+.siteFooterBrand {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--colorCharcoal);
+}
+
+.siteFooterLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   font-size: 0.8125rem;
-  line-height: 1.45;
-  color: #64748b;
+}
+
+.siteFooterLinks a {
+  color: var(--colorMuted);
+  text-decoration: none;
+}
+
+.siteFooterLinks a:hover {
+  color: var(--colorTerracotta);
+}
+
+.siteFooterCopy {
+  margin: 1rem 0 0;
+  font-size: 0.75rem;
+  color: #9c9690;
 }

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans_KR } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Serif_KR } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import "./globals.css";
 
-/* 한글 본문 가독성: Noto Sans KR을 우선 적용하고, 라틴/코드용으로 Geist 계열을 보조 변수로 둔다 */
-const notoSansKr = Noto_Sans_KR({
-  variable: "--font-noto-sans-kr",
+/* 모킹의 세리프 헤드라인에 맞춰 제목·로고에 Noto Serif KR을 쓴다 (한글 가독성 유지) */
+const notoSerifKr = Noto_Serif_KR({
+  variable: "--font-noto-serif-kr",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["600", "700"],
 });
 
 const geistSans = Geist({
@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${notoSansKr.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${notoSerifKr.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
         <Navbar />

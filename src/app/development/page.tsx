@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ContentWriteCta } from "@/components/ContentWriteCta";
 import { contentTopicPageInfo } from "@/lib/contentTopic";
 import styles from "../contentPage.module.css";
 
@@ -13,6 +12,7 @@ export const metadata: Metadata = {
 export default function DevelopmentPage() {
   return (
     <main className={styles.contentPage}>
+      <p className={styles.contentTag}>콘텐츠</p>
       <h1 className={styles.contentTitle}>발달</h1>
       <p className={styles.contentLead}>
         우리 아이의 시간은 우리와 다르게 흐릅니다. 조금 느려도 괜찮아요, 함께

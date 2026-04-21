@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 export default function ParentingSuppliesPage() {
   return (
     <main className={styles.contentPage}>
+      <p className={styles.contentTag}>콘텐츠</p>
       <h1 className={styles.contentTitle}>육아용품</h1>
       <p className={styles.contentLead}>
         초보 부모의 서툰 하루를 완벽하게 채워줄 필수 육아 아이템에 대해서 이야기 해봐요

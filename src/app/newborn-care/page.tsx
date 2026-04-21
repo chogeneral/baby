@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 export default function NewbornCarePage() {
   return (
     <main className={styles.contentPage}>
+      <p className={styles.contentTag}>안내</p>
       <h1 className={styles.contentTitle}>신생아 관리</h1>
       <p className={styles.contentLead}>
         출생 연도 기준으로 만 1세 이하인 아이를 두신 경우, 함께 적응해 가며 필요한 기본

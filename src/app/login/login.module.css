@@ -1,4 +1,8 @@
-/* 로그인 화면 전용 레이아웃: 밝은 배경 그라데이션으로 육아 서비스 느낌의 부드러운 분위기를 만든다 */
+/**
+ * 로그인·회원가입 카드 — 홈 히어로와 같은 연한 크림·블루·핑크 그라데이션 배경에 띄운 흰 카드 형태다.
+ * 제출 버튼은 전역 브랜드 포인트인 테라코타 그라데이션으로 통일했다.
+ */
+
 .loginPage {
   min-height: 100%;
   flex: 1;
@@ -6,20 +10,25 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem 1rem 2.5rem;
-  background: linear-gradient(165deg, #fff9f5 0%, #f0f7ff 45%, #fef6ff 100%);
+  background: linear-gradient(
+    165deg,
+    #e8f4fc 0%,
+    #faf9f6 42%,
+    #fceef3 100%
+  );
 }
 
 /* 카드: 모바일에서는 전폭에 가깝게, 태블릿 이상에서 최대 너비로 반응형 정렬 */
 .loginCard {
   width: 100%;
   max-width: 26rem;
-  border-radius: 1.25rem;
+  border-radius: 28px;
   padding: 2rem 1.5rem;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.06),
-    0 12px 32px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+    0 1px 2px rgba(45, 41, 38, 0.05),
+    0 16px 40px rgba(45, 41, 38, 0.09);
+  border: 1px solid rgba(45, 41, 38, 0.06);
   backdrop-filter: blur(8px);
 }
 
@@ -35,18 +44,19 @@
 }
 
 .loginTitle {
-  font-size: 1.5rem;
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #1e293b;
+  color: var(--colorCharcoal);
   margin: 0;
 }
 
 .loginSubtitle {
   margin: 0.5rem 0 0;
   font-size: 0.875rem;
-  line-height: 1.5;
-  color: #64748b;
+  line-height: 1.55;
+  color: var(--colorMuted);
   text-align: center;
 }
 
@@ -66,17 +76,17 @@
 .formLabel {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--colorCharcoal);
 }
 
 .formInput {
   width: 100%;
   box-sizing: border-box;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  border: 1px solid rgba(45, 41, 38, 0.12);
   padding: 0.65rem 0.85rem;
   font-size: 1rem;
-  color: #0f172a;
+  color: var(--colorCharcoal);
   background: #fff;
   transition:
     border-color 0.15s ease,
@@ -84,34 +94,34 @@
 }
 
 .formInput::placeholder {
-  color: #94a3b8;
+  color: #a8a29e;
 }
 
 .formInput:focus {
   outline: none;
-  border-color: #7dd3fc;
-  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.35);
+  border-color: rgba(197, 123, 103, 0.55);
+  box-shadow: 0 0 0 3px rgba(197, 123, 103, 0.18);
 }
 
 .formInputInvalid {
-  border-color: #fb923c;
+  border-color: #ea580c;
 }
 
 .formInputInvalid:focus {
-  border-color: #f97316;
-  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.25);
+  border-color: #c2410c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.2);
 }
 
 .formError {
   font-size: 0.75rem;
-  color: #ea580c;
+  color: #c2410c;
   margin: 0;
   min-height: 1.125rem;
 }
 
 .formHint {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--colorMuted);
   margin: 0;
 }
 
@@ -119,27 +129,33 @@
   margin-top: 0.25rem;
   width: 100%;
   border: none;
-  border-radius: 0.75rem;
-  padding: 0.75rem 1rem;
+  border-radius: var(--radiusPill);
+  padding: 0.8rem 1rem;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
   cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    var(--colorTerracotta) 0%,
+    var(--colorTerracottaDark) 100%
+  );
+  box-shadow: 0 8px 24px rgba(197, 123, 103, 0.32);
   transition:
-    transform 0.12s ease,
-    filter 0.12s ease,
-    box-shadow 0.12s ease;
-  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease,
+    filter 0.2s ease,
+    opacity 0.12s ease;
 }
 
 .submitButton:hover:not(:disabled) {
-  filter: brightness(1.05);
-  box-shadow: 0 6px 20px rgba(129, 140, 248, 0.4);
+  transform: translateY(var(--btnLiftY));
+  box-shadow: 0 14px 36px rgba(197, 123, 103, 0.4);
+  filter: brightness(1.04);
 }
 
 .submitButton:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.98);
 }
 
 .submitButton:disabled {
@@ -179,26 +195,26 @@
   margin-top: 1.25rem;
   text-align: center;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--colorMuted);
   text-decoration: none;
 }
 
 .homeLink:hover {
-  color: #0ea5e9;
+  color: var(--colorTerracottaDark);
   text-decoration: underline;
 }
 
-/* 로그인↔회원가입 전환 안내: 본문과 구분되는 보조 텍스트 링크 */
+/* 로그인↔회원가입 전환 안내: 보조 링크는 테라코타 톤으로 통일 */
 .inlineTextLink {
   margin: 0.75rem 0 0;
   text-align: center;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #64748b;
+  color: var(--colorMuted);
 }
 
 .inlineTextLink a {
-  color: #0ea5e9;
+  color: var(--colorTerracottaDark);
   font-weight: 600;
   text-decoration: none;
 }

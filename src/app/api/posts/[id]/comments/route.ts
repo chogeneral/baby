@@ -23,8 +23,8 @@ export async function POST(
     return NextResponse.json({ message: "게시글을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  const body = await req.json() as { content?: string; authorEmail?: string };
-  const { content, authorEmail } = body;
+  const body = await req.json() as { content?: string; authorEmail?: string; parentId?: string };
+  const { content, authorEmail, parentId } = body;
 
   if (!content?.trim() || !authorEmail) {
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
@@ -42,6 +42,7 @@ export async function POST(
     authorEmail: user.email,
     authorNickname: user.nickname,
     createdAt: new Date().toISOString(),
+    ...(parentId ? { parentId } : {}),
   };
 
   appendComment(comment);

@@ -43,9 +43,13 @@ export async function POST(req: NextRequest) {
     authorEmail?: string;
     /** 꼬꼬마(익명) 전용 — 클라이언트가 보내면 연령 게시판 분기 대신 이쪽으로만 저장한다 */
     boardKind?: "kokkoma";
+    /** 영아방 말머리 */
+    prefix?: string;
+    /** 사진첩 이미지 (base64 data URL) */
+    photoDataUrl?: string;
   };
 
-  const { title, content, authorEmail, boardKind: requestedKind } = body;
+  const { title, content, authorEmail, boardKind: requestedKind, prefix, photoDataUrl } = body;
 
   if (!title?.trim() || !content?.trim() || !authorEmail) {
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
@@ -92,6 +96,8 @@ export async function POST(req: NextRequest) {
     childBirthYear: primaryYear,
     boardKind,
     createdAt: new Date().toISOString(),
+    ...(prefix ? { prefix } : {}),
+    ...(photoDataUrl ? { photoDataUrl } : {}),
   };
 
   appendPost(post);

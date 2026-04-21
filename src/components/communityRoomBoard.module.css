@@ -1,0 +1,335 @@
+/**
+ * 연령별·익명 게시판 목록 레이아웃 — 홈(육아도사)과 동일한 크림·테라코타·큰 라운드 토큰을 쓴다.
+ * 게시판 URL마다 페이지를 나누지 않고 CommunityRoomBoard 한 곳에서 스타일을 통일한다.
+ */
+
+/* 전체 페이지 배경: globals의 크림과 맞춰 네비 아래 이질감을 줄인다 */
+.boardPage {
+  flex: 1;
+  min-height: 100%;
+  background: var(--colorCream);
+  color: var(--colorCharcoal);
+  padding: 2rem 1.25rem 3.5rem;
+}
+
+/* 홈의 homeContainer와 비슷한 가로 폭으로 본문을 읽기 좋게 제한한다 */
+.boardContainer {
+  width: 100%;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1024px) {
+  .boardContainer {
+    max-width: 1100px;
+  }
+}
+
+/* 상단 카테고리 뱃지 — 홈 히어로의 세이지 태그보다 작게, 게시판 구분용으로만 쓴다 */
+.boardTag {
+  display: inline-block;
+  margin: 0 0 0.65rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #fff;
+  background: linear-gradient(90deg, var(--colorSageDeep) 0%, var(--colorSage) 100%);
+  box-shadow: var(--shadowSoft);
+}
+
+/* 익명(꼬꼬마)일 때는 시각적 구분을 위해 테라코타 계열 그라데이션을 쓴다 */
+.boardTagKokkoma {
+  background: linear-gradient(
+    135deg,
+    var(--colorTerracotta) 0%,
+    var(--colorTerracottaDark) 100%
+  );
+}
+
+/* 방 이름 — 홈 히어로와 동일하게 세리프로 브랜드 톤을 이어 받는다 */
+.boardTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--colorCharcoal);
+}
+
+/* 연령 설명: 본문보다 한 단계만 낮춘 회색으로 부가 정보라는 느낌을 준다 */
+.boardHint {
+  margin: 0.5rem 0 0;
+  padding-bottom: 10px;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--colorMuted);
+}
+
+/* 글쓰기 등 액션 줄 — 목록 아래 오른쪽 정렬 */
+.boardToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+}
+
+/* 주요 CTA: 홈의 heroPrimaryButton과 같은 테라코타 그라데이션·알약 형태 */
+.writeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0 1.35rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(
+    135deg,
+    var(--colorTerracotta) 0%,
+    var(--colorTerracottaDark) 100%
+  );
+  box-shadow: 0 6px 22px rgba(197, 123, 103, 0.32);
+  transition:
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease,
+    filter 0.2s ease;
+}
+
+.writeButton:hover {
+  transform: translateY(var(--btnLiftY));
+  box-shadow: 0 12px 32px rgba(197, 123, 103, 0.42);
+  filter: brightness(1.04);
+}
+
+.writeButton:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* 로딩·리다이렉트: 과한 장식 없이 여백과 muted 색만으로 대기 상태를 표현한다 */
+.boardMessage {
+  margin: 0;
+  padding: 3rem 1rem;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--colorMuted);
+}
+
+/* 빈 목록 영역: 로그인 유도 링크가 카드처럼 읽히도록 박스를 준다 */
+.emptyState {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  border-radius: var(--radiusCard);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(45, 41, 38, 0.08);
+  box-shadow: var(--shadowSoft);
+}
+
+.emptyHint {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+  color: var(--colorMuted);
+}
+
+/* 로그인 링크: 본문 링크보다 진하게 테라코타로 강조한다 */
+.loginLink {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--colorTerracottaDark);
+  text-decoration: none;
+}
+
+.loginLink:hover {
+  text-decoration: underline;
+}
+
+/* 카드 그리드 */
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 카드 */
+.postCard {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(45, 41, 38, 0.08);
+  box-shadow: var(--shadowSoft);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  transition:
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease,
+    border-color 0.2s ease;
+}
+
+.postCard:hover {
+  transform: translateY(var(--btnLiftY));
+  box-shadow: var(--btnShadowHover);
+  border-color: rgba(197, 123, 103, 0.25);
+}
+
+/* 썸네일 */
+.cardThumb {
+  width: 100%;
+  height: 11rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cardThumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cardThumbPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: var(--colorCreamMuted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--colorMuted);
+}
+
+.cardPlaceholderText {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #bbb;
+  letter-spacing: 0.05em;
+}
+
+/* 카드 본문 */
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem 1rem;
+  flex: 1;
+}
+
+/* 말머리 뱃지 */
+.cardPrefix {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--colorTerracottaDark);
+  background: rgba(197, 123, 103, 0.1);
+  white-space: nowrap;
+}
+
+/* 제목 */
+.cardTitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--colorCharcoal);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 내용 미리보기 */
+.cardExcerpt {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--colorMuted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* 메타 정보 */
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+/* 페이징 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 1.25rem;
+}
+
+.pageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.4rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 0.875rem;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.13s ease, border-color 0.13s ease, color 0.13s ease;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: #f0f0f0;
+  border-color: #bbb;
+  color: #222;
+}
+
+.pageBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pageBtnActive {
+  background: #555;
+  border-color: #555;
+  color: #fff;
+  font-weight: 700;
+}
+
+.pageBtnActive:hover:not(:disabled) {
+  background: #444;
+  border-color: #444;
+  color: #fff;
+}
+

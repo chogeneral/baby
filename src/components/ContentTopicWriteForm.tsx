@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import nestForm from "@/app/nestForm.module.css";
 import { contentTopicPageInfo, type ContentTopicKind } from "@/lib/contentTopic";
 import { readLoginSession } from "@/lib/loginSession";
 
@@ -30,7 +31,9 @@ export function ContentTopicWriteForm({ topic }: Props) {
       router.replace("/login");
       return;
     }
+    /* eslint-disable react-hooks/set-state-in-effect -- 로그인 세션 이메일로 작성자 식별 */
     setAuthorEmail(session.email);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -55,7 +58,7 @@ export function ContentTopicWriteForm({ topic }: Props) {
       });
 
       if (!res.ok) {
-        const data = await res.json() as { message?: string };
+        const data = (await res.json()) as { message?: string };
         setError(data.message ?? "글 작성에 실패했습니다.");
         return;
       }
@@ -69,18 +72,16 @@ export function ContentTopicWriteForm({ topic }: Props) {
   if (!authorEmail) return null;
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-8">
-      <p className="text-xs font-semibold text-indigo-600 mb-1">콘텐츠 글쓰기</p>
-      <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-snug">
-        {info.title}
-      </h1>
-      <p className="text-sm text-gray-500 mt-1 mb-6">
+    <main className={nestForm.nestPage}>
+      <p className={nestForm.nestTag}>콘텐츠 글쓰기</p>
+      <h1 className={nestForm.nestTitle}>{info.title}</h1>
+      <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
         이 주제에 맞는 경험이나 정보를 남겨 주세요. 등록 후 목록으로 돌아갑니다.
       </p>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className={nestForm.nestForm}>
         <div>
-          <label htmlFor="contentTopicTitle" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="contentTopicTitle" className={nestForm.nestLabel}>
             제목
           </label>
           <input
@@ -90,12 +91,12 @@ export function ContentTopicWriteForm({ topic }: Props) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="제목을 입력해 주세요"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className={nestForm.nestInput}
           />
         </div>
 
         <div>
-          <label htmlFor="contentTopicBody" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="contentTopicBody" className={nestForm.nestLabel}>
             내용
           </label>
           <textarea
@@ -104,23 +105,23 @@ export function ContentTopicWriteForm({ topic }: Props) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="내용을 입력해 주세요"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+            className={nestForm.nestTextarea}
           />
         </div>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error ? <p className={nestForm.nestError}>{error}</p> : null}
 
-        <div className="flex gap-3">
+        <div className={nestForm.nestActions}>
           <Link
             href={info.backPath}
-            className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-md text-sm text-center hover:bg-gray-50 transition-colors"
+            className={`${nestForm.nestBtnSecondary} ${nestForm.flex1}`}
           >
             취소
           </Link>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 bg-indigo-600 text-white py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className={`${nestForm.nestBtnPrimary} ${nestForm.flex1}`}
           >
             {isSubmitting ? "등록 중…" : "등록"}
           </button>

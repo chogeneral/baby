@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPostById } from "@/lib/postStore";
+import { getPostById, incrementViewCount } from "@/lib/postStore";
 
 export async function GET(
   _req: NextRequest,
@@ -12,5 +12,6 @@ export async function GET(
     return NextResponse.json({ message: "게시글을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  return NextResponse.json(post);
+  incrementViewCount(id);
+  return NextResponse.json({ ...post, viewCount: (post.viewCount ?? 0) + 1 });
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ContentWriteCta } from "@/components/ContentWriteCta";
 import { contentTopicPageInfo } from "@/lib/contentTopic";
 import styles from "../contentPage.module.css";
 
@@ -13,9 +12,10 @@ export const metadata: Metadata = {
 export default function ParentStoriesPage() {
   return (
     <main className={styles.contentPage}>
+      <p className={styles.contentTag}>콘텐츠</p>
       <h1 className={styles.contentTitle}>부모 이야기</h1>
       <p className={styles.contentLead}>
-        완벽한 부모는 없어요. 지치거나 불안할 때는 혼자 참지 말고 이야기 해봐요
+        완벽한 부모는 없어요. 지치거나 불안할 때는 혼자 참지 말고 같이 이야기 해봐요
       </p>
       <div className={styles.contentLocalWriteRow}>
         <Link

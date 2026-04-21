@@ -17,6 +17,12 @@ export type PostRecord = {
   createdAt: string;
   /** 없으면 childBirthYear로 추정(구 데이터 호환) */
   boardKind?: CommunityRoomKind;
+  /** 영아방 말머리: 발달·식습관·언어·정서·건강 */
+  prefix?: string;
+  /** 사진첩 이미지 (base64 data URL, 1장) */
+  photoDataUrl?: string;
+  /** 조회수 */
+  viewCount?: number;
 };
 
 /** 저장 형식이 달라도 목록·필터에서 동일한 방 기준을 쓴다 */
@@ -51,6 +57,15 @@ export function getPostsByBoardKind(kind: CommunityRoomKind): PostRecord[] {
 
 export function getPostById(id: string): PostRecord | undefined {
   return readAll().find((p) => p.id === id);
+}
+
+export function incrementViewCount(id: string): void {
+  const posts = readAll();
+  const post = posts.find((p) => p.id === id);
+  if (post) {
+    post.viewCount = (post.viewCount ?? 0) + 1;
+    writeAll(posts);
+  }
 }
 
 export function appendPost(post: PostRecord): void {

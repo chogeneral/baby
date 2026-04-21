@@ -10,6 +10,8 @@ export type CommentRecord = {
   authorEmail: string;
   authorNickname: string;
   createdAt: string;
+  /** 대댓글인 경우 부모 댓글 id */
+  parentId?: string;
 };
 
 function readAll(): CommentRecord[] {
