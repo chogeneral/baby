@@ -2,19 +2,76 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import nestForm from "@/app/nestForm.module.css";
 import { formatKoreanPhoneInput, onlyDigits } from "@/lib/formatKoreanPhone";
 import { readLoginSession, saveLoginSession } from "@/lib/loginSession";
 import { formatDate } from "@/lib/formatDate";
+import { isIsoDateInRange } from "@/lib/birthDateParts";
+import {
+  communityRoomLabels,
+  inferBoardKindFromBirthYear,
+} from "@/lib/communityRoom";
+
+type ChildRow = {
+  /** 아이 호칭 — 가입 폼과 동일(저장·연령방·기준아이) */
+  name: string;
+  /** YYYY-MM-DD (input type=date) */
+  birthDate: string;
+};
 
 type UserInfo = {
   email: string;
   nickname: string;
   phone: string;
   childBirthYear: number;
+  childBirthYears?: number[];
+  childCount?: number;
+  childNames?: string[];
+  childBirthDates?: string[];
+  primaryChildIndex?: number;
   createdAt: string;
 };
+
+/**
+ * GET /api/me 로 받은 값으로 자녀 입력 줄을 맞춘다.
+ * 옛 기록(연도만)은 1·1·1로 두어 달력에서 실제 날로 고치게 유도한다.
+ */
+function buildChildFormFromInfo(u: UserInfo): { childCountStr: string; childRows: ChildRow[] } {
+  const nFromServer = u.childCount ?? u.childBirthYears?.length;
+  if (nFromServer != null && nFromServer >= 1) {
+    const n = Math.min(5, Math.max(1, nFromServer));
+    const childRows: ChildRow[] = [];
+    for (let i = 0; i < n; i += 1) {
+      const date = u.childBirthDates?.[i];
+      const y = u.childBirthYears?.[i];
+      const birthDate =
+        date && /^\d{4}-\d{2}-\d{2}$/.test(date)
+          ? date
+          : y != null
+            ? `${y}-01-01`
+            : "";
+      childRows.push({ name: (u.childNames?.[i] ?? "").trim(), birthDate });
+    }
+    return { childCountStr: String(n), childRows };
+  }
+  if (u.childBirthYear) {
+    const date0 = u.childBirthDates?.[0];
+    return {
+      childCountStr: "1",
+      childRows: [
+        {
+          name: (u.childNames?.[0] ?? "").trim(),
+          birthDate:
+            date0 && /^\d{4}-\d{2}-\d{2}$/.test(date0)
+              ? date0
+              : `${u.childBirthYear}-01-01`,
+        },
+      ],
+    };
+  }
+  return { childCountStr: "1", childRows: [{ name: "", birthDate: "" }] };
+}
 
 type MyPost = {
   id: string;
@@ -31,7 +88,11 @@ export default function MyPage() {
 
   const [nickname, setNickname] = useState("");
   const [phone, setPhone] = useState("");
-  const [childBirthYear, setChildBirthYear] = useState("");
+  /** childBirthYears 인덱스 — 어떤 아이를 ‘맞춤·연령방’ 기준으로 쓸지 */
+  const [primaryChildIndex, setPrimaryChildIndex] = useState("0");
+  /** 1~5 — 출산·가족 구성이 바뀌면 늘려 맞출 수 있게(가입·같은 규칙으로 저장) */
+  const [childCountStr, setChildCountStr] = useState("1");
+  const [childRows, setChildRows] = useState<ChildRow[]>([{ name: "", birthDate: "" }]);
   const [infoError, setInfoError] = useState("");
   const [infoSuccess, setInfoSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -41,6 +102,14 @@ export default function MyPage() {
   const [pwError, setPwError] = useState("");
   const [pwSuccess, setPwSuccess] = useState("");
   const [isChangingPw, setIsChangingPw] = useState(false);
+
+  const { maxDate } = useMemo(() => {
+    const t = new Date();
+    const y = t.getFullYear();
+    const m = String(t.getMonth() + 1).padStart(2, "0");
+    const d = String(t.getDate()).padStart(2, "0");
+    return { maxDate: `${y}-${m}-${d}` };
+  }, []);
 
   useEffect(() => {
     const session = readLoginSession();
@@ -59,11 +128,88 @@ export default function MyPage() {
       setInfo(user);
       setNickname(user.nickname ?? "");
       setPhone(formatKoreanPhoneInput(user.phone ?? ""));
-      setChildBirthYear(String(user.childBirthYear ?? ""));
+      setPrimaryChildIndex(String(user.primaryChildIndex ?? 0));
+      const { childCountStr: cStr, childRows: rows } = buildChildFormFromInfo(user);
+      setChildCountStr(cStr);
+      setChildRows(rows);
       setMyPosts(postsData as MyPost[]);
       setIsLoading(false);
     });
   }, [router]);
+
+  function handleMyChildCountChange(value: string) {
+    setChildCountStr(value);
+    const n = Number.parseInt(value, 10);
+    if (Number.isNaN(n) || n < 1 || n > 5) {
+      setChildRows([]);
+      return;
+    }
+    setChildRows((prev) => {
+      const next = prev.slice(0, n);
+      while (next.length < n) {
+        next.push({ name: "", birthDate: "" });
+      }
+      return next;
+    });
+    setPrimaryChildIndex((prevIdxStr) => {
+      const current = Number.parseInt(prevIdxStr, 10);
+      if (Number.isNaN(current) || current >= n) {
+        return String(Math.max(0, n - 1));
+      }
+      return prevIdxStr;
+    });
+  }
+
+  function handleMyChildRowChange(index: number, field: keyof ChildRow, value: string) {
+    setChildRows((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index]!, [field]: value };
+      return next;
+    });
+  }
+
+  /**
+   * 자녀 블록은 가입·서버(validateChildProfilePayload)와 같은 규칙으로
+   * 클라이언트에서 먼저 잡는다(불필요한 400·사용자 혼란을 줄이기 위함).
+   */
+  function parseValidChildren(
+    countStr: string,
+    rows: ChildRow[],
+  ):
+    | { ok: true; count: number; childNames: string[]; childBirthDates: string[] }
+    | { ok: false; message: string } {
+    const countNum = Number.parseInt(countStr, 10);
+    if (!countStr.trim() || Number.isNaN(countNum) || countNum < 1 || countNum > 5) {
+      return { ok: false, message: "자녀 수는 1~5로 입력해 주세요." };
+    }
+    if (rows.length !== countNum) {
+      return { ok: false, message: "자녀 수에 맞게 각 아이의 이름·생일을 넣어 주세요." };
+    }
+    const childNames: string[] = [];
+    const childBirthDates: string[] = [];
+    for (let i = 0; i < countNum; i += 1) {
+      const r = rows[i] ?? { name: "", birthDate: "" };
+      const nm = r.name.trim();
+      if (!nm) {
+        return { ok: false, message: `${i + 1}번째 아이 이름을 입력해 주세요.` };
+      }
+      if (nm.length > 24) {
+        return { ok: false, message: `${i + 1}번째 아이 이름은 24자 이하로 입력해 주세요.` };
+      }
+      if (!r.birthDate) {
+        return { ok: false, message: `${i + 1}번째 아이 생일을 선택해 주세요.` };
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(r.birthDate)) {
+        return { ok: false, message: `${i + 1}번째 아이 생일을 다시 선택해 주세요.` };
+      }
+      if (!isIsoDateInRange(r.birthDate, "1990-01-01", maxDate)) {
+        return { ok: false, message: `${i + 1}번째 아이의 생일은 1990-01-01 ~ 오늘 사이여야 합니다.` };
+      }
+      childNames.push(nm);
+      childBirthDates.push(r.birthDate);
+    }
+    return { ok: true, count: countNum, childNames, childBirthDates };
+  }
 
   async function handleInfoSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -76,8 +222,18 @@ export default function MyPage() {
       return;
     }
 
-    if (!childBirthYear.trim()) {
-      setInfoError("아이 대표 출생 연도를 선택해 주세요.");
+    const childParsed = parseValidChildren(childCountStr, childRows);
+    if (!childParsed.ok) {
+      setInfoError(childParsed.message);
+      return;
+    }
+    const primaryIdx = Number.parseInt(primaryChildIndex, 10);
+    if (
+      Number.isNaN(primaryIdx) ||
+      primaryIdx < 0 ||
+      primaryIdx >= childParsed.count
+    ) {
+      setInfoError("기준 아이를 다시 선택해 주세요.");
       return;
     }
 
@@ -90,7 +246,10 @@ export default function MyPage() {
           email,
           nickname: trimmedNickname,
           phone: onlyDigits(phone),
-          childBirthYear: Number(childBirthYear),
+          childCount: childParsed.count,
+          childNames: childParsed.childNames,
+          childBirthDates: childParsed.childBirthDates,
+          primaryChildIndex: primaryIdx,
         }),
       });
 
@@ -100,25 +259,29 @@ export default function MyPage() {
         return;
       }
 
-      setInfo((prev) =>
-        prev
-          ? {
-              ...prev,
-              nickname: trimmedNickname,
-              phone: onlyDigits(phone),
-              childBirthYear: Number(childBirthYear),
-            }
-          : prev,
-      );
+      const meRes = await fetch(`/api/me?email=${encodeURIComponent(email)}`);
+      const me = (await meRes.json()) as UserInfo;
+      if (!meRes.ok) {
+        setInfoError("저장은 되었는데 화면을 갱신하지 못했습니다. 새로고침해 주세요.");
+        return;
+      }
+      setInfo(me);
+      setPrimaryChildIndex(String(me.primaryChildIndex ?? 0));
+      const reloaded = buildChildFormFromInfo(me);
+      setChildCountStr(reloaded.childCountStr);
+      setChildRows(reloaded.childRows);
 
-      const yearNum = Number(childBirthYear);
+      const yearsFromMe = me.childBirthYears ?? childParsed.childBirthDates.map((d) =>
+        Number.parseInt(d.slice(0, 4), 10),
+      );
       saveLoginSession({
         email,
         nickname: trimmedNickname,
         phoneDigits: onlyDigits(phone),
-        /* 마이페이지는 단일 연도만 편집하므로 세션에도 1명 기준으로 맞춘다 */
-        childCount: 1,
-        childBirthYears: [yearNum],
+        childCount: me.childCount ?? childParsed.count,
+        childBirthYears: yearsFromMe,
+        childBirthDates: me.childBirthDates,
+        primaryChildIndex: me.primaryChildIndex ?? primaryIdx,
       });
 
       setInfoSuccess("정보가 수정되었습니다.");
@@ -167,10 +330,6 @@ export default function MyPage() {
     );
   }
 
-  const currentYear = new Date().getFullYear();
-  const years: number[] = [];
-  for (let y = currentYear; y >= 1990; y -= 1) years.push(y);
-
   return (
     <main className={nestForm.nestPage}>
       <div className={nestForm.nestStack}>
@@ -217,33 +376,147 @@ export default function MyPage() {
               />
             </div>
 
-            {/* 메인·추천 콘텐츠는 첫째(대표) 아이 출생 연도만 사용한다 — 여러 명이면 가장 맞는 아이 기준으로 선택 */}
-            <div className={nestForm.nestNotice}>
-              <h3 className={nestForm.nestNoticeTitle}>아이 대표 출생 연도</h3>
+            <hr className={nestForm.nestMypageDivider} aria-hidden="true" />
+
+            {/* 휴대폰 직후: 네비·맞춤 연령 방은 기준 아이 1명으로 정해짐 — 자녀 상세(이름·생일)는 아래에서 입력·저장 */}
+            <div
+              className={`${nestForm.nestNotice} ${nestForm.nestMypageAfterPhone}`}
+            >
+              <h3 className={nestForm.nestNoticeTitle}>맞춤·게시판 기준 아이</h3>
               <p className={nestForm.nestNoticeSub} style={{ marginTop: "0.35rem" }}>
-                맞춤 안내(예: 만 1세 이하 시 신생아 관리 추천)에 쓰는 기준이에요. 둘째·셋째만
-                있다면 안내를 받고 싶은 아이를 골라 주세요.
+                홈·네비의 연령 방(영아방·토들러방·유아방)이 여기서 고른 아이의 나이에 맞게
+                정해져요. 이름·생일은 바로 이어지는 자녀 정보에서 입력한 뒤 저장하면
+                같이 반영돼요. 둘째·셋째를 기준으로 쓰고 싶다면 이 목록에서 골라 주세요.
               </p>
             </div>
 
-            <div>
-              <label htmlFor="myBirthYear" className={nestForm.nestLabel}>
-                대표 연도 선택
-              </label>
-              <select
-                id="myBirthYear"
-                value={childBirthYear}
-                onChange={(e) => setChildBirthYear(e.target.value)}
-                className={nestForm.nestSelect}
-              >
-                <option value="">연도를 선택해 주세요</option>
-                {years.map((y) => (
-                  <option key={y} value={String(y)}>
-                    {y}년생 (대표)
-                  </option>
-                ))}
-              </select>
+            {childRows.length > 0 ? (
+              <div className={nestForm.nestMypageTightAfterPrimaryIntro}>
+                <label htmlFor="myPrimaryChild" className={nestForm.nestLabel}>
+                  기준 아이 선택
+                </label>
+                <select
+                  id="myPrimaryChild"
+                  value={primaryChildIndex}
+                  onChange={(e) => {
+                    setPrimaryChildIndex(e.target.value);
+                    if (infoError) setInfoError("");
+                  }}
+                  className={nestForm.nestSelect}
+                >
+                  {childRows.map((row, i) => {
+                    const yForRoom =
+                      row.birthDate && /^\d{4}-\d{2}-\d{2}$/.test(row.birthDate)
+                        ? Number.parseInt(row.birthDate.slice(0, 4), 10)
+                        : (info?.childBirthYears?.[i] ?? new Date().getFullYear() - 1);
+                    const name = row.name.trim() || `${i + 1}번째 아이`;
+                    const roomKind = inferBoardKindFromBirthYear(yForRoom);
+                    const roomName = communityRoomLabels[roomKind].roomName;
+                    const birthPart =
+                      row.birthDate && /^\d{4}-\d{2}-\d{2}$/.test(row.birthDate)
+                        ? `${row.birthDate.slice(0, 10).replace(/-/g, ".")} 생`
+                        : "생일을 선택하면 정확히 보여요";
+                    return (
+                      <option key={i} value={String(i)}>
+                        {name} — {roomName} · {birthPart}
+                      </option>
+                    );
+                  })}
+                </select>
+                <p className={nestForm.nestHint} style={{ marginTop: "0.35rem" }}>
+                  {(() => {
+                    const idx = Math.max(
+                      0,
+                      Math.min(
+                        Number.parseInt(primaryChildIndex, 10) || 0,
+                        childRows.length - 1,
+                      ),
+                    );
+                    const row = childRows[idx]!;
+                    const yHint =
+                      row.birthDate && /^\d{4}-\d{2}-\d{2}$/.test(row.birthDate)
+                        ? Number.parseInt(row.birthDate.slice(0, 4), 10)
+                        : (info?.childBirthYears?.[idx] ?? new Date().getFullYear() - 1);
+                    const kind = inferBoardKindFromBirthYear(yHint);
+                    return `선택한 아이는 지금·${communityRoomLabels[kind].roomName} 안내 기준이에요. (${communityRoomLabels[kind].ageHint})`;
+                  })()}
+                </p>
+              </div>
+            ) : null}
+
+            {childRows.length > 0 ? (
+              <hr className={nestForm.nestMypageDivider} aria-hidden="true" />
+            ) : null}
+
+            <div
+              className={`${nestForm.nestNotice} ${nestForm.nestMypageChildInfoFollows} ${nestForm.nestMypageChildInfoNoticeSlim}`}
+            >
+              <h3 className={nestForm.nestNoticeTitle}>자녀 정보</h3>
+              <p className={nestForm.nestNoticeSub} style={{ marginTop: "0.35rem" }}>
+                둘째·셋째가 생기면 자녀 수를 늘리고, 아이마다 호칭과 생일을 맞춰 주세요. 저장
+                시 회원가입과 같은 기준(이름 24자, 생일 1990~오늘)으로 확인합니다.
+              </p>
             </div>
+
+            <div className={nestForm.nestMypageTightAfterChildInfoIntro}>
+              <label htmlFor="myChildCount" className={nestForm.nestLabel}>
+                자녀 수
+              </label>
+              <input
+                id="myChildCount"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={5}
+                value={childCountStr}
+                onChange={(e) => {
+                  handleMyChildCountChange(e.target.value);
+                  if (infoError) setInfoError("");
+                }}
+                className={nestForm.nestInput}
+              />
+            </div>
+
+            {childRows.map((row, i) => (
+              <div
+                key={i}
+                className={nestForm.nestTightStack}
+                /* 첫 아이: 자녀 수 필드 직후만 살짝 띄움, 둘째부터는 덩어리 구분용 여백 */
+                style={{ marginTop: i === 0 ? "0.5rem" : "1.25rem" }}
+              >
+                <p className={nestForm.nestLabel} style={{ margin: "0 0 0.25rem" }}>
+                  {i + 1}번째 아이
+                </p>
+                <div>
+                  <label className={nestForm.nestLabel} htmlFor={`myChildName-${i}`}>
+                    이름(호칭)
+                  </label>
+                  <input
+                    id={`myChildName-${i}`}
+                    type="text"
+                    maxLength={24}
+                    value={row.name}
+                    onChange={(e) => handleMyChildRowChange(i, "name", e.target.value)}
+                    className={nestForm.nestInput}
+                    placeholder="예: 우리 콩이"
+                  />
+                </div>
+                <div>
+                  <label className={nestForm.nestLabel} htmlFor={`myChildDate-${i}`}>
+                    생년월일
+                  </label>
+                  <input
+                    id={`myChildDate-${i}`}
+                    type="date"
+                    min="1990-01-01"
+                    max={maxDate}
+                    value={row.birthDate}
+                    onChange={(e) => handleMyChildRowChange(i, "birthDate", e.target.value)}
+                    className={nestForm.nestInput}
+                  />
+                </div>
+              </div>
+            ))}
 
             {infoError ? <p className={nestForm.nestError}>{infoError}</p> : null}
             {infoSuccess ? <p className={nestForm.nestSuccess}>{infoSuccess}</p> : null}
@@ -297,8 +570,8 @@ export default function MyPage() {
           </form>
         </section>
 
-        {/* 내가 쓴 글 */}
-        <section>
+        {/* 내가 쓴 글 — 우측 퀵메뉴(글쓰기 기록)에서 #myWrites 로 스크롤 이동 */}
+        <section id="myWrites">
           <h2 className={nestForm.nestSectionTitle}>
             내가 쓴 글 <span className={nestForm.nestAccentCount}>{myPosts.length}</span>
           </h2>

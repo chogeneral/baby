@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
       childBirthYear: placeholderYear,
       boardKind: "kokkoma",
       createdAt: new Date().toISOString(),
+      ...(photoDataUrl ? { photoDataUrl } : {}),
     };
     appendPost(post);
     return NextResponse.json(post, { status: 201 });

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import nestForm from "@/app/nestForm.module.css";
 import { communityBoardTitle } from "@/lib/communityBoard";
 import { readLoginSession } from "@/lib/loginSession";
@@ -15,9 +15,11 @@ export default function KokkomaWritePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [authorEmail, setAuthorEmail] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const session = readLoginSession();
@@ -29,6 +31,21 @@ export default function KokkomaWritePage() {
     setAuthorEmail(session.email);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [router]);
+
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handlePhotoRemove() {
+    setPhotoPreview(null);
+    if (photoInputRef.current) photoInputRef.current.value = "";
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -49,7 +66,13 @@ export default function KokkomaWritePage() {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, content, authorEmail, boardKind: "kokkoma" }),
+        body: JSON.stringify({
+          title,
+          content,
+          authorEmail,
+          boardKind: "kokkoma",
+          ...(photoPreview ? { photoDataUrl: photoPreview } : {}),
+        }),
       });
 
       if (!res.ok) {
@@ -58,8 +81,7 @@ export default function KokkomaWritePage() {
         return;
       }
 
-      const post = (await res.json()) as { id: string };
-      router.push(`/community/${post.id}`);
+      router.push("/community/kokkoma");
     } finally {
       setIsSubmitting(false);
     }
@@ -69,17 +91,16 @@ export default function KokkomaWritePage() {
 
   return (
     <main className={nestForm.nestPage}>
-      <p className={nestForm.nestTag}>익명 게시판</p>
       <h1 className={nestForm.nestTitle}>꼬꼬마(익명게시판)</h1>
-      <p className={nestForm.nestLead}>{communityBoardTitle}</p>
+
       <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
         글 등록 안내
       </p>
 
       <div className={nestForm.nestNotice}>
         <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
-          이 방에 올린 글과 댓글은 다른 사용자에게 <strong>익명</strong>으로만 보여요. 자녀
-          출생 연도를 입력하지 않아도 글을 쓸 수 있어요.
+          이 방에 올린 글과 댓글은 다른 사용자에게 <strong>익명</strong>으로만
+          보여요. 자녀 출생 연도를 입력하지 않아도 글을 쓸 수 있어요.
         </p>
       </div>
 
@@ -113,10 +134,45 @@ export default function KokkomaWritePage() {
           />
         </div>
 
+        <div>
+          <p className={nestForm.nestLabel}>사진첩</p>
+          {photoPreview ? (
+            <div className={nestForm.nestPhotoPreviewWrap}>
+              <img
+                src={photoPreview}
+                alt="첨부 사진 미리보기"
+                className={nestForm.nestPhotoPreview}
+              />
+              <button
+                type="button"
+                onClick={handlePhotoRemove}
+                className={nestForm.nestPhotoRemove}
+              >
+                삭제
+              </button>
+            </div>
+          ) : (
+            <label htmlFor="kokkomaPhoto" className={nestForm.nestPhotoLabel}>
+              <span>+ 사진 추가 (1장)</span>
+              <input
+                ref={photoInputRef}
+                id="kokkomaPhoto"
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className={nestForm.nestPhotoInput}
+              />
+            </label>
+          )}
+        </div>
+
         {error ? <p className={nestForm.nestError}>{error}</p> : null}
 
         <div className={nestForm.nestActions}>
-          <Link href="/community/kokkoma" className={`${nestForm.nestBtnSecondary} ${nestForm.flex1}`}>
+          <Link
+            href="/community/kokkoma"
+            className={`${nestForm.nestBtnSecondary} ${nestForm.flex1}`}
+          >
             취소
           </Link>
           <button

@@ -19,9 +19,11 @@ export function getApproxFullYearsSinceBirth(
  */
 export function getChildAgeStageFromBirthYears(
   birthYears: number[] | undefined,
+  primaryChildIndex = 0,
 ): ChildAgeStage {
   if (!birthYears?.length) return "unknown";
-  const years = getApproxFullYearsSinceBirth(birthYears[0]);
+  const idx = Math.max(0, Math.min(primaryChildIndex, birthYears.length - 1));
+  const years = getApproxFullYearsSinceBirth(birthYears[idx]);
   if (years < 0) return "unknown";
   if (years <= 1) return "newborn";
   return "older";

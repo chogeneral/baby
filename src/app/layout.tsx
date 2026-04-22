@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Serif_KR } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { RightQuickMenu } from "@/components/RightQuickMenu";
 import "./globals.css";
 
 /* 모킹의 세리프 헤드라인에 맞춰 제목·로고에 Noto Serif KR을 쓴다 (한글 가독성 유지) */
@@ -41,6 +43,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         <Navbar />
         {children}
+        <RightQuickMenu />
+        <Footer />
       </body>
     </html>
   );

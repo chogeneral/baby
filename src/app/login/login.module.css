@@ -112,6 +112,12 @@
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.2);
 }
 
+/* type="date" — OS/브라우저 기본 datepicker 를 쓰며 터치·데스크톱에서 높이를 맞춘다 */
+.formInputDate {
+  min-height: 2.75rem;
+  font-family: inherit;
+}
+
 .formError {
   font-size: 0.75rem;
   color: #c2410c;

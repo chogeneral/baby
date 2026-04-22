@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { appendUser, emailExists } from "@/lib/userStore";
+import { validateChildProfilePayload } from "@/lib/validateChildProfilePayload";
 
 export async function POST(req: NextRequest) {
-  const body = await req.json() as {
+  const body = (await req.json()) as {
     email?: string;
     nickname?: string;
     phone?: string;
     password?: string;
     childCount?: number;
-    childBirthYears?: number[];
+    childBirthDates?: string[];
+    childNames?: string[];
   };
 
-  const { email, nickname, phone, password, childCount, childBirthYears } = body;
+  const { email, nickname, phone, password, childCount, childBirthDates, childNames } = body;
 
   const emailTrimmed = email?.trim() ?? "";
   const nicknameTrimmed = nickname?.trim() ?? "";
@@ -21,32 +23,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
   }
 
-  if (
-    childCount == null ||
-    typeof childCount !== "number" ||
-    !Array.isArray(childBirthYears) ||
-    childBirthYears.length !== childCount
-  ) {
-    return NextResponse.json(
-      { message: "자녀 수와 출생 연도 정보가 올바르지 않습니다." },
-      { status: 400 },
-    );
+  const today = new Date();
+  const maxStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  const childValid = validateChildProfilePayload(
+    childCount,
+    childNames,
+    childBirthDates,
+    maxStr,
+  );
+  if (!childValid.ok) {
+    return NextResponse.json({ message: childValid.message }, { status: 400 });
   }
 
-  if (childCount < 1 || childCount > 5) {
-    return NextResponse.json({ message: "자녀 수는 1명~5명만 가능합니다." }, { status: 400 });
-  }
-
-  const currentYear = new Date().getFullYear();
-  for (let i = 0; i < childBirthYears.length; i++) {
-    const y = childBirthYears[i];
-    if (typeof y !== "number" || Number.isNaN(y) || y < 1990 || y > currentYear) {
-      return NextResponse.json(
-        { message: `${i + 1}번째 아이의 출생 연도가 올바르지 않습니다.` },
-        { status: 400 },
-      );
-    }
-  }
+  const {
+    childCount: nChildren,
+    trimmedNames,
+    childBirthDates: datesValid,
+    childBirthYears,
+  } = childValid;
 
   if (emailExists(emailTrimmed)) {
     return NextResponse.json({ message: "이미 사용 중인 이메일입니다." }, { status: 409 });
@@ -59,10 +54,12 @@ export async function POST(req: NextRequest) {
     nickname: nicknameTrimmed,
     phone,
     passwordHash,
-    childCount,
+    childCount: nChildren,
+    childNames: trimmedNames,
+    childBirthDates: datesValid,
     childBirthYears,
-    /* 기존 단일 필드 API·게시글과 호환되도록 첫째 연도를 넣는다 */
     childBirthYear: childBirthYears[0],
+    primaryChildIndex: 0,
     createdAt: new Date().toISOString(),
   });
 

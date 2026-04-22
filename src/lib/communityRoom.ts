@@ -22,7 +22,7 @@ export const communityRoomPath: Record<CommunityRoomKind, string> = {
 
 export const communityRoomLabels: Record<
   CommunityRoomKind,
-  { roomName: string; ageHint: string }
+  { roomName: string; ageHint: string; subtext?: string }
 > = {
   youngInfant: {
     roomName: "영아방",
@@ -39,6 +39,7 @@ export const communityRoomLabels: Record<
   kokkoma: {
     roomName: "꼬꼬마(익명게시판)",
     ageHint: "하지 못했던 이야기, 서로 이야기 해봐요 ",
+    subtext: "말못한 고민이 있으면 여기에 털어놓으세요. 당신의 마음속 깊은 이야기를 이곳에 편히 내려놓으세요",
   },
 };
 
@@ -64,10 +65,15 @@ export function inferBoardKindFromBirthYear(
   return "preschool";
 }
 
+/**
+ * @param primaryChildIndex — childBirthYears 중 몇 번째를 연령 방 판정에 쓸지(기본 0=첫째)
+ */
 export function getCommunityRoomFromBirthYears(
   birthYears: number[] | undefined,
   reference = new Date(),
+  primaryChildIndex = 0,
 ): AgeBasedRoomKind | null {
   if (!birthYears?.length) return null;
-  return inferBoardKindFromBirthYear(birthYears[0], reference);
+  const idx = Math.max(0, Math.min(primaryChildIndex, birthYears.length - 1));
+  return inferBoardKindFromBirthYear(birthYears[idx], reference);
 }

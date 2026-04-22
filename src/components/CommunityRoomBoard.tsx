@@ -56,7 +56,11 @@ export function CommunityRoomBoard({ roomKind }: Props) {
       return;
     }
 
-    const myRoom = getCommunityRoomFromBirthYears(session?.childBirthYears);
+    const myRoom = getCommunityRoomFromBirthYears(
+      session?.childBirthYears,
+      new Date(),
+      session?.primaryChildIndex ?? 0,
+    );
     if (session && myRoom === null) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 리다이렉트 직후 로딩 화면 전환용
       setRedirecting(true);

@@ -65,12 +65,16 @@ export function LoginForm() {
         nickname?: string;
         childCount?: number;
         childBirthYears?: number[];
+        childBirthDates?: string[];
+        primaryChildIndex?: number;
       };
       saveLoginSession({
         email: data.email,
         nickname: data.nickname,
         childCount: data.childCount,
         childBirthYears: data.childBirthYears,
+        childBirthDates: data.childBirthDates,
+        primaryChildIndex: data.primaryChildIndex,
       });
       router.push("/");
       router.refresh();

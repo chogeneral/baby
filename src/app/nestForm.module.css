@@ -27,6 +27,13 @@
   gap: 2.5rem;
 }
 
+/* 마이페이지·자녀 한 덩어리 — nestStack(2.5rem)은 너무 벌어지고, 0.4rem은 촘촘해 보일 때 0.55rem 정도로 살짝만 띄움 */
+.nestTightStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
 /* 상단 구분 태그 — 게시판/콘텐츠 종류를 작게 보여 준다 */
 .nestTag {
   display: block;
@@ -111,6 +118,77 @@
   color: var(--colorCharcoal);
 }
 
+/* 마이페이지: 계정(휴대폰) ↔ 맞춤 기준, 기준아이 선택 ↔ 자녀 정보 — 1px 점선으로 섹션만 구분(색은 캐릿 톤에 투명도) */
+.nestMypageDivider {
+  display: block;
+  margin: 0.7rem 0;
+  width: 100%;
+  height: 0;
+  border: 0;
+  border-top: 1px dashed #2d292614;
+}
+
+/* 성장·일상(/record): 마이/가입에 넣은 아이 수만큼 — 좌측 띠 색이 인덱스(0~4)에 따라 갈라 한눈에 구분 */
+.nestRecordChildSection {
+  margin-top: 0.25rem;
+  padding: 0.8rem 0.9rem 0.85rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(45, 41, 38, 0.08);
+}
+
+
+
+.nestRecordChildName {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--colorCharcoal);
+  letter-spacing: -0.02em;
+}
+
+.nestRecordHistoryItem[data-index="0"] {
+  border-left: 3px solid var(--colorTerracotta);
+}
+
+.nestRecordHistoryItem[data-index="1"] {
+  border-left: 3px solid var(--colorTeal);
+}
+
+.nestRecordHistoryItem[data-index="2"] {
+  border-left: 3px solid var(--colorSageDeep);
+}
+
+.nestRecordHistoryItem[data-index="3"] {
+  border-left: 3px solid #7a6a9e;
+}
+
+.nestRecordHistoryItem[data-index="4"] {
+  border-left: 3px solid var(--colorTerracottaDark);
+}
+
+.nestRecordHistoryItem {
+  padding-left: calc(1.1rem - 2px);
+}
+
+.nestRecordHistoryChildName {
+  font-weight: 700;
+  color: var(--colorTerracottaDark);
+  margin-right: 0.15rem;
+}
+
+
+/* ‘맞춤·게시판 기준 아이’ 안내 박스 직후 ‘기준 아이 선택’ — nestForm gap(1rem)+notice 하단 여백이 겹쳐 라벨이 멀어 보여 위만 약한 음수 마진 */
+.nestMypageTightAfterPrimaryIntro {
+  margin-top: -0.45rem;
+}
+
+
+/* ‘자녀 정보’ notice만: 다음 필드(자녀 수)와 붙이고 싶을 때 박스 아래 margin을 gap과 겹치지 않게 약하게 */
+.nestNotice.nestMypageChildInfoNoticeSlim {
+  margin-bottom: 0.65rem;
+}
+
 /* 폼 필드 간격 */
 .nestForm {
   display: flex;
@@ -184,47 +262,40 @@
   color: var(--colorTerracottaDark);
 }
 
-/* 버튼 줄 */
-.nestActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
+/* 글쓰기·댓글 등록 등 주요 제출 버튼 — 갈색 톤으로 강조하고 좌우 패딩을 1.35rem 으로 통일해 취소 버튼과 시각적 균형을 맞춘다 */
 .nestBtnPrimary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 2.75rem;
-  padding: 0 1.25rem;
-  border: none;
+  padding: 0 1.35rem;
   border-radius: var(--radiusPill);
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #fff;
+  color: #fffaf5;
   cursor: pointer;
   text-decoration: none;
-  background: linear-gradient(
-    135deg,
-    var(--colorTerracotta) 0%,
-    var(--colorTerracottaDark) 100%
-  );
-  box-shadow: 0 6px 20px rgba(197, 123, 103, 0.28);
+  background: linear-gradient(145deg, #8b5c3a 0%, #5c3d2e 55%, #4a3228 100%);
+  border: 1px solid rgba(45, 30, 22, 0.45);
+  box-shadow: var(--shadowSoft);
   transition:
     transform var(--btnHoverMs) var(--btnHoverEase),
     box-shadow var(--btnHoverMs) ease,
+    border-color 0.2s ease,
     filter 0.2s ease,
     opacity 0.12s ease;
 }
 
 .nestBtnPrimary:hover:not(:disabled) {
   transform: translateY(var(--btnLiftY));
-  box-shadow: 0 12px 32px rgba(197, 123, 103, 0.42);
-  filter: brightness(1.04);
+  box-shadow: var(--btnShadowHover);
+  border-color: rgba(45, 30, 22, 0.55);
+  filter: brightness(1.06);
 }
 
 .nestBtnPrimary:active:not(:disabled) {
   transform: translateY(0) scale(0.98);
+  filter: brightness(0.96);
 }
 
 .nestBtnPrimary:disabled {
@@ -263,6 +334,31 @@
 
 .nestBtnSecondary:active {
   transform: translateY(0) scale(0.99);
+}
+
+/*
+ * 글쓰기·수정 폼 하단(.nestActions) 전용:
+ * - 취소 링크는 왼쪽, 등록 버튼은 오른쪽(justify-content: space-between, DOM 순서 유지)
+ * - 기본 primary/secondary보다 작은 높이·패딩으로 보이게 한다
+ * - .flex1 은 다른 화면에서 쓰이므로 여기서만 flex 확장을 끈다
+ */
+.nestActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nestActions .nestBtnPrimary,
+.nestActions .nestBtnSecondary {
+  min-height: 2.2rem;
+  padding: 0 0.9rem;
+  font-size: 0.8125rem;
+}
+
+.nestActions .flex1 {
+  flex: 0 0 auto;
 }
 
 .nestBtnNeutral {

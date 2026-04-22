@@ -264,12 +264,21 @@ export default function PostDetailPage({
             </div>
           </form>
         ) : (
-          <p className={`${nestForm.nestMuted} ${nestForm.nestTextCenter}`} style={{ padding: "1rem 0" }}>
-            <Link href="/login" className={nestForm.nestLink}>
-              로그인
-            </Link>
-            하면 댓글을 남길 수 있어요.
-          </p>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", padding: "1rem 0" }}>
+            <p className={`${nestForm.nestMuted} ${nestForm.nestTextCenter}`}>
+              <Link href="/login" className={nestForm.nestLink}>
+                로그인
+              </Link>
+              하면 댓글을 남길 수 있어요.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push(listHref)}
+              className={nestForm.nestBtnSecondary}
+            >
+              목록
+            </button>
+          </div>
         )}
       </section>
 
@@ -294,6 +303,7 @@ export default function PostDetailPage({
               </button>
             </div>
 
+            
             
 
             <form onSubmit={handleReplySubmit} className={nestForm.nestModalForm}>

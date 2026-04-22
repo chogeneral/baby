@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -8,8 +8,16 @@ import {
   isValidKoreanMobile,
   onlyDigits,
 } from "@/lib/formatKoreanPhone";
+import { isIsoDateInRange } from "@/lib/birthDateParts";
 import { saveLoginSession } from "@/lib/loginSession";
 import styles from "../login/login.module.css";
+
+type ChildRow = {
+  /** 아이를 부르는 이름(호칭) */
+  name: string;
+  /** HTML5 date 값 YYYY-MM-DD */
+  birthDate: string;
+};
 
 type FieldErrors = {
   email?: string;
@@ -17,9 +25,14 @@ type FieldErrors = {
   phone?: string;
   password?: string;
   childCount?: string;
-  childBirthYears?: string[];
+  childNameErrors?: string[];
+  childDateErrors?: string[];
 };
 
+/**
+ * 가입 시 자녀 수·자녀별 이름·생일(브라우저 datepicker)을 받는다.
+ * 생일은 `input type="date"` 로 열리는 OS·브라우저 기본 달력 UI 를 사용한다.
+ */
 export function SignupForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -27,48 +40,58 @@ export function SignupForm() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [childCount, setChildCount] = useState("");
-  const [childBirthYears, setChildBirthYears] = useState<string[]>([]);
+  const [childRows, setChildRows] = useState<ChildRow[]>([]);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  /** 서버(400 등) 오류는 특정 필드 문제가 아닐 수 있어 이메일 칸에만 넣지 않는다 */
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { minDate, maxDate } = useMemo(() => {
+    const t = new Date();
+    const y = t.getFullYear();
+    const m = String(t.getMonth() + 1).padStart(2, "0");
+    const d = String(t.getDate()).padStart(2, "0");
+    return { minDate: "1990-01-01", maxDate: `${y}-${m}-${d}` };
+  }, []);
 
   function handleChildCountChange(value: string) {
     setChildCount(value);
     if (fieldErrors.childCount) setFieldErrors((p) => ({ ...p, childCount: undefined }));
-    const count = Number.parseInt(value, 10);
-    if (!Number.isNaN(count) && count > 0) {
-      setChildBirthYears((prev) => {
-        const next = [...prev];
-        next.length = count;
-        for (let i = 0; i < count; i++) {
-          if (next[i] === undefined) next[i] = "";
-        }
-        return next;
-      });
-    } else {
-      setChildBirthYears([]);
+    const n = Number.parseInt(value, 10);
+    if (Number.isNaN(n) || n < 1 || n > 5) {
+      setChildRows([]);
+      return;
     }
-  }
-
-  function handleChildBirthYearChange(index: number, value: string) {
-    setChildBirthYears((prev) => {
-      const next = [...prev];
-      next[index] = value;
+    setChildRows((prev) => {
+      const next: ChildRow[] = prev.slice(0, n);
+      while (next.length < n) {
+        next.push({ name: "", birthDate: "" });
+      }
       return next;
     });
-    if (fieldErrors.childBirthYears?.[index]) {
+  }
+
+  function handleChildRowChange(index: number, field: keyof ChildRow, value: string) {
+    setChildRows((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+    if (field === "name" && fieldErrors.childNameErrors?.[index]) {
       setFieldErrors((p) => {
-        const years = [...(p.childBirthYears ?? [])];
-        years[index] = undefined as unknown as string;
-        return { ...p, childBirthYears: years };
+        const err = [...(p.childNameErrors ?? [])];
+        err[index] = "";
+        return { ...p, childNameErrors: err };
+      });
+    }
+    if (field === "birthDate" && fieldErrors.childDateErrors?.[index]) {
+      setFieldErrors((p) => {
+        const err = [...(p.childDateErrors ?? [])];
+        err[index] = "";
+        return { ...p, childDateErrors: err };
       });
     }
   }
 
-  /**
-   * 회원가입 검증: 로그인 폼과 동일한 규칙을 맞춰 두면 나중에 API 스키마를 하나로 묶기 쉽다.
-   */
   function validate(): boolean {
     const next: FieldErrors = {};
 
@@ -102,28 +125,36 @@ export function SignupForm() {
     }
 
     const countNum = Number.parseInt(childCount, 10);
-    if (!childCount) {
-      next.childCount = "자녀 수를 선택해 주세요.";
+    if (!childCount.trim()) {
+      next.childCount = "자녀 수를 입력해 주세요. (1~5)";
     } else if (Number.isNaN(countNum) || countNum < 1 || countNum > 5) {
-      next.childCount = "자녀 수는 1명~5명 사이로 선택해 주세요.";
+      next.childCount = "자녀 수는 1~5 사이 숫자로 입력해 주세요.";
     }
 
     if (!next.childCount && countNum > 0) {
-      const currentYear = new Date().getFullYear();
-      const yearErrors: string[] = new Array(countNum).fill("");
-      let hasYearError = false;
+      const nameErrs: string[] = new Array(countNum).fill("");
+      const dateErrs: string[] = new Array(countNum).fill("");
+
       for (let i = 0; i < countNum; i++) {
-        const y = childBirthYears[i] ?? "";
-        const yearNum = Number.parseInt(y, 10);
-        if (!y.trim()) {
-          yearErrors[i] = `${i + 1}번째 아이의 출생 연도를 선택해 주세요.`;
-          hasYearError = true;
-        } else if (Number.isNaN(yearNum) || yearNum < 1990 || yearNum > currentYear) {
-          yearErrors[i] = `출생 연도는 1990년부터 ${currentYear}년 사이로 선택해 주세요.`;
-          hasYearError = true;
+        const r = childRows[i] ?? { name: "", birthDate: "" };
+        const nm = r.name.trim();
+        if (!nm) {
+          nameErrs[i] = "이름을 입력해 주세요.";
+        } else if (nm.length > 24) {
+          nameErrs[i] = "이름은 24자 이하로 입력해 주세요.";
+        }
+
+        if (!r.birthDate) {
+          dateErrs[i] = "생일을 선택해 주세요.";
+        } else if (!/^\d{4}-\d{2}-\d{2}$/.test(r.birthDate)) {
+          dateErrs[i] = "생일을 다시 선택해 주세요.";
+        } else if (!isIsoDateInRange(r.birthDate, "1990-01-01", maxDate)) {
+          dateErrs[i] = "생일은 1990-01-01 ~ 오늘 사이여야 합니다.";
         }
       }
-      if (hasYearError) next.childBirthYears = yearErrors;
+
+      if (nameErrs.some(Boolean)) next.childNameErrors = nameErrs;
+      if (dateErrs.some(Boolean)) next.childDateErrors = dateErrs;
     }
 
     setFieldErrors(next);
@@ -136,6 +167,12 @@ export function SignupForm() {
 
     setIsSubmitting(true);
     setSubmitError("");
+    const countNum = Number.parseInt(childCount, 10);
+    const rows = childRows.slice(0, countNum);
+    const childBirthDates = rows.map((r) => r.birthDate);
+    const childNames = rows.map((r) => r.name.trim());
+    const childBirthYears = childBirthDates.map((d) => Number.parseInt(d.slice(0, 4), 10));
+
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
@@ -145,13 +182,14 @@ export function SignupForm() {
           nickname: nickname.trim(),
           phone: onlyDigits(phone),
           password,
-          childCount: Number.parseInt(childCount, 10),
-          childBirthYears: childBirthYears.map((y) => Number.parseInt(y, 10)),
+          childCount: countNum,
+          childNames,
+          childBirthDates,
         }),
       });
 
       if (!res.ok) {
-        const data = await res.json() as { message?: string };
+        const data = (await res.json()) as { message?: string };
         if (res.status === 409) {
           setFieldErrors({ email: data.message ?? "이미 사용 중인 이메일입니다." });
         } else {
@@ -165,8 +203,10 @@ export function SignupForm() {
         email: email.trim(),
         nickname: nickname.trim(),
         phoneDigits: onlyDigits(phone),
-        childCount: Number.parseInt(childCount, 10),
-        childBirthYears: childBirthYears.map((y) => Number.parseInt(y, 10)),
+        childCount: countNum,
+        childBirthYears,
+        childBirthDates,
+        primaryChildIndex: 0,
       });
       router.push("/");
       router.refresh();
@@ -286,51 +326,68 @@ export function SignupForm() {
             <label className={styles.formLabel} htmlFor="signupChildCount">
               자녀 수
             </label>
-            <select
+            <input
               id="signupChildCount"
               name="childCount"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={5}
+              step={1}
               className={`${styles.formInput} ${fieldErrors.childCount ? styles.formInputInvalid : ""}`}
               value={childCount}
               onChange={(e) => handleChildCountChange(e.target.value)}
-            >
-              <option value="">자녀 수 선택</option>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <option key={n} value={String(n)}>
-                  {n}명
-                </option>
-              ))}
-            </select>
+              placeholder="1 ~ 5"
+            />
+            <p className={styles.formHint}>1명부터 5명까지 숫자로 입력해 주세요.</p>
             <p className={styles.formError} role="alert">
               {fieldErrors.childCount ?? ""}
             </p>
           </div>
 
-          {childBirthYears.map((year, index) => {
-            const currentYear = new Date().getFullYear();
-            const years: number[] = [];
-            for (let y = currentYear; y >= 1990; y -= 1) years.push(y);
-            const yearError = fieldErrors.childBirthYears?.[index];
+          {childRows.map((row, index) => {
+            const nameErr = fieldErrors.childNameErrors?.[index];
+            const dateErr = fieldErrors.childDateErrors?.[index];
+            const hasChildErr = Boolean(nameErr || dateErr);
             return (
               <div key={index} className={styles.formGroup}>
-                <label className={styles.formLabel} htmlFor={`signupChildBirthYear_${index}`}>
-                  {index + 1}번째 아이 출생 연도
-                </label>
-                <select
-                  id={`signupChildBirthYear_${index}`}
-                  name={`childBirthYear_${index}`}
-                  className={`${styles.formInput} ${yearError ? styles.formInputInvalid : ""}`}
-                  value={year}
-                  onChange={(e) => handleChildBirthYearChange(index, e.target.value)}
-                >
-                  <option value="">연도 선택</option>
-                  {years.map((y) => (
-                    <option key={y} value={String(y)}>
-                      {y}년
-                    </option>
-                  ))}
-                </select>
+                <p className={styles.formLabel}>{index + 1}번째 아이</p>
+                <input
+                  type="text"
+                  id={`childName_${index}`}
+                  name={`childName_${index}`}
+                  autoComplete="off"
+                  className={`${styles.formInput} ${nameErr ? styles.formInputInvalid : ""}`}
+                  value={row.name}
+                  onChange={(e) => handleChildRowChange(index, "name", e.target.value)}
+                  placeholder="아이 이름(호칭)"
+                  maxLength={24}
+                  aria-label={`${index + 1}번째 아이 이름`}
+                />
                 <p className={styles.formError} role="alert">
-                  {yearError ?? ""}
+                  {nameErr ?? ""}
+                </p>
+
+                <label className={styles.formLabel} htmlFor={`childBirthDate_${index}`} style={{ marginTop: "0.5rem" }}>
+                  생일
+                </label>
+                <p className={styles.formHint} style={{ margin: 0 }}>
+                  달력에서 선택하면 됩니다. (최대 오늘까지)
+                </p>
+                <input
+                  id={`childBirthDate_${index}`}
+                  name={`childBirthDate_${index}`}
+                  type="date"
+                  min={minDate}
+                  max={maxDate}
+                  className={`${styles.formInput} ${styles.formInputDate} ${dateErr ? styles.formInputInvalid : ""}`}
+                  value={row.birthDate}
+                  onChange={(e) => handleChildRowChange(index, "birthDate", e.target.value)}
+                  aria-invalid={hasChildErr}
+                  aria-label={`${index + 1}번째 아이 생일`}
+                />
+                <p className={styles.formError} role="alert">
+                  {dateErr ?? ""}
                 </p>
               </div>
             );

@@ -15,6 +15,10 @@ export type LoginSessionPayload = {
   phoneDigits?: string;
   childCount?: number;
   childBirthYears?: number[];
+  /** YYYY-MM-DD — 네비 기준 아이 만 나이·개월(datepicker와 동일) */
+  childBirthDates?: string[];
+  /** 마이에서 고른 ‘기준 아이’ 인덱스 — 연령방(영아/토들러/유아)에 이 연도를 쓴다 */
+  primaryChildIndex?: number;
 };
 
 export function saveLoginSession(

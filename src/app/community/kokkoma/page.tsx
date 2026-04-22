@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CommunityRoomBoard } from "@/components/CommunityRoomBoard";
+import { KokkomaBoard } from "@/components/KokkomaBoard";
 
 export const metadata: Metadata = {
   title: "꼬꼬마(익명게시판)",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function KokkomaRoomPage() {
-  return <CommunityRoomBoard roomKind="kokkoma" />;
+  return <KokkomaBoard />;
 }

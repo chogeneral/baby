@@ -14,9 +14,9 @@ import { readLoginSession } from "@/lib/loginSession";
 import { findBannedWord } from "@/lib/contentFilter";
 
 const PREFIXES_BY_ROOM: Record<string, readonly string[]> = {
-  youngInfant: ["발달", "식습관", "언어", "정서", "건강"],
-  toddler:     ["발달", "식습관", "언어", "정서", "건강"],
-  preschool:   ["정서", "사회성", "언어", "신체발달", "생활습관", "교육", "놀이"],
+  youngInfant: ["언어", "놀이", "성장", "식습관"],
+  toddler:     ["언어", "놀이", "성장", "식습관"],
+  preschool:   ["언어", "놀이", "성장", "식습관"],
 };
 
 export default function WritePage() {
@@ -43,7 +43,11 @@ export default function WritePage() {
     setWriterNickname(
       session.nickname?.trim() || session.email.split("@")[0] || "회원",
     );
-    const room = getCommunityRoomFromBirthYears(session.childBirthYears);
+    const room = getCommunityRoomFromBirthYears(
+      session.childBirthYears,
+      new Date(),
+      session.primaryChildIndex ?? 0,
+    );
     setRoomKind(room);
     if (room) setPrefix((PREFIXES_BY_ROOM[room] ?? PREFIXES_BY_ROOM.youngInfant)[0]);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -110,7 +114,11 @@ export default function WritePage() {
       }
 
       await res.json();
-      router.push(communityRoomPath[roomKind]);
+      if (roomKind) {
+        router.push(communityRoomPath[roomKind]);
+      } else {
+        router.push("/community");
+      }
     } finally {
       setIsSubmitting(false);
     }

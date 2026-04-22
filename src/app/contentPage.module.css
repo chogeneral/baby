@@ -125,7 +125,7 @@
   text-align: left;
 }
 
-/* 글쓰기 이동 버튼 — 히어로 primary와 동일한 테라코타 알약 버튼 */
+/* 글쓰기 이동 버튼 — nestForm.nestBtnPrimary(등록)과 같은 갈색 알약형으로 CTA 톤을 통일한다 */
 .contentWriteLink {
   flex-shrink: 0;
   display: inline-flex;
@@ -136,26 +136,336 @@
   border-radius: var(--radiusPill);
   font-size: 0.875rem;
   font-weight: 700;
-  color: #fff;
+  color: #fffaf5;
   text-decoration: none;
-  background: linear-gradient(
-    135deg,
-    var(--colorTerracotta) 0%,
-    var(--colorTerracottaDark) 100%
-  );
-  box-shadow: 0 6px 22px rgba(197, 123, 103, 0.3);
+  background: linear-gradient(145deg, #8b5c3a 0%, #5c3d2e 55%, #4a3228 100%);
+  border: 1px solid rgba(45, 30, 22, 0.45);
+  box-shadow: var(--shadowSoft);
   transition:
     transform var(--btnHoverMs) var(--btnHoverEase),
     box-shadow var(--btnHoverMs) ease,
+    border-color 0.2s ease,
     filter 0.2s ease;
 }
 
 .contentWriteLink:hover {
   transform: translateY(var(--btnLiftY));
-  box-shadow: 0 12px 32px rgba(197, 123, 103, 0.42);
-  filter: brightness(1.04);
+  box-shadow: var(--btnShadowHover);
+  border-color: rgba(45, 30, 22, 0.55);
+  filter: brightness(1.06);
 }
 
 .contentWriteLink:active {
   transform: translateY(0) scale(0.98);
+  filter: brightness(0.96);
+}
+
+/* ── 게시글 상세 ── */
+.detailMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--colorMuted);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(45, 41, 38, 0.08);
+}
+
+.detailPhoto {
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.detailPhotoImg {
+  width: 100%;
+  max-height: 28rem;
+  object-fit: cover;
+  display: block;
+}
+
+.detailContent {
+  font-size: 0.9375rem;
+  line-height: 1.85;
+  color: var(--colorCharcoal);
+  white-space: pre-wrap;
+  margin-bottom: 2.5rem;
+}
+
+.detailContent p {
+  margin: 0 0 0.5rem;
+}
+
+.detailActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.25rem;
+}
+
+.detailBtnSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--colorCharcoal);
+  background: #ffffff;
+  border: 1px solid rgba(45, 41, 38, 0.12);
+  box-shadow: var(--shadowSoft);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.detailBtnSecondary:hover {
+  color: var(--colorCharcoal);
+  border-color: rgba(45, 41, 38, 0.2);
+}
+
+/* ── 게시글 목록 테이블 ── */
+.postTableWrap {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(45, 41, 38, 0.08);
+  box-shadow: 0 2px 12px rgba(45, 41, 38, 0.05);
+}
+
+.postTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  background: #fff;
+}
+
+.postTable thead tr {
+  background: var(--colorCreamMuted);
+  border-bottom: 1px solid rgba(45, 41, 38, 0.1);
+}
+
+.postTableThCenter {
+  padding: 0.875rem 0.75rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--colorMuted);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.postTableThLeft {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--colorMuted);
+  letter-spacing: 0.02em;
+}
+
+.postTableRow {
+  border-bottom: 1px solid rgba(45, 41, 38, 0.05);
+  transition: background 0.15s ease;
+}
+
+.postTableRow:last-child {
+  border-bottom: none;
+}
+
+.postTableRow:hover {
+  background: rgba(197, 123, 103, 0.04);
+}
+
+.postTableTdCenter {
+  padding: 0.875rem 0.75rem;
+  text-align: center;
+  color: var(--colorMuted);
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+
+.postTableTdLeft {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  color: var(--colorCharcoal);
+  max-width: 0;
+}
+
+.postTableTitleText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.postTableLink {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--colorCharcoal);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.postTableLink:hover {
+  color: var(--colorTerracottaDark);
+}
+
+.postTablePhotoIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--colorTerracotta);
+}
+
+.postTableEmpty {
+  padding: 4rem 1rem;
+  text-align: center;
+  color: var(--colorMuted);
+  font-size: 0.875rem;
+}
+
+/* 768px 이상에서만 테이블 블록을 쓴다 — 모바일은 PostStackListMobile 로 대체 */
+.postTableOnlyDesktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .postTableOnlyDesktop {
+    display: block;
+  }
+}
+
+/* 모바일 전용 세로 목록 — 제목·날짜 2줄, 위쪽 짙은 선·항목 사이 얇은 선 */
+.postStackListHost {
+  display: block;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .postStackListHost {
+    display: none;
+  }
+}
+
+.postStackList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border-top: 2px solid #2a2624;
+}
+
+.postStackItem {
+  border-bottom: 1px solid rgba(45, 41, 38, 0.1);
+}
+
+.postStackItem:last-child {
+  border-bottom: none;
+}
+
+.postStackItemLink {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 1rem 0.25rem 1rem 0;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.12s ease;
+}
+
+.postStackItemLink:active {
+  background: rgba(45, 41, 38, 0.03);
+}
+
+.postStackItemLink:focus-visible {
+  outline: 2px solid var(--colorTerracotta);
+  outline-offset: 2px;
+}
+
+/* 첫 줄: 본문 제목 — 어두운 글씨, 여러 줄 허용 */
+.postStackTitle {
+  display: -webkit-box;
+  width: 100%;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--colorCharcoal);
+}
+
+/* 둘째 줄: 날짜 — 작고 연한 회색 */
+.postStackDate {
+  font-size: 0.8125rem;
+  color: #9a9490;
+  letter-spacing: 0.02em;
+}
+
+.postStackListLoading,
+.postStackListEmpty {
+  margin: 0;
+  padding: 2.25rem 0.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--colorMuted);
+  border-top: 2px solid #2a2624;
+  background: #fff;
+}
+
+/* ── 페이지네이션 ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin-top: 1.5rem;
+}
+
+.pageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.125rem;
+  height: 2.125rem;
+  padding: 0 0.5rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1px solid rgba(45, 41, 38, 0.12);
+  background: #fff;
+  color: var(--colorMuted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pageBtn:hover:not(:disabled) {
+  border-color: var(--colorTerracotta);
+  color: var(--colorTerracottaDark);
+  background: rgba(197, 123, 103, 0.06);
+}
+
+.pageBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pageBtnActive {
+  background: var(--colorTerracotta);
+  border-color: var(--colorTerracotta);
+  color: #fff;
+  font-weight: 700;
+}
+
+.pageBtnActive:hover:not(:disabled) {
+  background: var(--colorTerracottaDark);
+  border-color: var(--colorTerracottaDark);
+  color: #fff;
 }

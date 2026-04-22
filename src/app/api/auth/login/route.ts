@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
 
   const primaryYear = getPrimaryChildBirthYear(user);
 
+  const pIdx = user.primaryChildIndex ?? 0;
   return NextResponse.json({
     email: user.email,
     nickname: user.nickname ?? "",
@@ -30,5 +31,7 @@ export async function POST(req: NextRequest) {
     childBirthYears:
       user.childBirthYears ??
       (primaryYear != null ? [primaryYear] : []),
+    childBirthDates: user.childBirthDates,
+    primaryChildIndex: user.childBirthYears?.length ? pIdx : 0,
   });
 }
