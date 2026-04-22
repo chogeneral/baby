@@ -11,7 +11,6 @@ import { findByEmail } from "@/lib/userStore";
 function isContentTopicKind(value: string): value is ContentTopicKind {
   return (
     value === "development" ||
-    value === "parentingSupplies" ||
     value === "parentStories"
   );
 }
@@ -30,9 +29,11 @@ export async function POST(req: NextRequest) {
     content?: string;
     authorEmail?: string;
     topic?: string;
+    photoDataUrl?: string;
+    password?: string;
   };
 
-  const { title, content, authorEmail, topic: rawTopic } = body;
+  const { title, content, authorEmail, topic: rawTopic, photoDataUrl, password } = body;
 
   if (!title?.trim() || !content?.trim() || !authorEmail) {
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
@@ -55,6 +56,8 @@ export async function POST(req: NextRequest) {
     authorEmail: user.email,
     authorNickname: user.nickname ?? "",
     createdAt: new Date().toISOString(),
+    ...(photoDataUrl ? { photoDataUrl } : {}),
+    ...(password?.trim() ? { password: password.trim() } : {}),
   };
 
   appendPost(post);
