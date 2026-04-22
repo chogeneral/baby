@@ -151,63 +151,67 @@ export function Navbar() {
     return `${navLinkBase} ${isActive(href) ? "font-semibold text-[#2d2926]" : "text-[#5c5652]"}`;
   }
 
+  /**
+   * 메인 GNB(홈·연령방·부모이야기·발달·꼬꼬마) — 1024px(lg) 이상은 1행 절대배치 가운데,
+   * 1024px 미만은 이미지와 같이 2행(1행: 로고+우측 / 2행: 링크 전체·왼쪽 정렬)으로 고정해
+   * 햄버거·세로 쌓기 없이 동일한 정보 구조를 유지한다.
+   */
+  const mainNavItems = (
+    <>
+      <Link href="/" className={navLinkClass("/")}>
+        홈
+      </Link>
+      {nickname && (
+        <Link
+          href={boardNavHref}
+          title={
+            myRoomKind
+              ? `${communityRoomLabels[myRoomKind].roomName}(대표 연도 기준)`
+              : "마이페이지에서 대표 연도를 설정하면 맞는 방으로 안내돼요"
+          }
+          className={`${navLinkBase} ${pathname.startsWith("/community") && !pathname.startsWith("/community/kokkoma") ? "font-semibold text-[#2d2926]" : "text-[#5c5652]"}`}
+        >
+          {boardNavLabel}
+        </Link>
+      )}
+      <Link href="/parent-stories" className={navLinkClass("/parent-stories")}>
+        부모이야기
+      </Link>
+      <Link href="/development" className={navLinkClass("/development")}>
+        발달
+      </Link>
+      <Link href="/community/kokkoma" className={navLinkClass("/community/kokkoma")}>
+        꼬꼬마
+      </Link>
+    </>
+  );
+
   return (
     <nav
       className="w-full border-b border-[#2d2926]/[0.06] bg-[#faf9f6] px-4 sm:px-6"
       style={{ fontFamily: "var(--font-sans)" }}
     >
-      <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-3 py-4 md:gap-6">
-        <Link
-          href="/"
-          className="shrink-0 font-serif text-xl font-semibold tracking-tight text-[#2d2926] sm:text-[1.35rem]"
-        >
-          육아도사
-        </Link>
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-3 py-4 lg:gap-0">
+        <div className="relative flex min-h-[2.5rem] items-center justify-between gap-2 sm:gap-3 md:gap-6">
+          <Link
+            href="/"
+            className="shrink-0 font-serif text-xl font-semibold tracking-tight text-[#2d2926] sm:text-[1.35rem]"
+          >
+            육아도사
+          </Link>
 
-        {/* 데스크톱에서만 중앙 정렬: 우측(프로필·닉네임)과 겹침/답답함을 덜이려 중앙 그룹 오른쪽에 여백 */}
-        <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-8 pr-6 md:pr-10 md:flex">
-          <Link href="/" className={navLinkClass("/")}>
-            홈
-          </Link>
-          {nickname && (
-            <Link
-              href={boardNavHref}
-              title={
-                myRoomKind
-                  ? `${communityRoomLabels[myRoomKind].roomName}(대표 연도 기준)`
-                  : "마이페이지에서 대표 연도를 설정하면 맞는 방으로 안내돼요"
-              }
-              className={`${navLinkBase} ${pathname.startsWith("/community") && !pathname.startsWith("/community/kokkoma") ? "font-semibold text-[#2d2926]" : "text-[#5c5652]"}`}
-            >
-              {boardNavLabel}
-            </Link>
-          )}
-          <Link href="/parent-stories" className={navLinkClass("/parent-stories")}>
-            부모이야기
-          </Link>
-          <Link href="/development" className={navLinkClass("/development")}>
-            발달
-          </Link>
-          <Link href="/community/kokkoma" className={navLinkClass("/community/kokkoma")}>
-            꼬꼬마
-          </Link>
-        </div>
+          {/* lg 이상: 1행 레이아웃 — 가운데 GNB(우측 닉·로그아웃과 겹침을 줄이기 위해 pr 유지) */}
+          <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-8 pr-6 lg:flex lg:pr-10">
+            {mainNavItems}
+          </div>
 
-        <div
-          suppressHydrationWarning
-          className="flex shrink-0 items-center gap-3 pl-1 sm:gap-4 sm:pl-2 md:gap-5 md:pl-4"
-        >
+          <div
+            suppressHydrationWarning
+            className="flex min-w-0 shrink-0 items-center justify-end gap-2 pl-1 sm:gap-3 sm:pl-2 md:gap-4 md:pl-4 lg:gap-5 lg:pl-4"
+          >
           {nickname ? (
             <>
               <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3.5">
-                <Link
-                  href="/mypage"
-                  className="rounded-full p-2 text-[#5c4033] transition-[transform,colors,background-color] duration-200 ease-out hover:scale-110 hover:bg-[#5c4033]/[0.1] hover:text-[#3d2a20] active:scale-95 motion-reduce:transition-none motion-reduce:hover:scale-100"
-                  aria-label="마이페이지"
-                  title={`${nickname}님`}
-                >
-                  {userIcon()}
-                </Link>
                 {primaryChildAgeLabel ? (
                   <span
                     className="shrink-0 text-[0.7rem] font-semibold leading-tight text-[#5c4033] sm:text-[0.75rem]"
@@ -217,9 +221,9 @@ export function Navbar() {
                   </span>
                 ) : null}
                 <Link
-                  href="/record"
+                  href="/baby-records"
                   className={`shrink-0 text-[0.8125rem] font-medium text-[#5c4033] transition-[color,transform] duration-200 ease-out hover:text-[#3d2a20] motion-safe:hover:-translate-y-px ${
-                    isActive("/record") ? "font-semibold text-[#3d2a20]" : ""
+                    isActive("/baby-records") ? "font-semibold text-[#3d2a20]" : ""
                   }`}
                   title="아기 성장·일상 기록"
                 >
@@ -259,32 +263,16 @@ export function Navbar() {
               </Link>
             </>
           )}
+          </div>
         </div>
-      </div>
 
-      {/* 모바일 보조 네비: 중앙 고정 링크가 숨겨져 있으므로 스크롤 행으로 보완 */}
-      <div className="flex gap-4 overflow-x-auto pb-3 md:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <Link href="/" className={`${navLinkClass("/")} shrink-0`}>
-          홈
-        </Link>
-        {nickname && (
-          <Link
-            href={boardNavHref}
-            className={`${navLinkBase} shrink-0 ${pathname.startsWith("/community") && !pathname.startsWith("/community/kokkoma") ? "font-semibold text-[#2d2926]" : "text-[#5c5652]"}`}
-          >
-            {boardNavLabel}
-          </Link>
-        )}
-        <Link href="/parent-stories" className={`${navLinkClass("/parent-stories")} shrink-0`}>
-          부모이야기
-        </Link>
-        <Link href="/development" className={`${navLinkClass("/development")} shrink-0`}>
-          발달
-        </Link>
-
-        <Link href="/community/kokkoma" className={`${navLinkClass("/community/kokkoma")} shrink-0`}>
-          꼬꼬마
-        </Link>
+        {/*
+          1024px 미만 전용 2번째 행: 상단과 동일한 mainNavItems를 재사용해
+          육아도사 타이틀 시작선과 맞춰 왼쪽부터 가로 나열한다(햄버거/가로 스크롤 단일 행 대신 flex-wrap).
+        */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:gap-x-4 lg:hidden">
+          {mainNavItems}
+        </div>
       </div>
     </nav>
   );

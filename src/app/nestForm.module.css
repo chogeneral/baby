@@ -24,7 +24,7 @@
 .nestStack {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 1.5rem;
 }
 
 /* 마이페이지·자녀 한 덩어리 — nestStack(2.5rem)은 너무 벌어지고, 0.4rem은 촘촘해 보일 때 0.55rem 정도로 살짝만 띄움 */
@@ -465,7 +465,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.7rem;
 }
 
 .nestCommentItem {
@@ -827,4 +827,42 @@
 
 .nestPhotoRemove:hover {
   background: rgba(0, 0, 0, 0.65);
+}
+
+/* 마이페이지 2단 PC 레이아웃 */
+.nestMypageGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.nestMypageGridRight {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+  .nestMypageGrid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    grid-template-areas:
+      "title title"
+      "left  right";
+    column-gap: 2.5rem;
+    row-gap: 2rem;
+    align-items: start;
+  }
+
+  .nestMypageGridTitle {
+    grid-area: title;
+  }
+
+  .nestMypageGridLeft {
+    grid-area: left;
+  }
+
+  .nestMypageGridRight {
+    grid-area: right;
+  }
 }

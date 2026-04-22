@@ -25,6 +25,7 @@ type Post = {
   prefix?: string;
   photoDataUrl?: string;
   viewCount?: number;
+  commentCount?: number;
 };
 
 type Props = {
@@ -142,7 +143,14 @@ export function CommunityRoomBoard({ roomKind }: Props) {
                     {post.prefix && (
                       <span className={styles.cardPrefix}>{post.prefix}</span>
                     )}
-                    <p className={styles.cardTitle}>{post.title}</p>
+                    <p className={styles.cardTitle}>
+                      {post.title}
+                      {(post.commentCount ?? 0) > 0 && (
+                        <span style={{ color: "#5c4033", marginLeft: "0.3rem", fontSize: "0.85em", fontWeight: 600 }}>
+                          [{post.commentCount}]
+                        </span>
+                      )}
+                    </p>
                     {post.content && (
                       <p className={styles.cardExcerpt}>
                         {post.content.slice(0, 60)}{post.content.length > 60 ? "…" : ""}

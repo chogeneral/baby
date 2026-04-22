@@ -332,12 +332,12 @@ export default function MyPage() {
 
   return (
     <main className={nestForm.nestPage}>
-      <div className={nestForm.nestStack}>
-        <div>
-          <p className={nestForm.nestTag}>계정</p>
+      <div className={nestForm.nestMypageGrid}>
+        <div className={nestForm.nestMypageGridTitle}>
           <h1 className={nestForm.nestTitle}>마이페이지</h1>
         </div>
 
+        <div className={nestForm.nestMypageGridLeft}>
         {/* 내 정보 수정 */}
         <section>
           <h2 className={nestForm.nestSectionTitle}>내 정보</h2>
@@ -482,12 +482,16 @@ export default function MyPage() {
                 key={i}
                 className={nestForm.nestTightStack}
                 /* 첫 아이: 자녀 수 필드 직후만 살짝 띄움, 둘째부터는 덩어리 구분용 여백 */
-                style={{ marginTop: i === 0 ? "0.5rem" : "1.25rem" }}
+                style={{
+                  marginTop: "0.5rem",
+                  borderBottom: i < childRows.length - 1 ? "1px dashed #2d292614" : undefined,
+                  paddingBottom: i < childRows.length - 1 ? "1.25rem" : undefined,
+                }}
               >
                 <p className={nestForm.nestLabel} style={{ margin: "0 0 0.25rem" }}>
                   {i + 1}번째 아이
                 </p>
-                <div>
+                <div style={{ marginTop: "0.15rem" }}>
                   <label className={nestForm.nestLabel} htmlFor={`myChildName-${i}`}>
                     이름(호칭)
                   </label>
@@ -501,7 +505,7 @@ export default function MyPage() {
                     placeholder="예: 우리 콩이"
                   />
                 </div>
-                <div>
+                <div style={{ marginTop: "0.75rem" }}>
                   <label className={nestForm.nestLabel} htmlFor={`myChildDate-${i}`}>
                     생년월일
                   </label>
@@ -521,15 +525,17 @@ export default function MyPage() {
             {infoError ? <p className={nestForm.nestError}>{infoError}</p> : null}
             {infoSuccess ? <p className={nestForm.nestSuccess}>{infoSuccess}</p> : null}
 
-            <button type="submit" disabled={isSaving} className={nestForm.nestBtnPrimary}>
+            <button type="submit" disabled={isSaving} className={nestForm.nestBtnPrimary} style={{ marginTop: "1.15rem" }}>
               {isSaving ? "저장 중…" : "저장"}
             </button>
           </form>
         </section>
+        </div>
 
+        <div className={nestForm.nestMypageGridRight}>
         {/* 비밀번호 변경 */}
         <section>
-          <h2 className={nestForm.nestSectionTitle}>비밀번호 변경</h2>
+          <h2 className={nestForm.nestSectionTitle} >비밀번호 변경</h2>
 
           <form onSubmit={handlePasswordChange} className={nestForm.nestForm}>
             <div>
@@ -564,7 +570,7 @@ export default function MyPage() {
             {pwError ? <p className={nestForm.nestError}>{pwError}</p> : null}
             {pwSuccess ? <p className={nestForm.nestSuccess}>{pwSuccess}</p> : null}
 
-            <button type="submit" disabled={isChangingPw} className={nestForm.nestBtnNeutral}>
+            <button type="submit" disabled={isChangingPw} className={nestForm.nestBtnNeutral} style={{ marginTop: "1.15rem" }}>
               {isChangingPw ? "변경 중…" : "비밀번호 변경"}
             </button>
           </form>
@@ -591,6 +597,7 @@ export default function MyPage() {
             </ul>
           )}
         </section>
+        </div>
       </div>
     </main>
   );

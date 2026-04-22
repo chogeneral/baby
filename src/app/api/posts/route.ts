@@ -11,6 +11,7 @@ import {
   inferBoardKindFromBirthYear,
 } from "@/lib/communityRoom";
 import { findByEmail, getPrimaryChildBirthYear } from "@/lib/userStore";
+import { getCommentsByPostId } from "@/lib/commentStore";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -30,7 +31,10 @@ export async function GET(req: NextRequest) {
     boardKind === "preschool" ||
     boardKind === "kokkoma"
   ) {
-    return NextResponse.json(getPostsByBoardKind(boardKind));
+    const boardPosts = getPostsByBoardKind(boardKind);
+    return NextResponse.json(
+      boardPosts.map((p) => ({ ...p, commentCount: getCommentsByPostId(p.id).length }))
+    );
   }
 
   return NextResponse.json([]);

@@ -7,6 +7,7 @@ import {
 } from "@/lib/contentTopicPostStore";
 import type { ContentTopicKind } from "@/lib/contentTopic";
 import { findByEmail } from "@/lib/userStore";
+import { getCommentsByPostId } from "@/lib/commentStore";
 
 function isContentTopicKind(value: string): value is ContentTopicKind {
   return (
@@ -20,7 +21,10 @@ export async function GET(req: NextRequest) {
   if (!topic || !isContentTopicKind(topic)) {
     return NextResponse.json([]);
   }
-  return NextResponse.json(getPostsByTopic(topic));
+  const posts = getPostsByTopic(topic);
+  return NextResponse.json(
+    posts.map((p) => ({ ...p, commentCount: getCommentsByPostId(p.id).length }))
+  );
 }
 
 export async function POST(req: NextRequest) {

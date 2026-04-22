@@ -16,6 +16,7 @@ type Post = {
   createdAt: string;
   photoDataUrl?: string;
   viewCount?: number;
+  commentCount?: number;
 };
 
 type Props = { topic: ContentTopicKind };
@@ -79,6 +80,7 @@ export function ContentTopicBoard({ topic }: Props) {
             <col style={{ width: "6rem" }} />
             <col style={{ width: "2.5rem" }} />
             <col style={{ width: "6.5rem" }} />
+            <col style={{ width: "3.5rem" }} />
             <col style={{ width: "4.5rem" }} />
           </colgroup>
           <thead>
@@ -88,6 +90,7 @@ export function ContentTopicBoard({ topic }: Props) {
               <th className={styles.postTableThCenter}>작성자</th>
               <th className={styles.postTableThCenter}>사진</th>
               <th className={styles.postTableThCenter}>날짜</th>
+              <th className={styles.postTableThCenter}>댓글</th>
               <th className={styles.postTableThCenter}>조회</th>
             </tr>
           </thead>
@@ -111,12 +114,13 @@ export function ContentTopicBoard({ topic }: Props) {
                   )}
                 </td>
                 <td className={styles.postTableTdCenter}>{post.createdAt.slice(0, 10)}</td>
+                <td className={styles.postTableTdCenter}>{post.commentCount ?? 0}</td>
                 <td className={styles.postTableTdCenter}>{post.viewCount ?? 0}</td>
               </tr>
             ))}
             {!isLoading && posts.length === 0 && (
               <tr>
-                <td colSpan={6} className={styles.postTableEmpty}>
+                <td colSpan={7} className={styles.postTableEmpty}>
                   아직 작성된 글이 없어요.
                 </td>
               </tr>
