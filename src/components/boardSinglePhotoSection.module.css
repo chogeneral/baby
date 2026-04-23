@@ -1,0 +1,95 @@
+/* 본문 에디터 아래 1장 전용 사진 영역 — nestForm 톤에 맞춤 */
+.section {
+  margin-top: 0.35rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  border: 1px dashed rgba(45, 41, 38, 0.18);
+  background: rgba(255, 250, 245, 0.65);
+}
+
+.sectionLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--colorCharcoal, #2d2926);
+}
+
+.hint {
+  margin: 0 0 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--colorMuted, #78716c);
+  line-height: 1.45;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.fileInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pickBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid rgba(45, 41, 38, 0.14);
+  color: var(--colorCharcoal, #2d2926);
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.pickBtn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(197, 123, 103, 0.35);
+}
+
+.removeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0 0.85rem;
+  border-radius: 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(194, 65, 12, 0.35);
+  color: #c2410c;
+}
+
+.removeBtn:hover {
+  background: rgba(254, 243, 199, 0.5);
+}
+
+.previewWrap {
+  flex: 1 1 100%;
+  max-width: 20rem;
+}
+
+.preview {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid rgba(45, 41, 38, 0.1);
+  background: #fff;
+}

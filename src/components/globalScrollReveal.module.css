@@ -1,0 +1,27 @@
+/**
+ * 전역 스크롤 시 등장 효과 — `GlobalScrollReveal` 이 본문·섹션 등에 붙이는 모듈 클래스(camelCase).
+ * `prefers-reduced-motion: reduce` 이면 애니메이션을 끄고 즉시 보이게 한다(접근성).
+ */
+.revealable {
+  opacity: 0;
+  transform: translateY(60px);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+  will-change: opacity, transform;
+}
+
+.revealed {
+  opacity: 1;
+  transform: translateY(0);
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revealable {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
+}

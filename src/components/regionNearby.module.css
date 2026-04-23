@@ -1,0 +1,115 @@
+/**
+ * 지역 페이지 — 현재 위치 텍스트·1km 주변 목록(병원·키즈카페·어린이집·유치원) 레이아웃.
+ */
+
+.regionNearbyRoot {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(45, 41, 38, 0.1);
+}
+
+/**
+ * ‘현재 위치’ 블록도 아래 PlaceSection 카드와 같은 톤(흰 배경·radius·그림자)으로 맞춘다.
+ */
+.regionNearbyCurrentBox {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.15rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  border: 1px solid rgba(45, 41, 38, 0.06);
+  box-shadow: 0 4px 14px rgba(45, 41, 38, 0.07), 0 1px 3px rgba(45, 41, 38, 0.04);
+}
+
+.regionNearbyCurrentTitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #2d2926;
+}
+
+/* 현재 위치에 표시되는 주소(또는 주소 없음 안내) — 본문 가독성을 위해 루트 `1rem` 과 동일하게 맞춤 */
+.regionNearbyAddress {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #2d2926;
+}
+
+/**
+ * 주변 시설 한 묶음(제목·부제·목록)을 카드처럼 묶는다.
+ * 연한 배경으로 본문·지도와 구분하고, radius·그림자로 살짝 떠 있는 느낌을 준다.
+ */
+.regionNearbySection {
+  margin-top: 1.25rem;
+  padding: 1rem 1.15rem 1.05rem;
+  border-radius: 0.75rem;
+  /* 흰 배경: 그림자·테두리로 카드만 구분한다 */
+  background: #ffffff;
+  border: 1px solid rgba(45, 41, 38, 0.06);
+  box-shadow: 0 4px 14px rgba(45, 41, 38, 0.07), 0 1px 3px rgba(45, 41, 38, 0.04);
+}
+
+.regionNearbySectionTitle {
+  /* 이전엔 제목·부제(키워드 설명) 사이 여백이 있었는데, 부제를 뺀 뒤에도 본문과 간격이 비슷하도록 맞춤 */
+  margin: 0 0 0.75rem;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #2d2926;
+}
+
+.regionNearbyList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.regionNearbyItem {
+  padding: 0.65rem 0;
+  /* 카드 배경과 대비되는 아주 옅은 구분선 */
+  border-bottom: 1px solid rgba(45, 41, 38, 0.07);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #3d3834;
+}
+
+.regionNearbyItem:last-child {
+  border-bottom: none;
+}
+
+.regionNearbyPlaceName {
+  font-weight: 600;
+  color: #2d2926;
+}
+
+.regionNearbyMeta {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  color: #6b6560;
+}
+
+.regionNearbyPhone {
+  color: #5c4033;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.regionNearbyEmpty {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #6b6560;
+}
+
+.regionNearbyLoading {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #6b6560;
+}
+
+.regionNearbyError {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #8b4513;
+}
