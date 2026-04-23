@@ -1,5 +1,7 @@
 /**
  * 화면 우하단 고정 퀵 메뉴 — 본문·푸터를 가리지 않도록 safe-area·z-index 를 맞춘다.
+ * 푸터가 뷰포트에 들어올 때는 JS 가 --qm-bottom CSS 변수를 인라인으로 설정해 푸터 바로 위까지 올린다.
+ * bottom 속성은 CSS 에만 존재하므로 !important 없이도 미디어 쿼리가 자연스럽게 적용된다.
  * 클래스명은 camelCase.
  */
 
@@ -7,14 +9,29 @@
 .rightQuickMenu {
   position: fixed;
   z-index: 40;
-  right: max(0.75rem, env(safe-area-inset-right, 0px));
-  /* safe-area + 기본 여백에 50px 를 더해 시각적으로 위로 띄운다 */
-  bottom: calc(max(1rem, env(safe-area-inset-bottom, 0px)) + 50px);
+  right: max(10rem, env(safe-area-inset-right, 0px));
+  /* JS 가 --qm-bottom 을 설정하면 그 값을, 없으면 --qm-base-bottom 의 기본값을 사용 */
+  --qm-base-bottom: calc(max(1rem, env(safe-area-inset-bottom, 0px)) + 50px);
+  bottom: var(--qm-bottom, var(--qm-base-bottom));
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.5rem;
   pointer-events: none;
+}
+
+/* 모바일에서는 우측에 바짝 붙인다 */
+@media (max-width: 1451px) {
+  .rightQuickMenu {
+    right: max(0.75rem, env(safe-area-inset-right, 0px));
+  }
+}
+
+
+@media (max-width: 639px) {
+  .rightQuickMenu {
+    --qm-base-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+  }
 }
 
 @media print {
@@ -23,7 +40,14 @@
   }
 }
 
-/* 단일 액션 버튼: 갈색 배경 + 흰색 stroke 아이콘(nestBtnPrimary 와 같은 톤으로 통일) */
+/* `button` 요소는 기본 `appearance`·`margin` 이 있어 퀵 메뉴 칩과 겹칠 수 있으므로 제거한다. */
+button.rightQuickMenuItem {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* 단일 액션 버튼: 흰 배경 + 갈색 stroke 아이콘 — 본문 톤과 맞추고 위에서 떠 보이게 그림자만 살짝 둔다. */
 .rightQuickMenuItem {
   pointer-events: auto;
   display: flex;
@@ -32,29 +56,44 @@
   min-width: 3.25rem;
   min-height: 3.25rem;
   padding: 0.5rem;
-  border: 1px solid rgba(45, 30, 22, 0.45);
+  border: 1px solid rgba(45, 30, 22, 0.2);
   border-radius: 14px;
-  background: linear-gradient(145deg, #8b5c3a 0%, #5c3d2e 55%, #4a3228 100%);
-  color: #fffaf5;
-  box-shadow: 0 4px 16px rgba(74, 50, 40, 0.35);
+  background: #fff;
+  color: #4a3228;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   text-decoration: none;
   cursor: pointer;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
-    filter 0.2s ease;
+    background-color 0.2s ease;
   font: inherit;
 }
 
 .rightQuickMenuItem:hover {
-  color: #fff;
-  filter: brightness(1.06);
-  box-shadow: 0 6px 20px rgba(74, 50, 40, 0.42);
+  background: #faf7f3;
+  color: #3d2820;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
 .rightQuickMenuItem:active {
   transform: translateY(0) scale(0.98);
+}
+
+/* 연필(글쓰기) 전용: nestBtnPrimary 계열 갈색 그라데이션 + 밝은 아이콘. 맨 위로(흰 칩)와 역할이 달라 시각적 구분을 둔다. */
+.rightQuickMenuItem.rightQuickMenuItemBrown {
+  border: 1px solid rgba(45, 30, 22, 0.45);
+  background: linear-gradient(145deg, #8b5c3a 0%, #5c3d2e 55%, #4a3228 100%);
+  color: #fffaf5;
+  box-shadow: 0 4px 16px rgba(74, 50, 40, 0.35);
+}
+
+.rightQuickMenuItem.rightQuickMenuItemBrown:hover {
+  color: #fff;
+  background: linear-gradient(145deg, #8b5c3a 0%, #5c3d2e 55%, #4a3228 100%);
+  filter: brightness(1.06);
+  box-shadow: 0 6px 20px rgba(74, 50, 40, 0.42);
 }
 
 /* 터치 44px 이상 권고에 맞춰 최소 탭 영역을 확보한다 */
