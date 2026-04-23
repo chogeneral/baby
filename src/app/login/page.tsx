@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = {
-  title: "로그인 | 육아도사",
+  title: "로그인 | 육아박사",
   description: "육아도사 로그인 — 이메일, 비밀번호",
 };
 

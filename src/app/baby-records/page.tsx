@@ -182,10 +182,10 @@ export default function BabyRecordsPage() {
                 <ul className={nestForm.nestCommentList}>
                   {grouped[dateKey]!.map((r) => {
                     const metrics = [
-                      r.weightKg != null ? `몸무게 ${r.weightKg}kg` : null,
-                      r.heightCm != null ? `키 ${r.heightCm}cm` : null,
+                      r.weightKg != null ? `몸무게 : ${r.weightKg}kg` : null,
+                      r.heightCm != null ? `키 : ${r.heightCm}cm` : null,
                       r.headCircumferenceCm != null
-                        ? `머리둘레 ${r.headCircumferenceCm}cm`
+                        ? `머리둘레 : ${r.headCircumferenceCm}cm`
                         : null,
                     ]
                       .filter(Boolean)

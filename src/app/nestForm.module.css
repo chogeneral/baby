@@ -147,25 +147,7 @@
   letter-spacing: -0.02em;
 }
 
-.nestRecordHistoryItem[data-index="0"] {
-  border-left: 3px solid var(--colorTerracotta);
-}
 
-.nestRecordHistoryItem[data-index="1"] {
-  border-left: 3px solid var(--colorTeal);
-}
-
-.nestRecordHistoryItem[data-index="2"] {
-  border-left: 3px solid var(--colorSageDeep);
-}
-
-.nestRecordHistoryItem[data-index="3"] {
-  border-left: 3px solid #7a6a9e;
-}
-
-.nestRecordHistoryItem[data-index="4"] {
-  border-left: 3px solid var(--colorTerracottaDark);
-}
 
 .nestRecordHistoryItem {
   padding-left: calc(1.1rem - 2px);
@@ -483,7 +465,7 @@
   font-size: 0.875rem;
   color: var(--colorMuted);
   border-radius: 18px;
-  border: 1px dashed rgba(45, 41, 38, 0.12);
+  border: 1px solid #9d9d9d14;
   background: rgba(255, 255, 255, 0.5);
 }
 
