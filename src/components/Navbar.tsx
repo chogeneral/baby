@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useState } from "react";
@@ -152,15 +153,12 @@ export function Navbar() {
   }
 
   /**
-   * 메인 GNB(홈·연령방·부모이야기·발달·꼬꼬마) — 1024px(lg) 이상은 1행 절대배치 가운데,
+   * 메인 GNB(연령방·부모이야기·발달·꼬꼬마·정보·지역 — 홈은 로고 링크로만 이동) — 1024px(lg) 이상은 1행 절대배치 가운데,
    * 1024px 미만은 이미지와 같이 2행(1행: 로고+우측 / 2행: 링크 전체·왼쪽 정렬)으로 고정해
    * 햄버거·세로 쌓기 없이 동일한 정보 구조를 유지한다.
    */
   const mainNavItems = (
     <>
-      <Link href="/" className={navLinkClass("/")}>
-        홈
-      </Link>
       {nickname && (
         <Link
           href={boardNavHref}
@@ -180,8 +178,21 @@ export function Navbar() {
       <Link href="/development" className={navLinkClass("/development")}>
         발달
       </Link>
-      <Link href="/community/kokkoma" className={navLinkClass("/community/kokkoma")}>
+      {/*
+        - max-lg(2행 GNB): 행이 뷰포트 너비를 쓰므로 `ml-auto`로 꼬꼬마·정보·지역을 오른쪽 뭉치로 밀 수 있다.
+        - lg~: 가운데 GNB 래퍼는 내용만큼만 너비를 가져 `ml-auto` 효과가 없으므로 `lg:ml-0`으로 해제한다.
+      */}
+      <Link
+        href="/community/kokkoma"
+        className={`${navLinkClass("/community/kokkoma")} ml-auto shrink-0 lg:ml-0`}
+      >
         꼬꼬마
+      </Link>
+      <Link href="/info" className={navLinkClass("/info")}>
+        정보
+      </Link>
+      <Link href="/region" className={navLinkClass("/region")}>
+        지역
       </Link>
     </>
   );
@@ -189,19 +200,34 @@ export function Navbar() {
   return (
     <nav
       className="w-full border-b border-[#2d2926]/[0.06] bg-[#faf9f6] px-4 sm:px-6"
-      style={{ fontFamily: "var(--font-sans)" }}
+      style={{
+        /* 전역 @theme --font-sans(로컬 Pretendard) — 로고 링크만 `font-serif`로 덮어씀 */
+        fontFamily: "var(--font-sans)",
+      }}
     >
       <div className="relative mx-auto flex max-w-6xl flex-col gap-3 py-4 lg:gap-0">
         <div className="relative flex min-h-[2.5rem] items-center justify-between gap-2 sm:gap-3 md:gap-6">
+          {/*
+            public/logo.svg 원본(600×150)이 커서 높이만 h-16로 고정하고 w-auto로 비율 유지.
+            SVG 안에 ‘육아박사’ 타이포가 있어 별도 텍스트 로고는 두지 않는다.
+          */}
           <Link
             href="/"
-            className="shrink-0 font-serif text-xl font-semibold tracking-tight text-[#2d2926] sm:text-[1.35rem]"
+            className="shrink-0 flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c57b67]/40"
+            aria-label="육아박사 홈"
           >
-            육아박사
+            <Image
+              src="/logo.svg"
+              alt="육아박사"
+              width={600}
+              height={150}
+              className="h-16 w-auto"
+              priority
+            />
           </Link>
 
-          {/* lg 이상: 1행 레이아웃 — 가운데 GNB(우측 닉·로그아웃과 겹침을 줄이기 위해 pr 유지) */}
-          <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-8 pr-6 lg:flex lg:pr-10">
+          {/* lg 이상: 1행 레이아웃 — 정중앙에서 약 3rem 만큼 왼쪽으로 당겨 로고와의 간격을 확보 */}
+          <div className="absolute left-1/2 top-1/2 hidden -translate-x-[calc(50%+3rem)] -translate-y-1/2 items-center gap-8 pr-6 lg:flex lg:pr-10">
             {mainNavItems}
           </div>
 
@@ -269,8 +295,10 @@ export function Navbar() {
         {/*
           1024px 미만 전용 2번째 행: 상단과 동일한 mainNavItems를 재사용해
           육아박사 타이틀 시작선과 맞춰 왼쪽부터 가로 나열한다(햄버거/가로 스크롤 단일 행 대신 flex-wrap).
+          우하단 `RightQuickMenu`(고정 ~3.25rem 열)와 같은 세로 띠에 텍스트가 닿지 않게 `pr` 로 오른쪽을 비워
+          `ml-auto`로 붙은 꼬꼬마·정보·지역이 ‘퀵메뉴 직왼쪽’에 달라붙는 느낌을 없앤다.
         */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:gap-x-4 lg:hidden">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pr-16 sm:gap-x-4 sm:pr-20 lg:hidden">
           {mainNavItems}
         </div>
       </div>
