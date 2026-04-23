@@ -12,7 +12,6 @@ export type ContentTopicPostRecord = {
   authorEmail: string;
   authorNickname: string;
   createdAt: string;
-  photoDataUrl?: string;
   viewCount?: number;
   password?: string;
 };
@@ -59,29 +58,40 @@ export function appendPost(post: ContentTopicPostRecord): void {
 export type UpdatePostFields = {
   title: string;
   content: string;
-  photoDataUrl?: string | null;
 };
 
-export function updatePost(
+/**
+ * 작성자 이메일이 같으면 항상 수정 가능.
+ * 비밀번호가 있는 글은 비작성자가 올바른 비밀번호를 보내도 수정 가능(기존 동작 유지).
+ */
+export function updateContentTopicPost(
   id: string,
-  password: string,
   fields: UpdatePostFields,
-): "ok" | "not_found" | "wrong_password" {
+  auth: { authorEmail?: string; password?: string },
+): "ok" | "not_found" | "wrong_password" | "forbidden" {
   const rows = readAll();
   const idx = rows.findIndex((p) => p.id === id);
   if (idx === -1) return "not_found";
-  if (rows[idx].password !== password) return "wrong_password";
+  const post = rows[idx];
+
+  const isAuthor =
+    !!auth.authorEmail && post.authorEmail === auth.authorEmail;
+  const passwordMatches =
+    !!post.password &&
+    !!auth.password &&
+    post.password === auth.password;
+
+  if (!isAuthor && !passwordMatches) {
+    if (post.password) return "wrong_password";
+    return "forbidden";
+  }
 
   rows[idx] = {
     ...rows[idx],
     title: fields.title.trim(),
     content: fields.content.trim(),
-    ...(fields.photoDataUrl !== undefined
-      ? fields.photoDataUrl === null
-        ? { photoDataUrl: undefined }
-        : { photoDataUrl: fields.photoDataUrl }
-      : {}),
   };
+  delete (rows[idx] as ContentTopicPostRecord & { photoDataUrl?: string }).photoDataUrl;
   writeAll(rows);
   return "ok";
 }

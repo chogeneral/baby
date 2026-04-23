@@ -110,12 +110,8 @@ export default function RecordPage() {
         setError(data.message ?? "저장에 실패했습니다.");
         return;
       }
-      setSuccess("기록이 저장되었어요.");
-      setPerChild((prev) => {
-        const next = [...prev];
-        next[activeChildIndex] = emptyPerChild();
-        return next;
-      });
+      /* 저장과 동시에 아이 기록 목록으로 보낸다(상세 id URL 은 거치지 않음). */
+      router.push("/baby-records");
     } finally {
       setIsSubmitting(false);
     }

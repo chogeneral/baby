@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import {
   type CommunityRoomKind,
-  inferBoardKindFromBirthYear,
+  effectiveBoardKind,
 } from "@/lib/communityRoom";
 
 const DATA_PATH = path.join(process.cwd(), "data", "posts.json");
@@ -19,17 +19,14 @@ export type PostRecord = {
   boardKind?: CommunityRoomKind;
   /** 영아방 말머리: 발달·식습관·언어·정서·건강 */
   prefix?: string;
-  /** 사진첩 이미지 (base64 data URL, 1장) */
-  photoDataUrl?: string;
   /** 조회수 */
   viewCount?: number;
+  /**
+   * 연령방(영아·토들러·유아) 전용 — 설정 시 수정 화면·API에서 같은 값을 다시 보내야 한다.
+   * 꼬꼬마 게시판 글에는 두지 않는다.
+   */
+  editPassword?: string;
 };
-
-/** 저장 형식이 달라도 목록·필터에서 동일한 방 기준을 쓴다 */
-export function effectiveBoardKind(p: PostRecord): CommunityRoomKind {
-  if (p.boardKind) return p.boardKind;
-  return inferBoardKindFromBirthYear(p.childBirthYear);
-}
 
 function readAll(): PostRecord[] {
   try {
@@ -72,6 +69,41 @@ export function appendPost(post: PostRecord): void {
   const posts = readAll();
   posts.push(post);
   writeAll(posts);
+}
+
+/**
+ * 작성자 이메일이 일치하고, 저장된 수정 비밀번호가 있으면 요청의 비밀번호까지 일치해야 갱신한다.
+ */
+export function updateCommunityPost(
+  id: string,
+  editorEmail: string,
+  fields: { title: string; content: string; prefix?: string },
+  opts?: { editPassword?: string },
+): "ok" | "not_found" | "forbidden" | "wrong_password" {
+  const posts = readAll();
+  const idx = posts.findIndex((p) => p.id === id);
+  if (idx === -1) return "not_found";
+  if (posts[idx].authorEmail !== editorEmail) return "forbidden";
+
+  const storedPw = posts[idx].editPassword;
+  if (storedPw != null && storedPw.length > 0) {
+    if (!opts?.editPassword || opts.editPassword !== storedPw) {
+      return "wrong_password";
+    }
+  }
+
+  const next: PostRecord = {
+    ...posts[idx],
+    title: fields.title.trim(),
+    content: fields.content.trim(),
+  };
+  const kind = effectiveBoardKind(next);
+  if (kind !== "kokkoma" && fields.prefix !== undefined) {
+    next.prefix = fields.prefix;
+  }
+  posts[idx] = next;
+  writeAll(posts);
+  return "ok";
 }
 
 export function generatePostId(): string {

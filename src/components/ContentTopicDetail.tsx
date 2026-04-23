@@ -4,20 +4,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { ContentTopicKind } from "@/lib/contentTopic";
-import { contentTopicPageInfo } from "@/lib/contentTopic";
+import { contentTopicEditPath, contentTopicPageInfo } from "@/lib/contentTopic";
 import styles from "@/app/contentPage.module.css";
 import nestForm from "@/app/nestForm.module.css";
 import { readLoginSession } from "@/lib/loginSession";
 import { formatDate } from "@/lib/formatDate";
+import { looksLikeHtmlPostBody } from "@/lib/postHtmlUtils";
+import { sanitizePostHtml } from "@/lib/postHtmlSanitize";
 
 type Post = {
   id: string;
   topic: ContentTopicKind;
   title: string;
   content: string;
+  /** 글 작성 시 저장된 회원 이메일 — 로그인 사용자와 같으면 비밀번호 없이 수정 가능 */
+  authorEmail: string;
   authorNickname: string;
   createdAt: string;
-  photoDataUrl?: string;
   viewCount?: number;
   password?: string;
 };
@@ -81,7 +84,18 @@ export function ContentTopicDetail({ id, topic }: Props) {
     }
   }, [replyTarget]);
 
+  /** 수정: 작성자면 바로 편집 화면으로, 비밀번호 글·비작성자면 확인 모달 */
   function handleEditClick() {
+    if (!post) return;
+
+    const authorMatches =
+      !!authorEmail && !!post.authorEmail && post.authorEmail === authorEmail;
+
+    if (authorMatches) {
+      router.push(contentTopicEditPath(topic, id));
+      return;
+    }
+
     setPasswordInput("");
     setPasswordError("");
     setShowPasswordModal(true);
@@ -106,7 +120,7 @@ export function ContentTopicDetail({ id, topic }: Props) {
     }
 
     setShowPasswordModal(false);
-    router.push(`/${topic === "development" ? "development" : "parent-stories"}/${id}/edit?pw=${encodeURIComponent(passwordInput.trim())}`);
+    router.push(contentTopicEditPath(topic, id, passwordInput.trim()));
   }
 
   async function handleCommentSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -168,6 +182,11 @@ export function ContentTopicDetail({ id, topic }: Props) {
   if (!post) return null;
 
   const hasPassword = !!post.password;
+  /** 로그인한 사용자가 이 글의 작성자인지 — 비밀번호 없는 글은 작성자만 수정 버튼을 본다 */
+  const canEditAsAuthor =
+    !!authorEmail && !!post.authorEmail && post.authorEmail === authorEmail;
+  const showEditButton = canEditAsAuthor || hasPassword;
+
   const topComments = comments.filter((c) => !c.parentId);
   const repliesByParent = comments.reduce<Record<string, Comment[]>>((acc, c) => {
     if (c.parentId) {
@@ -176,35 +195,44 @@ export function ContentTopicDetail({ id, topic }: Props) {
     return acc;
   }, {});
 
+  /* 발달·부모이야기만 — 정보 게시판은 기존 톤 유지(요청 범위 밖) */
+  const showAuthorInMeta = topic === "development" || topic === "parentStories";
+  const authorLabel = post.authorNickname?.trim() ? post.authorNickname : "—";
+
   return (
     <main className={styles.contentPage}>
       <h1 className={styles.contentTitle}>{post.title}</h1>
 
       <div className={styles.detailMeta}>
-        <span>{post.authorNickname || "익명"}</span>
-        <span aria-hidden>·</span>
+        {showAuthorInMeta ? (
+          <>
+            <span>글쓴이 {authorLabel}</span>
+            <span aria-hidden>·</span>
+          </>
+        ) : null}
         <span>{post.createdAt.slice(0, 10)}</span>
         <span aria-hidden>·</span>
         <span>조회 {post.viewCount ?? 0}</span>
       </div>
 
-      {post.photoDataUrl && (
-        <div className={styles.detailPhoto}>
-          <img src={post.photoDataUrl} alt="첨부 사진" className={styles.detailPhotoImg} />
-        </div>
-      )}
-
       <div className={styles.detailContent}>
-        {post.content.split("\n").map((line, i) => (
-          <p key={i}>{line || " "}</p>
-        ))}
+        {looksLikeHtmlPostBody(post.content) ? (
+          <div
+            className={nestForm.nestRichBody}
+            dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.content) }}
+          />
+        ) : (
+          post.content.split("\n").map((line, i) => (
+            <p key={i}>{line || " "}</p>
+          ))
+        )}
       </div>
 
       <div className={styles.detailActions}>
         <Link href={info.backPath} className={styles.detailBtnSecondary}>
           목록
         </Link>
-        {hasPassword && (
+        {showEditButton && (
           <button type="button" onClick={handleEditClick} className={styles.detailBtnSecondary}>
             수정하기
           </button>

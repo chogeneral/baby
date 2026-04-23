@@ -5,14 +5,18 @@ import {
   getPostsByTopic,
   type ContentTopicPostRecord,
 } from "@/lib/contentTopicPostStore";
-import type { ContentTopicKind } from "@/lib/contentTopic";
+import {
+  type ContentTopicKind,
+  isContentTopicWriteAllowedEmail,
+} from "@/lib/contentTopic";
 import { findByEmail } from "@/lib/userStore";
 import { getCommentsByPostId } from "@/lib/commentStore";
 
 function isContentTopicKind(value: string): value is ContentTopicKind {
   return (
     value === "development" ||
-    value === "parentStories"
+    value === "parentStories" ||
+    value === "info"
   );
 }
 
@@ -33,11 +37,10 @@ export async function POST(req: NextRequest) {
     content?: string;
     authorEmail?: string;
     topic?: string;
-    photoDataUrl?: string;
     password?: string;
   };
 
-  const { title, content, authorEmail, topic: rawTopic, photoDataUrl, password } = body;
+  const { title, content, authorEmail, topic: rawTopic, password } = body;
 
   if (!title?.trim() || !content?.trim() || !authorEmail) {
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
@@ -52,6 +55,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
   }
 
+  if (!isContentTopicWriteAllowedEmail(user.email)) {
+    return NextResponse.json(
+      { message: "글 등록 권한이 없습니다." },
+      { status: 403 },
+    );
+  }
+
   const post: ContentTopicPostRecord = {
     id: generateContentTopicPostId(),
     topic: rawTopic,
@@ -60,7 +70,6 @@ export async function POST(req: NextRequest) {
     authorEmail: user.email,
     authorNickname: user.nickname ?? "",
     createdAt: new Date().toISOString(),
-    ...(photoDataUrl ? { photoDataUrl } : {}),
     ...(password?.trim() ? { password: password.trim() } : {}),
   };
 

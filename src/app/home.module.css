@@ -64,13 +64,13 @@
   box-shadow: var(--shadowSoft);
 }
 
-/* 메인 헤드라인 — 세리프로 우아한 첫인상 */
+/* 메인 헤드라인 — h1 은 전역(--fontH1) Pretendard와 통일 */
 .heroTitle {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: var(--fontH1);
   font-size: clamp(2rem, 4.5vw, 2.85rem);
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.5;
   letter-spacing: -0.02em;
   color: var(--colorCharcoal);
 }
@@ -105,4 +105,183 @@
 
 .heroImage {
   object-fit: cover;
+}
+
+/* —— 최신 글 2×2(1행: 부모이야기·발달, 2행: 꼬꼬마·정보) — 데스크톱 2열 50%씩, 모바일은 1열 스택. */
+
+.homeLatestSection {
+  padding: 0 0 3rem;
+  background: #faf7f2;
+  border-top: 1px solid rgba(45, 41, 38, 0.06);
+}
+
+.homeLatestInner {
+  padding-top: 2.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.homeLatestLead {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #5c5652;
+}
+
+.homeLatestGrid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .homeLatestGrid {
+    /* 두 칸이 각각 가로의 절반(최대 폭 72rem 기준)을 차지 — 한 행에 정확히 2칸씩 */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* 각 게시판 미리보기는 카드 한 장으로 묶고, 섹션 제목 아래에 제목(링크) 목록을 둔다. */
+/* `grid` 자식이 기본 `min-width:auto` 이면 긴 제목이 셀을 밀어 넘친다 — 0으로 두어 말줄임이 먹게 한다. */
+.homeLatestCard {
+  margin: 0;
+  min-width: 0;
+  padding: 1.1rem 1.2rem 1.15rem;
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid rgba(45, 41, 38, 0.07);
+  box-shadow: 0 6px 20px rgba(45, 41, 38, 0.06);
+}
+
+.homeLatestCardHeader {
+  min-width: 0;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid rgba(45, 41, 38, 0.08);
+}
+
+/* 부모이야기·발달·꼬꼬마·정보 — 짧은 칸(50% 열)에서도 제목이 영역을 넘지 않게 … */
+.homeLatestCardTitle {
+  display: block;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d2926;
+}
+
+.homeLatestList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.homeLatestItem {
+  min-width: 0;
+  border-bottom: 1px solid rgba(45, 41, 38, 0.06);
+}
+
+.homeLatestItem:last-child {
+  border-bottom: none;
+}
+
+/* 왼쪽: 제목(한 줄 …) / 오른쪽: [닉네임][날짜] — 제목 `span`이 inline 이면 길이에 맞춰 늘어나 날짜와 겹치므로 flex·overflow 로 막는다. */
+.homeLatestItemLink {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0;
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.15s ease;
+  box-sizing: border-box;
+}
+
+/* `flex:1` + `min-width:0` + `overflow:hidden` — 할당받은 가로를 넘는 긴 제목이 메타(날짜)와 겹치지 않게 막음 */
+.homeLatestItemBody {
+  min-width: 0;
+  flex: 1 1 0%;
+  overflow: hidden;
+}
+
+/* 닉네임 + 날짜를 한 덩어리로 오른쪽 끝에 묶는다(닉이 날짜 직왼). */
+.homeLatestItemMeta {
+  display: flex;
+  flex-shrink: 0;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-left: auto;
+  max-width: 48%;
+  font-size: 0.75rem;
+  color: #8a827b;
+}
+
+/* 부모이야기·발달 — 닉네임과 날짜 사이, 제목 덩어리와 오른쪽 메타 사이를 조금 더 벌림 */
+.homeLatestItemLinkWithAuthor {
+  gap: 0.5rem 1.35rem;
+}
+
+.homeLatestItemLinkWithAuthor .homeLatestItemMeta {
+  gap: 0.65rem;
+}
+
+.homeLatestItemLink:hover {
+  color: var(--colorTerracotta, #c45c3a);
+}
+
+.homeLatestItemLink:hover .homeLatestItemDate {
+  color: #6b6560;
+}
+
+.homeLatestItemLink:hover .homeLatestItemAuthor {
+  color: #5c5652;
+}
+
+/* 접두어 ‘글쓴이’ 없이 닉네임만 — 날짜와 같은 시각 띠에 두되 살짝만 구분 */
+.homeLatestItemAuthor {
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 6.5rem;
+  line-height: 1.35;
+  color: #6b6560;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.homeLatestItemTitle {
+  /* inline 은 말줄임이 먹지 않고 뷰포트 끝까지 늘어날 수 있어 block + 부모 폭 100% 로 고정 */
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #2d2926;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.homeLatestItemDate {
+  flex-shrink: 0;
+  text-align: right;
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.homeLatestEmpty {
+  padding: 0.5rem 0 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #7a726c;
 }

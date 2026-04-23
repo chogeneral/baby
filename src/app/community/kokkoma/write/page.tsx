@@ -2,24 +2,25 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import nestForm from "@/app/nestForm.module.css";
-import { communityBoardTitle } from "@/lib/communityBoard";
+import { BoardRichTextEditor } from "@/components/BoardRichTextEditor";
+import { BoardSinglePhotoSection } from "@/components/BoardSinglePhotoSection";
 import { readLoginSession } from "@/lib/loginSession";
+import { mergeTrailingSinglePhotoHtml, isMergedPostBodyEmpty } from "@/lib/boardSinglePhotoHtml";
 
 /**
- * 꼬꼬마(익명게시판) 전용 글쓰기 — 연령 게시판과 달리 대표 출생 연도 없이 작성 가능하고,
+ * 꼬꼬마 전용 글쓰기 — 연령 게시판과 달리 대표 출생 연도 없이 작성 가능하고,
  * 서버에는 boardKind: kokkoma 로 저장되어 목록·상세에서 익명으로만 보이게 한다.
  */
 export default function KokkomaWritePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [authorEmail, setAuthorEmail] = useState<string | null>(null);
-  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const session = readLoginSession();
@@ -32,21 +33,6 @@ export default function KokkomaWritePage() {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [router]);
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPhotoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function handlePhotoRemove() {
-    setPhotoPreview(null);
-    if (photoInputRef.current) photoInputRef.current.value = "";
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -54,7 +40,7 @@ export default function KokkomaWritePage() {
       setError("제목을 입력해 주세요.");
       return;
     }
-    if (!content.trim()) {
+    if (isMergedPostBodyEmpty(content, attachedPhoto)) {
       setError("내용을 입력해 주세요.");
       return;
     }
@@ -68,10 +54,9 @@ export default function KokkomaWritePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
-          content,
+          content: mergeTrailingSinglePhotoHtml(content, attachedPhoto),
           authorEmail,
           boardKind: "kokkoma",
-          ...(photoPreview ? { photoDataUrl: photoPreview } : {}),
         }),
       });
 
@@ -124,47 +109,19 @@ export default function KokkomaWritePage() {
           <label htmlFor="kokkomaPostContent" className={nestForm.nestLabel}>
             내용
           </label>
-          <textarea
+          <BoardRichTextEditor
             id="kokkomaPostContent"
-            rows={10}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={setContent}
             placeholder="내용을 입력해 주세요"
-            className={nestForm.nestTextarea}
           />
         </div>
 
-        <div>
-          <p className={nestForm.nestLabel}>사진첩</p>
-          {photoPreview ? (
-            <div className={nestForm.nestPhotoPreviewWrap}>
-              <img
-                src={photoPreview}
-                alt="첨부 사진 미리보기"
-                className={nestForm.nestPhotoPreview}
-              />
-              <button
-                type="button"
-                onClick={handlePhotoRemove}
-                className={nestForm.nestPhotoRemove}
-              >
-                삭제
-              </button>
-            </div>
-          ) : (
-            <label htmlFor="kokkomaPhoto" className={nestForm.nestPhotoLabel}>
-              <span>+ 사진 추가 (1장)</span>
-              <input
-                ref={photoInputRef}
-                id="kokkomaPhoto"
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                className={nestForm.nestPhotoInput}
-              />
-            </label>
-          )}
-        </div>
+        <BoardSinglePhotoSection
+          sectionId="kokkomaWritePhoto"
+          value={attachedPhoto}
+          onChange={setAttachedPhoto}
+        />
 
         {error ? <p className={nestForm.nestError}>{error}</p> : null}
 

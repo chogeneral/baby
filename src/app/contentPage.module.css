@@ -36,8 +36,8 @@
 
 .contentTitle {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-family: var(--fontH1);
+  font-size: clamp(1.5rem, 4vw, 2.3rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--colorCharcoal);
@@ -169,7 +169,7 @@
   font-size: 0.8125rem;
   color: var(--colorMuted);
   margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  padding: 1rem 0;
   border-bottom: 1px solid rgba(45, 41, 38, 0.08);
 }
 
@@ -196,6 +196,14 @@
 
 .detailContent p {
   margin: 0 0 0.5rem;
+}
+
+.detailContent :where(img) {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.65rem 0;
+  border-radius: 10px;
 }
 
 .detailActions {
@@ -315,11 +323,39 @@
   color: var(--colorTerracottaDark);
 }
 
-.postTablePhotoIcon {
+/* 테이블·모바일 목록 공통 — 사진 열이 비었을 때 자리만 차지 */
+.postTablePhotoPlaceholder {
+  display: inline-block;
+  color: #c4bfb8;
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+.postTablePhotoIconWrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--colorTerracotta);
+}
+
+.postTablePhotoSvg {
+  width: 0.95rem;
+  height: 0.85rem;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* 모바일 스택: 제목 옆에 같은 아이콘 */
+.postStackTitleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.postStackTitleRow .postStackTitle {
+  flex: 1;
+  min-width: 0;
 }
 
 .postTableEmpty {
@@ -407,6 +443,12 @@
   font-size: 0.8125rem;
   color: #9a9490;
   letter-spacing: 0.02em;
+}
+
+/* 발달·부모이야기 모바일 목록 — 날짜 줄 앞에 붙는 글쓴이(닉네임)만 살짝 진하게 구분 */
+.postStackAuthorName {
+  color: #6b6560;
+  font-weight: 500;
 }
 
 .postStackListLoading,

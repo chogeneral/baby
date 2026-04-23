@@ -14,16 +14,20 @@ import {
 } from "@/lib/communityRoom";
 import { readLoginSession } from "@/lib/loginSession";
 import { formatDate } from "@/lib/formatDate";
+import { looksLikeHtmlPostBody } from "@/lib/postHtmlUtils";
+import { sanitizePostHtml } from "@/lib/postHtmlSanitize";
 
 type Post = {
   id: string;
   title: string;
   content: string;
+  authorEmail: string;
   authorNickname: string;
   childBirthYear: number;
   boardKind?: CommunityRoomKind;
   createdAt: string;
-  photoDataUrl?: string;
+  /** 연령방에서만 사용 — 있으면 수정 모달에서 검증한다 */
+  editPassword?: string;
 };
 
 type Comment = {
@@ -54,6 +58,12 @@ export default function PostDetailPage({
   const [isReplySubmitting, setIsReplySubmitting] = useState(false);
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
+  /** 연령방 수정 — 비밀번호 확인 후에만 편집 URL 로 이동 */
+  const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
+  const [editPasswordInput, setEditPasswordInput] = useState("");
+  const [editPasswordError, setEditPasswordError] = useState("");
+  const editPasswordInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const session = readLoginSession();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 글·댓글 작성 가능 여부(로그인)를 불러온 직후 반영
@@ -74,6 +84,12 @@ export default function PostDetailPage({
       setTimeout(() => replyTextareaRef.current?.focus(), 80);
     }
   }, [replyTarget]);
+
+  useEffect(() => {
+    if (showEditPasswordModal) {
+      setTimeout(() => editPasswordInputRef.current?.focus(), 80);
+    }
+  }, [showEditPasswordModal]);
 
   async function handleCommentSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -152,6 +168,39 @@ export default function PostDetailPage({
   const postRoomName = communityRoomLabels[postRoom].roomName;
   const anonymousMode = isKokkomaBoard(postRoom);
   const listHref = anonymousMode ? "/community/kokkoma" : communityRoomPath[postRoom];
+  const canEditPost =
+    !!authorEmail && !!post.authorEmail && post.authorEmail === authorEmail;
+
+  /** 꼬꼬마는 기존처럼 바로 수정 URL 로 이동하고, 연령방은 모달에서 비밀번호를 거친다 */
+  function handleEditClickAgeBoard() {
+    setEditPasswordInput("");
+    setEditPasswordError("");
+    setShowEditPasswordModal(true);
+  }
+
+  function handleEditPasswordConfirm(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!post) return;
+
+    const needsPw = !!post.editPassword && post.editPassword.length > 0;
+    if (needsPw) {
+      if (!editPasswordInput.trim()) {
+        setEditPasswordError("수정 비밀번호를 입력해 주세요.");
+        return;
+      }
+      if (editPasswordInput !== post.editPassword) {
+        setEditPasswordError("수정 비밀번호가 일치하지 않습니다.");
+        return;
+      }
+      setShowEditPasswordModal(false);
+      router.push(
+        `/community/${post.id}/edit?pw=${encodeURIComponent(editPasswordInput)}`,
+      );
+      return;
+    }
+    setShowEditPasswordModal(false);
+    router.push(`/community/${post.id}/edit`);
+  }
 
   const topComments = comments.filter((c) => !c.parentId);
   const repliesByParent = comments.reduce<Record<string, Comment[]>>((acc, c) => {
@@ -168,21 +217,48 @@ export default function PostDetailPage({
       <article className={nestForm.nestArticle}>
         <h1 className={nestForm.nestArticleTitle}>{post.title}</h1>
         <div className={nestForm.nestMeta}>
-          <span>
-            {anonymousMode ? "익명" : displayCommunityNickname(post.authorNickname)}
-          </span>
-          <span aria-hidden>·</span>
+          {!anonymousMode && (
+            <>
+              <span>{displayCommunityNickname(post.authorNickname)}</span>
+              <span aria-hidden>·</span>
+            </>
+          )}
           <span>{formatDate(post.createdAt)}</span>
         </div>
-        <p className={nestForm.nestBody}>{post.content}</p>
-        {post.photoDataUrl && (
-          <img
-            src={post.photoDataUrl}
-            alt="첨부 사진"
-            className={nestForm.nestPostPhoto}
+        {looksLikeHtmlPostBody(post.content) ? (
+          <div
+            className={nestForm.nestRichBody}
+            dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.content) }}
           />
+        ) : (
+          <p className={nestForm.nestBody}>{post.content}</p>
         )}
       </article>
+
+      <div className={nestForm.nestDetailActionRow}>
+        <button
+          type="button"
+          onClick={() => router.push(listHref)}
+          className={nestForm.nestBtnSecondary}
+        >
+          목록
+        </button>
+        {canEditPost ? (
+          anonymousMode ? (
+            <Link href={`/community/${post.id}/edit`} className={nestForm.nestBtnEditBrown}>
+              수정하기
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={handleEditClickAgeBoard}
+              className={nestForm.nestBtnEditBrown}
+            >
+              수정하기
+            </button>
+          )
+        ) : null}
+      </div>
 
       <section>
         <h2 className={nestForm.nestSectionTitle}>
@@ -197,10 +273,14 @@ export default function PostDetailPage({
               <li key={comment.id}>
                 <div className={nestForm.nestCommentItem}>
                   <div className={nestForm.nestCommentMeta}>
-                    <span style={{ fontWeight: 600, color: "var(--colorMuted)" }}>
-                      {anonymousMode ? "익명" : displayCommunityNickname(comment.authorNickname)}
-                    </span>
-                    <span aria-hidden>·</span>
+                    {!anonymousMode && (
+                      <>
+                        <span style={{ fontWeight: 600, color: "var(--colorMuted)" }}>
+                          {displayCommunityNickname(comment.authorNickname)}
+                        </span>
+                        <span aria-hidden>·</span>
+                      </>
+                    )}
                     <span>{formatDate(comment.createdAt)}</span>
                     {authorEmail && (
                       <button
@@ -219,10 +299,14 @@ export default function PostDetailPage({
                   <div key={reply.id} className={nestForm.nestReplyItem}>
                     <div className={nestForm.nestCommentMeta}>
                       <span className={nestForm.nestReplyPrefix}>↳</span>
-                      <span style={{ fontWeight: 600, color: "var(--colorMuted)" }}>
-                        {anonymousMode ? "익명" : displayCommunityNickname(reply.authorNickname)}
-                      </span>
-                      <span aria-hidden>·</span>
+                      {!anonymousMode && (
+                        <>
+                          <span style={{ fontWeight: 600, color: "var(--colorMuted)" }}>
+                            {displayCommunityNickname(reply.authorNickname)}
+                          </span>
+                          <span aria-hidden>·</span>
+                        </>
+                      )}
                       <span>{formatDate(reply.createdAt)}</span>
                     </div>
                     <p className={nestForm.nestCommentBody}>{reply.content}</p>
@@ -281,6 +365,65 @@ export default function PostDetailPage({
           </div>
         )}
       </section>
+
+      {showEditPasswordModal && (
+        <div
+          className={nestForm.nestModalBackdrop}
+          onClick={() => setShowEditPasswordModal(false)}
+        >
+          <div
+            className={nestForm.nestModal}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="수정 비밀번호 확인"
+          >
+            <div className={nestForm.nestModalHeader}>
+              <p className={nestForm.nestModalTitle}>수정 비밀번호 확인</p>
+              <button
+                type="button"
+                onClick={() => setShowEditPasswordModal(false)}
+                className={nestForm.nestModalClose}
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleEditPasswordConfirm} className={nestForm.nestModalForm}>
+              {post.editPassword && post.editPassword.length > 0 ? (
+                <input
+                  ref={editPasswordInputRef}
+                  type="password"
+                  value={editPasswordInput}
+                  onChange={(e) => setEditPasswordInput(e.target.value)}
+                  placeholder="글 등록 시 입력한 수정 비밀번호"
+                  className={nestForm.nestInput}
+                />
+              ) : (
+                <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
+                  등록할 때 수정 비밀번호를 두지 않았어요. 확인을 누르면 수정 화면으로
+                  이동합니다.
+                </p>
+              )}
+              {editPasswordError ? (
+                <p className={nestForm.nestError}>{editPasswordError}</p>
+              ) : null}
+              <div className={nestForm.nestModalActions}>
+                <button
+                  type="button"
+                  onClick={() => setShowEditPasswordModal(false)}
+                  className={nestForm.nestBtnSecondary}
+                >
+                  취소
+                </button>
+                <button type="submit" className={nestForm.nestBtnPrimary}>
+                  확인
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {replyTarget && (
         <div className={nestForm.nestModalBackdrop} onClick={() => setReplyTarget(null)}>

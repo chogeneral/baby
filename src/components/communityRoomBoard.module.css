@@ -1,5 +1,5 @@
 /**
- * 연령별·익명 게시판 목록 레이아웃 — 홈(육아도사)과 동일한 크림·테라코타·큰 라운드 토큰을 쓴다.
+ * 연령별·익명 게시판 목록 레이아웃 — 홈(육아박사)과 동일한 크림·테라코타·큰 라운드 토큰을 쓴다.
  * 게시판 URL마다 페이지를 나누지 않고 CommunityRoomBoard 한 곳에서 스타일을 통일한다.
  */
 
@@ -49,10 +49,10 @@
   );
 }
 
-/* 방 이름 — 홈 히어로와 동일하게 세리프로 브랜드 톤을 이어 받는다 */
+/* 방 이름 h1 — Pretendard(--fontH1) */
 .boardTitle {
   margin: 0;
-  font-family: var(--font-serif);
+  font-family: var(--fontH1);
   font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 700;
   line-height: 1.2;

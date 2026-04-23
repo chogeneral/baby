@@ -52,6 +52,11 @@ export function getBabyRecordsByEmail(email: string): BabyRecord[] {
     .sort((a, b) => (a.recordedAt < b.recordedAt ? 1 : -1));
 }
 
+/** id 로 한 건만 조회 — 상세 API·화면에서 사용 */
+export function getBabyRecordById(id: string): BabyRecord | undefined {
+  return readAll().find((r) => r.id === id);
+}
+
 export function generateBabyRecordId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }

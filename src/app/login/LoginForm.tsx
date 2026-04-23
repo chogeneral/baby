@@ -88,7 +88,7 @@ export function LoginForm() {
       <div className={styles.loginCard}>
         <div className={styles.loginBrand}>
           <h1 className={styles.loginTitle}>로그인</h1>
-          <p className={styles.loginSubtitle}>육아도사와 함께 아이 성장을 기록해 보세요.</p>
+          <p className={styles.loginSubtitle}>육아박사와 함께 아이 성장을 기록해 보세요.</p>
         </div>
 
         <form className={styles.loginForm} onSubmit={handleSubmit} noValidate>

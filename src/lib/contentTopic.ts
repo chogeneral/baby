@@ -1,8 +1,25 @@
 /**
- * 발달·부모이야기 등 정적 콘텐츠 메뉴별로 나누는 주제 키.
+ * 발달·부모이야기·정보 등 정적 콘텐츠 메뉴별로 나누는 주제 키.
  * API·JSON과 동일한 문자열을 쓰므로 오타로 깨지지 않게 한곳에서만 정의한다.
  */
-export type ContentTopicKind = "development" | "parentStories";
+export type ContentTopicKind = "development" | "parentStories" | "info";
+
+/**
+ * 발달·부모이야기·정보 게시판에 ‘새 글’을 등록할 수 있는 계정(단일).
+ * 목록의 글쓰기 버튼 노출, 글쓰기 페이지 진입, API POST 가 모두 이 이메일과 일치하는지 검사해
+ * URL 직접 입력으로 우회하는 것을 막는다.
+ */
+export const contentTopicWriteAllowedEmail = "s2ckh1005@gmail.com";
+
+/** 세션/API 에서 넘어온 이메일이 위 허용 목록과 같은지(대소문자 무시) */
+export function isContentTopicWriteAllowedEmail(
+  email: string | null | undefined,
+): boolean {
+  if (!email?.trim()) return false;
+  return (
+    email.trim().toLowerCase() === contentTopicWriteAllowedEmail.toLowerCase()
+  );
+}
 
 /** 각 주제의 화면 제목과 글쓰기 후 돌아갈 목록 경로 */
 export const contentTopicPageInfo: Record<
@@ -22,4 +39,46 @@ export const contentTopicPageInfo: Record<
     backPath: "/parent-stories",
     writePath: "/parent-stories/write",
   },
+
+  info: {
+    title: "정보",
+    subtext: "육아와 가족 생활에 도움이 되는 안내·자료·팁을 차분히 모아 두는 공간이에요. ",
+    backPath: "/info",
+    writePath: "/info/write",
+  },
 };
+
+/**
+ * 주제 키(camelCase, API topic 값)를 URL 첫 경로 세그먼트로 바꾼다.
+ * parentStories만 폴더명이 kebab-case(parent-stories)라 예외로 매핑하고, 나머지는 그대로 쓴다.
+ */
+export function contentTopicUrlSegment(topic: ContentTopicKind): string {
+  switch (topic) {
+    case "development":
+      return "development";
+    case "parentStories":
+      return "parent-stories";
+    case "info":
+      return "info";
+  }
+}
+
+/** 상세 페이지 경로 — 목록·수정 취소·수정 완료 후 이동에 공통 사용 */
+export function contentTopicDetailPath(topic: ContentTopicKind, id: string): string {
+  return `/${contentTopicUrlSegment(topic)}/${id}`;
+}
+
+/**
+ * 수정 페이지 경로 — 비밀번호 확인 후에는 쿼리로 pw를 넘겨 편집 폼이 권한을 검증한다.
+ */
+export function contentTopicEditPath(
+  topic: ContentTopicKind,
+  id: string,
+  passwordForQuery?: string,
+): string {
+  const base = `${contentTopicDetailPath(topic, id)}/edit`;
+  if (passwordForQuery != null && passwordForQuery !== "") {
+    return `${base}?pw=${encodeURIComponent(passwordForQuery)}`;
+  }
+  return base;
+}

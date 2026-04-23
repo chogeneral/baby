@@ -1,26 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Serif_KR } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { RightQuickMenu } from "@/components/RightQuickMenu";
+import { GlobalScrollReveal } from "@/components/GlobalScrollReveal";
 import "./globals.css";
-
-/* 모킹의 세리프 헤드라인에 맞춰 제목·로고에 Noto Serif KR을 쓴다 (한글 가독성 유지) */
-const notoSerifKr = Noto_Serif_KR({
-  variable: "--font-noto-serif-kr",
-  subsets: ["latin"],
-  weight: ["600", "700"],
-});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: {
@@ -38,9 +21,10 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${notoSerifKr.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col font-sans">
+        <GlobalScrollReveal />
         <Navbar />
         {children}
         <RightQuickMenu />

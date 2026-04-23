@@ -147,9 +147,14 @@ export async function POST(req: NextRequest) {
       headCircumferenceCm,
       dailyNote,
     });
-    if (!built.ok || built.message === "skip") {
+    if (!built.ok) {
       return NextResponse.json(
-        { message: "몸무게·키·머리둘레 중 하나이거나, 일상 메모를 입력해 주세요." },
+        {
+          message:
+            built.message === "skip"
+              ? "몸무게·키·머리둘레 중 하나이거나, 일상 메모를 입력해 주세요."
+              : built.message,
+        },
         { status: 400 },
       );
     }

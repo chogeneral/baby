@@ -52,11 +52,11 @@
   letter-spacing: normal;
 }
 
-/* 페이지 제목 — 세리프로 콘텐츠 페이지와 동일한 위계 */
+/* 페이지 제목 h1 — Pretendard(전역 --fontH1) */
 .nestTitle {
   margin: 0;
   padding-bottom: 10px;
-  font-family: var(--font-serif);
+  font-family: var(--fontH1);
   font-size: clamp(1.35rem, 3.5vw, 1.75rem);
   font-weight: 700;
   line-height: 1.25;
@@ -318,6 +318,51 @@
   transform: translateY(0) scale(0.99);
 }
 
+/* 상세 상단 액션 줄 — 목록은 왼쪽, 수정하기는 margin-left:auto 로 오른쪽에 붙인다 */
+.nestDetailActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/*
+ * 수정하기 전용 갈색 버튼 — nestBtnPrimary 와 비슷한 톤이되 상세에서 목록(secondary)과 구분되게 한다.
+ */
+.nestBtnEditBrown {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0 1.35rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #fff8f0;
+  cursor: pointer;
+  text-decoration: none;
+  background: linear-gradient(145deg, #7a4e30 0%, #5c3d28 45%, #4a3020 100%);
+  border: 1px solid rgba(40, 26, 18, 0.5);
+  box-shadow: var(--shadowSoft);
+  transition:
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease,
+    filter 0.2s ease;
+}
+
+.nestBtnEditBrown:hover {
+  transform: translateY(var(--btnLiftY));
+  box-shadow: var(--btnShadowHover);
+  filter: brightness(1.05);
+}
+
+.nestBtnEditBrown:active {
+  transform: translateY(0) scale(0.98);
+  filter: brightness(0.96);
+}
+
 /*
  * 글쓰기·수정 폼 하단(.nestActions) 전용:
  * - 취소 링크는 왼쪽, 등록 버튼은 오른쪽(justify-content: space-between, DOM 순서 유지)
@@ -404,18 +449,9 @@
   margin-bottom: 2rem;
 }
 
-.nestPostPhoto {
-  display: block;
-  width: 100%;
-  max-height: 28rem;
-  object-fit: contain;
-  margin-top: 1.25rem;
-  border-radius: 14px;
-}
-
 .nestArticleTitle {
   margin: 0 0 0.5rem;
-  font-family: var(--font-serif);
+  font-family: var(--fontH1);
   font-size: clamp(1.5rem, 4vw, 1.85rem);
   font-weight: 700;
   line-height: 1.25;
@@ -438,6 +474,73 @@
   line-height: 1.75;
   color: var(--colorCharcoal);
   white-space: pre-wrap;
+}
+
+/* sanitize 된 HTML 본문 — 줄바꿈은 브라우저/태그에 맡기고 링크·제목만 토큰에 맞춘다 */
+.nestRichBody {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: var(--colorCharcoal);
+  white-space: normal;
+  word-break: break-word;
+}
+
+.nestRichBody :where(p) {
+  margin: 0 0 0.65rem;
+}
+
+.nestRichBody :where(p):last-child {
+  margin-bottom: 0;
+}
+
+.nestRichBody :where(ul, ol) {
+  margin: 0.4rem 0;
+  padding-left: 1.35rem;
+}
+
+.nestRichBody :where(a) {
+  color: var(--colorTeal);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.nestRichBody :where(a):hover {
+  color: var(--colorTerracottaDark);
+}
+
+.nestRichBody :where(h1, h2, h3) {
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0.85rem 0 0.45rem;
+  color: var(--colorCharcoal);
+}
+
+/* 본문 HTML 안의 h1 만 페이지 대제목과 같이 Pretendard — h2·h3 는 기존 세리프 */
+.nestRichBody :where(h1) {
+  font-family: var(--fontH1);
+  font-size: 1.35rem;
+}
+
+.nestRichBody :where(h2, h3) {
+  font-family: var(--font-serif);
+}
+
+.nestRichBody :where(h2) {
+  font-size: 1.2rem;
+}
+
+.nestRichBody :where(h3) {
+  font-size: 1.05rem;
+}
+
+/* 본문 인라인 이미지 — 네이버 블로그처럼 글 폭에 맞춰 줄바꿈·여백만 통일한다 */
+.nestRichBody :where(img) {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.65rem 0;
+  border-radius: 10px;
 }
 
 /* 댓글 목록 — 카드형 행으로 리스트를 나눈다 */
@@ -748,67 +851,6 @@
 .nestModalActions {
   display: flex;
   gap: 0.5rem;
-}
-
-/* 사진첩 업로드 */
-.nestPhotoInput {
-  display: none;
-}
-
-.nestPhotoLabel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 7rem;
-  border-radius: 14px;
-  border: 1.5px dashed rgba(197, 123, 103, 0.45);
-  background: rgba(255, 255, 255, 0.7);
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--colorTerracottaDark);
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-  box-sizing: border-box;
-}
-
-.nestPhotoLabel:hover {
-  background: rgba(197, 123, 103, 0.06);
-  border-color: rgba(197, 123, 103, 0.7);
-}
-
-.nestPhotoPreviewWrap {
-  position: relative;
-  display: inline-block;
-  width: 100%;
-}
-
-.nestPhotoPreview {
-  display: block;
-  width: 100%;
-  max-height: 18rem;
-  object-fit: cover;
-  border-radius: 14px;
-  border: 1px solid rgba(45, 41, 38, 0.1);
-}
-
-.nestPhotoRemove {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  border: none;
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.nestPhotoRemove:hover {
-  background: rgba(0, 0, 0, 0.65);
 }
 
 /* 마이페이지 2단 PC 레이아웃 */

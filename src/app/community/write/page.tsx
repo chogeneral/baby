@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import nestForm from "@/app/nestForm.module.css";
 import {
   communityRoomLabels,
@@ -10,8 +10,12 @@ import {
   getCommunityRoomFromBirthYears,
   type CommunityRoomKind,
 } from "@/lib/communityRoom";
+import { BoardRichTextEditor } from "@/components/BoardRichTextEditor";
+import { BoardSinglePhotoSection } from "@/components/BoardSinglePhotoSection";
 import { readLoginSession } from "@/lib/loginSession";
 import { findBannedWord } from "@/lib/contentFilter";
+import { mergeTrailingSinglePhotoHtml, isMergedPostBodyEmpty } from "@/lib/boardSinglePhotoHtml";
+import { htmlToPlainText } from "@/lib/postHtmlUtils";
 
 const PREFIXES_BY_ROOM: Record<string, readonly string[]> = {
   youngInfant: ["언어", "놀이", "성장", "식습관"],
@@ -23,14 +27,15 @@ export default function WritePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  /** 본문 아래 1장 — 저장 시 본문 HTML 뒤에 붙인다 */
+  const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
   const [prefix, setPrefix] = useState<string>("발달");
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [authorEmail, setAuthorEmail] = useState<string | null>(null);
-  const [writerNickname, setWriterNickname] = useState("");
+  /** 발달·부모이야기 글쓰기와 같이 선택 입력 — 나중에 수정할 때 검증에 쓴다 */
+  const [editPassword, setEditPassword] = useState("");
   const [roomKind, setRoomKind] = useState<CommunityRoomKind | null>(null);
-  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const session = readLoginSession();
@@ -40,9 +45,6 @@ export default function WritePage() {
     }
     /* eslint-disable react-hooks/set-state-in-effect -- 로그인 세션으로 글쓰기 폼의 작성자·방 정보를 맞춘다 */
     setAuthorEmail(session.email);
-    setWriterNickname(
-      session.nickname?.trim() || session.email.split("@")[0] || "회원",
-    );
     const room = getCommunityRoomFromBirthYears(
       session.childBirthYears,
       new Date(),
@@ -53,21 +55,6 @@ export default function WritePage() {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [router]);
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPhotoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function handlePhotoRemove() {
-    setPhotoPreview(null);
-    if (photoInputRef.current) photoInputRef.current.value = "";
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -75,17 +62,18 @@ export default function WritePage() {
       setError("제목을 입력해 주세요.");
       return;
     }
-    if (!content.trim()) {
+    if (isMergedPostBodyEmpty(content, attachedPhoto)) {
       setError("내용을 입력해 주세요.");
       return;
     }
+    const plainBody = htmlToPlainText(mergeTrailingSinglePhotoHtml(content, attachedPhoto));
 
     const bannedInTitle = findBannedWord(title);
     if (bannedInTitle) {
       setError("제목에 사용할 수 없는 표현이 포함되어 있습니다.");
       return;
     }
-    const bannedInContent = findBannedWord(content);
+    const bannedInContent = findBannedWord(plainBody);
     if (bannedInContent) {
       setError("내용에 사용할 수 없는 표현이 포함되어 있습니다.");
       return;
@@ -100,10 +88,10 @@ export default function WritePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
-          content,
+          content: mergeTrailingSinglePhotoHtml(content, attachedPhoto),
           authorEmail,
           prefix,
-          ...(photoPreview ? { photoDataUrl: photoPreview } : {}),
+          ...(editPassword.trim() ? { editPassword: editPassword.trim() } : {}),
         }),
       });
 
@@ -147,6 +135,19 @@ export default function WritePage() {
     <main className={nestForm.nestPage}>
       <h1 className={nestForm.nestTitle}>{roomLabel?.roomName}</h1>
 
+      <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
+        글 등록 안내
+      </p>
+
+      <div className={nestForm.nestNotice}>
+        <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
+          이 방은 마이페이지에 등록한 <strong>대표 자녀 출생 연도</strong>에 따라 자동으로
+          정해져요. 글과 댓글에는 커뮤니티에서 사용 중인 <strong>닉네임</strong>이 함께
+          표시돼요. 말머리와 본문 서식을 활용해 읽기 좋게 작성해 주세요. 수정 비밀번호를
+          설정해 두면 글 수정 전에 한 번 더 확인할 수 있어요.
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit} className={nestForm.nestForm}>
         <div>
           <label htmlFor="postPrefix" className={nestForm.nestLabel}>
@@ -185,42 +186,42 @@ export default function WritePage() {
           <label htmlFor="postContent" className={nestForm.nestLabel}>
             내용
           </label>
-          <textarea
+          <BoardRichTextEditor
             id="postContent"
-            rows={10}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={setContent}
             placeholder="내용을 입력해 주세요"
-            className={nestForm.nestTextarea}
           />
         </div>
 
+        <BoardSinglePhotoSection
+          sectionId="communityWritePhoto"
+          value={attachedPhoto}
+          onChange={setAttachedPhoto}
+        />
+
         <div>
-          <p className={nestForm.nestLabel}>사진첩</p>
-          {photoPreview ? (
-            <div className={nestForm.nestPhotoPreviewWrap}>
-              <img src={photoPreview} alt="첨부 사진 미리보기" className={nestForm.nestPhotoPreview} />
-              <button
-                type="button"
-                onClick={handlePhotoRemove}
-                className={nestForm.nestPhotoRemove}
-              >
-                삭제
-              </button>
-            </div>
-          ) : (
-            <label htmlFor="postPhoto" className={nestForm.nestPhotoLabel}>
-              <span>+ 사진 추가 (1장)</span>
-              <input
-                ref={photoInputRef}
-                id="postPhoto"
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoChange}
-                className={nestForm.nestPhotoInput}
-              />
-            </label>
-          )}
+          <label htmlFor="communityWriteEditPassword" className={nestForm.nestLabel}>
+            수정 비밀번호{" "}
+            <span
+              style={{
+                fontWeight: 400,
+                color: "var(--colorMuted)",
+                fontSize: "0.8em",
+              }}
+            >
+              (나중에 수정할 때 사용해요)
+            </span>
+          </label>
+          <input
+            id="communityWriteEditPassword"
+            type="password"
+            maxLength={50}
+            value={editPassword}
+            onChange={(e) => setEditPassword(e.target.value)}
+            placeholder="비밀번호를 입력해 주세요"
+            className={nestForm.nestInput}
+          />
         </div>
 
         {error ? <p className={nestForm.nestError}>{error}</p> : null}

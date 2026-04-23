@@ -44,7 +44,7 @@
 }
 
 .loginTitle {
-  font-family: var(--font-serif);
+  font-family: var(--fontH1);
   font-size: 1.6rem;
   font-weight: 700;
   letter-spacing: -0.02em;

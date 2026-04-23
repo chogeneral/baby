@@ -4,38 +4,20 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import styles from "@/app/contentPage.module.css";
 import { communityRoomLabels } from "@/lib/communityRoom";
+import { PostListPhotoBadge } from "@/components/PostListPhotoBadge";
 import { PostStackListMobile } from "@/components/PostStackListMobile";
+import { firstDataImageSrcFromPostHtml } from "@/lib/postHtmlUtils";
 
 const PAGE_SIZE = 10;
 
 type Post = {
   id: string;
   title: string;
+  content: string;
   createdAt: string;
-  photoDataUrl?: string;
   viewCount?: number;
   commentCount?: number;
 };
-
-function PhotoIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-label="사진 있음"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <polyline points="21 15 16 10 5 21" />
-    </svg>
-  );
-}
 
 export function KokkomaBoard() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -52,16 +34,20 @@ export function KokkomaBoard() {
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const pagePosts = posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const stackEntries = pagePosts.map((post) => ({
-    id: post.id,
-    href: `/community/${post.id}`,
-    title: post.title,
-    createdAt: post.createdAt,
-  }));
+  const stackEntries = pagePosts.map((post) => {
+    const hasPhoto = !!firstDataImageSrcFromPostHtml(post.content ?? "");
+    return {
+      id: post.id,
+      href: `/community/${post.id}`,
+      title: post.title,
+      createdAt: post.createdAt,
+      hasPhoto,
+    };
+  });
 
   return (
     <main className={styles.contentPage}>
-      <h1 className={styles.contentTitle} style={{ marginBottom: "0.5rem" }}>꼬꼬마 (익명게시판)</h1>
+      <h1 className={styles.contentTitle} style={{ marginBottom: "0.5rem" }}>꼬꼬마</h1>
       <p className={styles.contentSubtext} style={{ color: "#6b6560", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
         {communityRoomLabels.kokkoma.subtext}
       </p>
@@ -71,25 +57,25 @@ export function KokkomaBoard() {
           <colgroup>
             <col style={{ width: "3.5rem" }} />
             <col />
-            <col style={{ width: "6rem" }} />
-            <col style={{ width: "2.5rem" }} />
             <col style={{ width: "6.5rem" }} />
             <col style={{ width: "3.5rem" }} />
+            <col style={{ width: "2.75rem" }} />
             <col style={{ width: "4.5rem" }} />
           </colgroup>
           <thead>
             <tr>
               <th className={styles.postTableThCenter}>번호</th>
               <th className={styles.postTableThLeft}>제목</th>
-              <th className={styles.postTableThCenter}>작성자</th>
-              <th className={styles.postTableThCenter}>사진</th>
               <th className={styles.postTableThCenter}>날짜</th>
               <th className={styles.postTableThCenter}>댓글</th>
+              <th className={styles.postTableThCenter}>사진</th>
               <th className={styles.postTableThCenter}>조회</th>
             </tr>
           </thead>
           <tbody>
-            {pagePosts.map((post, i) => (
+            {pagePosts.map((post, i) => {
+              const rowHasPhoto = !!firstDataImageSrcFromPostHtml(post.content ?? "");
+              return (
               <tr key={post.id} className={styles.postTableRow}>
                 <td className={styles.postTableTdCenter}>
                   {posts.length - ((page - 1) * PAGE_SIZE + i)}
@@ -99,22 +85,18 @@ export function KokkomaBoard() {
                     {post.title}
                   </Link>
                 </td>
-                <td className={styles.postTableTdCenter}>익명</td>
-                <td className={styles.postTableTdCenter}>
-                  {post.photoDataUrl && (
-                    <span className={styles.postTablePhotoIcon}>
-                      <PhotoIcon />
-                    </span>
-                  )}
-                </td>
                 <td className={styles.postTableTdCenter}>{post.createdAt.slice(0, 10)}</td>
                 <td className={styles.postTableTdCenter}>{post.commentCount ?? 0}</td>
+                <td className={styles.postTableTdCenter}>
+                  <PostListPhotoBadge hasPhoto={rowHasPhoto} />
+                </td>
                 <td className={styles.postTableTdCenter}>{post.viewCount ?? 0}</td>
               </tr>
-            ))}
+            );
+            })}
             {!isLoading && posts.length === 0 && (
               <tr>
-                <td colSpan={7} className={styles.postTableEmpty}>
+                <td colSpan={6} className={styles.postTableEmpty}>
                   아직 작성된 글이 없어요.
                 </td>
               </tr>

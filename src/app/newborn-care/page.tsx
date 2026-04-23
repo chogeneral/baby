@@ -28,9 +28,6 @@ export default function NewbornCarePage() {
 
       <ContentWriteCta />
 
-      <Link className={styles.backLink} href="/">
-        ← 메인으로
-      </Link>
     </main>
   );
 }

@@ -37,9 +37,9 @@ export const communityRoomLabels: Record<
     ageHint: "3~5살(만 3~5세, 연도 기준) · 6살 이상도 이 방에서 이용",
   },
   kokkoma: {
-    roomName: "꼬꼬마(익명게시판)",
+    roomName: "꼬꼬마",
     ageHint: "하지 못했던 이야기, 서로 이야기 해봐요 ",
-    subtext: "말못한 고민이 있으면 여기에 털어놓으세요. 당신의 마음속 깊은 이야기를 이곳에 편히 내려놓으세요",
+    subtext: "누구에게도 털어놓지 못한 고민이 있나요? 당신만의 비밀 우체통이 되어 드릴게요. 마음속 무거운 짐을 이곳에 잠시 덜어보세요.",
   },
 };
 
@@ -63,6 +63,19 @@ export function inferBoardKindFromBirthYear(
   if (diff <= 1) return "youngInfant";
   if (diff === 2) return "toddler";
   return "preschool";
+}
+
+/**
+ * 저장 포맷이 달라도 동일한 방 기준을 쓴다.
+ * boardKind가 있으면 그대로 쓰고, 없으면 출생 연도로만 추정한다(구 데이터 호환).
+ * Node 전용 postStore와 분리해 클라이언트 컴포넌트에서도 안전하게 import 가능하다.
+ */
+export function effectiveBoardKind(p: {
+  boardKind?: CommunityRoomKind;
+  childBirthYear: number;
+}): CommunityRoomKind {
+  if (p.boardKind) return p.boardKind;
+  return inferBoardKindFromBirthYear(p.childBirthYear);
 }
 
 /**

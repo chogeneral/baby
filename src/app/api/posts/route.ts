@@ -13,6 +13,12 @@ import {
 import { findByEmail, getPrimaryChildBirthYear } from "@/lib/userStore";
 import { getCommentsByPostId } from "@/lib/commentStore";
 
+/** 목록·마이페이지 등에서는 수정 비밀번호를 내려주지 않는다 */
+function withoutEditPassword(p: PostRecord) {
+  const { editPassword: _omit, ...rest } = p;
+  return rest;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const authorEmail = searchParams.get("authorEmail");
@@ -22,7 +28,7 @@ export async function GET(req: NextRequest) {
 
   if (authorEmail) {
     const filtered = posts.filter((p) => p.authorEmail === authorEmail);
-    return NextResponse.json(filtered);
+    return NextResponse.json(filtered.map(withoutEditPassword));
   }
 
   if (
@@ -33,7 +39,10 @@ export async function GET(req: NextRequest) {
   ) {
     const boardPosts = getPostsByBoardKind(boardKind);
     return NextResponse.json(
-      boardPosts.map((p) => ({ ...p, commentCount: getCommentsByPostId(p.id).length }))
+      boardPosts.map((p) => ({
+        ...withoutEditPassword(p),
+        commentCount: getCommentsByPostId(p.id).length,
+      })),
     );
   }
 
@@ -49,11 +58,11 @@ export async function POST(req: NextRequest) {
     boardKind?: "kokkoma";
     /** 영아방 말머리 */
     prefix?: string;
-    /** 사진첩 이미지 (base64 data URL) */
-    photoDataUrl?: string;
+    /** 연령방 — 수정 시에도 필요한 비밀번호(선택, 발달·부모이야기와 동일 UX) */
+    editPassword?: string;
   };
 
-  const { title, content, authorEmail, boardKind: requestedKind, prefix, photoDataUrl } = body;
+  const { title, content, authorEmail, boardKind: requestedKind, prefix, editPassword } = body;
 
   if (!title?.trim() || !content?.trim() || !authorEmail) {
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
@@ -76,7 +85,6 @@ export async function POST(req: NextRequest) {
       childBirthYear: placeholderYear,
       boardKind: "kokkoma",
       createdAt: new Date().toISOString(),
-      ...(photoDataUrl ? { photoDataUrl } : {}),
     };
     appendPost(post);
     return NextResponse.json(post, { status: 201 });
@@ -92,6 +100,11 @@ export async function POST(req: NextRequest) {
 
   const boardKind = inferBoardKindFromBirthYear(primaryYear);
 
+  const trimmedEditPw =
+    typeof editPassword === "string" && editPassword.trim().length > 0
+      ? editPassword.trim()
+      : undefined;
+
   const post: PostRecord = {
     id: generatePostId(),
     title: title.trim(),
@@ -102,7 +115,7 @@ export async function POST(req: NextRequest) {
     boardKind,
     createdAt: new Date().toISOString(),
     ...(prefix ? { prefix } : {}),
-    ...(photoDataUrl ? { photoDataUrl } : {}),
+    ...(trimmedEditPw ? { editPassword: trimmedEditPw } : {}),
   };
 
   appendPost(post);

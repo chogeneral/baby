@@ -14,6 +14,7 @@ import {
 } from "@/lib/communityRoom";
 import { readLoginSession } from "@/lib/loginSession";
 import { formatDate } from "@/lib/formatDate";
+import { excerptFromHtml, firstDataImageSrcFromPostHtml } from "@/lib/postHtmlUtils";
 
 type Post = {
   id: string;
@@ -23,7 +24,6 @@ type Post = {
   childBirthYear: number;
   createdAt: string;
   prefix?: string;
-  photoDataUrl?: string;
   viewCount?: number;
   commentCount?: number;
 };
@@ -120,23 +120,29 @@ export function CommunityRoomBoard({ roomKind }: Props) {
         ) : (
           <>
             <div className={styles.cardGrid}>
-              {pagedPosts.map((post) => (
+              {pagedPosts.map((post) => {
+                /* 꼬꼬마는 익명 톤 유지를 위해 기존 플레이스홀더만 쓰고, 연령방은 첨부·본문 data URL 사진을 썸네일로 쓴다 */
+                const listThumbSrc =
+                  !kokkomaMode ? firstDataImageSrcFromPostHtml(post.content) : null;
+
+                return (
                 <Link
                   key={post.id}
                   href={`/community/${post.id}`}
                   className={styles.postCard}
                 >
                   <div className={styles.cardThumb}>
-                    {post.photoDataUrl ? (
+                    {listThumbSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- 게시글에 저장된 data URL 은 next/image 대상이 아님
                       <img
-                        src={post.photoDataUrl}
+                        src={listThumbSrc}
                         alt=""
                         className={styles.cardThumbImg}
                       />
                     ) : (
-                      <div className={styles.cardThumbPlaceholder}>
-                        <span className={styles.cardPlaceholderText}>no-image</span>
-                      </div>
+                    <div className={styles.cardThumbPlaceholder}>
+                      <span className={styles.cardPlaceholderText}>no-image</span>
+                    </div>
                     )}
                   </div>
                   <div className={styles.cardBody}>
@@ -153,7 +159,7 @@ export function CommunityRoomBoard({ roomKind }: Props) {
                     </p>
                     {post.content && (
                       <p className={styles.cardExcerpt}>
-                        {post.content.slice(0, 60)}{post.content.length > 60 ? "…" : ""}
+                        {excerptFromHtml(post.content, 60)}
                       </p>
                     )}
                     <div className={styles.cardMeta}>
@@ -167,7 +173,8 @@ export function CommunityRoomBoard({ roomKind }: Props) {
                     </div>
                   </div>
                 </Link>
-              ))}
+              );
+              })}
             </div>
 
             {totalPages > 1 && (

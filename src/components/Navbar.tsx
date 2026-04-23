@@ -265,6 +265,12 @@ export function Navbar() {
                 </Link>
                 님
               </span>
+              <Link
+                href="/contact"
+                className="text-sm text-[#6d4c41] transition-[color,transform] duration-200 ease-out hover:text-[#3d2a20] motion-safe:hover:-translate-y-px"
+              >
+                문의하기
+              </Link>
               <button
                 type="button"
                 onClick={handleLogout}

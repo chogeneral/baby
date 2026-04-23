@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import styles from "@/app/contentPage.module.css";
+import { PostListPhotoBadge } from "@/components/PostListPhotoBadge";
 
 /**
  * ISO 앞 10자(YYYY-MM-DD)를 모바일에서 보기 쉬운 YYYY.MM.DD 로 바꾼다.
@@ -15,6 +16,10 @@ export type PostStackListEntry = {
   href: string;
   title: string;
   createdAt: string;
+  /** 본문에 첨부 이미지가 있으면 제목 옆에 작은 아이콘 */
+  hasPhoto?: boolean;
+  /** 발달·부모이야기 등 — 있으면 날짜 앞에 `닉네임 ·` 으로 붙인다. */
+  authorName?: string;
 };
 
 type PostStackListMobileProps = {
@@ -57,8 +62,17 @@ export function PostStackListMobile({
         {entries.map((entry) => (
           <li key={entry.id} className={styles.postStackItem}>
             <Link href={entry.href} className={styles.postStackItemLink}>
-              <span className={styles.postStackTitle}>{entry.title}</span>
+              <span className={styles.postStackTitleRow}>
+                <span className={styles.postStackTitle}>{entry.title}</span>
+                {entry.hasPhoto ? <PostListPhotoBadge hasPhoto /> : null}
+              </span>
               <span className={styles.postStackDate}>
+                {entry.authorName != null && entry.authorName !== "" ? (
+                  <>
+                    <span className={styles.postStackAuthorName}>{entry.authorName}</span>
+                    <span aria-hidden> · </span>
+                  </>
+                ) : null}
                 {formatStackDate(entry.createdAt)}
               </span>
             </Link>

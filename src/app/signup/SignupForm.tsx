@@ -220,7 +220,7 @@ export function SignupForm() {
       <div className={`${styles.loginCard} ${styles.signupCard}`}>
         <div className={styles.loginBrand}>
           <h1 className={styles.loginTitle}>회원가입</h1>
-          <p className={styles.loginSubtitle}>육아도사에 가입하고 맞춤 정보를 받아보세요.</p>
+          <p className={styles.loginSubtitle}>육아박사에 가입하고 맞춤 정보를 받아보세요.</p>
         </div>
 
         <form className={styles.signupForm} onSubmit={handleSubmit} noValidate>
