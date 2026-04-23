@@ -24,8 +24,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "육아도사",
-    template: "%s | 육아도사",
+    default: "육아박사",
+    template: "%s | 육아박사",
   },
   description: "육아 정보와 성장 기록을 돕는 밝고 따뜻한 육아 커뮤니티",
 };

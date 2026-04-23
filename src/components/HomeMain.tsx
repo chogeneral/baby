@@ -18,7 +18,7 @@ export function HomeMain() {
       <section className={styles.heroSection} aria-labelledby="homeHeroTitle">
         <div className={`${styles.homeContainer} ${styles.heroGrid}`}>
           <div>
-            <p className={styles.heroTag}>육아도사에 오신 걸 환영해요</p>
+            <p className={styles.heroTag}>육아박사에 오신 걸 환영해요</p>
             <h1 id="homeHeroTitle" className={styles.heroTitle}>
               아이와 함께 더 따뜻하게{" "}
               <span className={styles.heroAccent}>성장해요.</span>

@@ -10,7 +10,7 @@ export function Footer() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-2">
             <span className="font-serif text-lg font-semibold tracking-tight text-[#2d2926]">
-              육아도사
+              육아박사
             </span>
             <p className="text-xs text-[#6b6560] leading-relaxed max-w-xs">
               육아 정보와 성장 기록을 함께하는 따뜻한 커뮤니티
@@ -40,7 +40,7 @@ export function Footer() {
         </div>
 
         <p className="mt-8 text-xs text-[#6b6560]/70">
-          © {new Date().getFullYear()} 육아도사. All rights reserved.
+          © {new Date().getFullYear()} 육아박사. All rights reserved.
         </p>
       </div>
     </footer>

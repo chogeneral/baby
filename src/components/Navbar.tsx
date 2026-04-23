@@ -197,7 +197,7 @@ export function Navbar() {
             href="/"
             className="shrink-0 font-serif text-xl font-semibold tracking-tight text-[#2d2926] sm:text-[1.35rem]"
           >
-            육아도사
+            육아박사
           </Link>
 
           {/* lg 이상: 1행 레이아웃 — 가운데 GNB(우측 닉·로그아웃과 겹침을 줄이기 위해 pr 유지) */}
@@ -268,7 +268,7 @@ export function Navbar() {
 
         {/*
           1024px 미만 전용 2번째 행: 상단과 동일한 mainNavItems를 재사용해
-          육아도사 타이틀 시작선과 맞춰 왼쪽부터 가로 나열한다(햄버거/가로 스크롤 단일 행 대신 flex-wrap).
+          육아박사 타이틀 시작선과 맞춰 왼쪽부터 가로 나열한다(햄버거/가로 스크롤 단일 행 대신 flex-wrap).
         */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:gap-x-4 lg:hidden">
           {mainNavItems}
