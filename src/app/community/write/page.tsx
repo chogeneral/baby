@@ -14,13 +14,16 @@ import { BoardRichTextEditor } from "@/components/BoardRichTextEditor";
 import { BoardSinglePhotoSection } from "@/components/BoardSinglePhotoSection";
 import { readLoginSession } from "@/lib/loginSession";
 import { findBannedWord } from "@/lib/contentFilter";
-import { mergeTrailingSinglePhotoHtml, isMergedPostBodyEmpty } from "@/lib/boardSinglePhotoHtml";
+import {
+  mergeTrailingSinglePhotoHtml,
+  isMergedPostBodyEmpty,
+} from "@/lib/boardSinglePhotoHtml";
 import { htmlToPlainText } from "@/lib/postHtmlUtils";
 
 const PREFIXES_BY_ROOM: Record<string, readonly string[]> = {
   youngInfant: ["언어", "놀이", "성장", "식습관"],
-  toddler:     ["언어", "놀이", "성장", "식습관"],
-  preschool:   ["언어", "놀이", "성장", "식습관"],
+  toddler: ["언어", "놀이", "성장", "식습관"],
+  preschool: ["언어", "놀이", "성장", "식습관"],
 };
 
 export default function WritePage() {
@@ -51,7 +54,8 @@ export default function WritePage() {
       session.primaryChildIndex ?? 0,
     );
     setRoomKind(room);
-    if (room) setPrefix((PREFIXES_BY_ROOM[room] ?? PREFIXES_BY_ROOM.youngInfant)[0]);
+    if (room)
+      setPrefix((PREFIXES_BY_ROOM[room] ?? PREFIXES_BY_ROOM.youngInfant)[0]);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [router]);
 
@@ -66,7 +70,9 @@ export default function WritePage() {
       setError("내용을 입력해 주세요.");
       return;
     }
-    const plainBody = htmlToPlainText(mergeTrailingSinglePhotoHtml(content, attachedPhoto));
+    const plainBody = htmlToPlainText(
+      mergeTrailingSinglePhotoHtml(content, attachedPhoto),
+    );
 
     const bannedInTitle = findBannedWord(title);
     if (bannedInTitle) {
@@ -121,10 +127,14 @@ export default function WritePage() {
       <main className={nestForm.nestPage}>
         <h1 className={nestForm.nestTitle}>글쓰기</h1>
         <p className={nestForm.nestLead}>
-          아이 대표 출생 연도가 없으면 영아방·토들러방·유아방 중 어디에 글을 올릴지 정할 수
-          없어요.
+          아이 대표 출생 연도가 없으면 영아방·토들러방·유아방 중 어디에 글을
+          올릴지 정할 수 없어요.
         </p>
-        <Link href="/mypage" className={nestForm.nestBtnPrimary} style={{ marginTop: "1rem" }}>
+        <Link
+          href="/mypage"
+          className={nestForm.nestBtnPrimary}
+          style={{ marginTop: "1rem" }}
+        >
           마이페이지에서 연도 설정
         </Link>
       </main>
@@ -141,10 +151,11 @@ export default function WritePage() {
 
       <div className={nestForm.nestNotice}>
         <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
-          이 방은 마이페이지에 등록한 <strong>대표 자녀 출생 연도</strong>에 따라 자동으로
-          정해져요. 글과 댓글에는 커뮤니티에서 사용 중인 <strong>닉네임</strong>이 함께
-          표시돼요. 말머리와 본문 서식을 활용해 읽기 좋게 작성해 주세요. 수정 비밀번호를
-          설정해 두면 글 수정 전에 한 번 더 확인할 수 있어요.
+          이 방은 마이페이지에 등록한 <strong>대표 자녀 출생 연도</strong>에
+          따라 자동으로 정해져요. 글과 댓글에는 커뮤니티에서 사용 중인{" "}
+          <strong>닉네임</strong>이 함께 표시돼요. 말머리와 본문 서식을 활용해
+          읽기 좋게 작성해 주세요. 수정 비밀번호를 설정해 두면 글 수정 전에 한
+          번 더 확인할 수 있어요.
         </p>
       </div>
 
@@ -159,11 +170,13 @@ export default function WritePage() {
             onChange={(e) => setPrefix(e.target.value)}
             className={nestForm.nestSelect}
           >
-            {(PREFIXES_BY_ROOM[roomKind] ?? PREFIXES_BY_ROOM.youngInfant).map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
+            {(PREFIXES_BY_ROOM[roomKind] ?? PREFIXES_BY_ROOM.youngInfant).map(
+              (p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ),
+            )}
           </select>
         </div>
 
@@ -201,7 +214,10 @@ export default function WritePage() {
         />
 
         <div>
-          <label htmlFor="communityWriteEditPassword" className={nestForm.nestLabel}>
+          <label
+            htmlFor="communityWriteEditPassword"
+            className={nestForm.nestLabel}
+          >
             수정 비밀번호{" "}
             <span
               style={{
