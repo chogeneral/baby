@@ -8,7 +8,9 @@
 node_modules
 .next/
 .env.local
+src/lib/supabaseClient.ts
 tsconfig.tsbuildinfo
 settings.json
 data/
 *.tsbuildinfo
+c

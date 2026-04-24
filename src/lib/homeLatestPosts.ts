@@ -1,54 +1,67 @@
-import {
-  getPostsByTopic,
-  type ContentTopicPostRecord,
-} from "@/lib/contentTopicPostStore";
-import { getPostsByBoardKind } from "@/lib/postStore";
+import { supabase } from "./supabaseClient";
 
-/**
- * 메인 홈 “최신 글” 미리보기 — 제목·날짜·(선택)닉네임. 이메일·비밀번호는 절대 포함하지 않는다.
- */
 export type HomeLatestPostPreview = {
   id: string;
   title: string;
-  /** `YYYY-MM-DD` — 목록·게시판과 동일하게 앞 10자만 쓴다. */
   dateLabel: string;
-  /** 부모이야기·발달에만 — 게시글에 저장된 닉네임(빈 값이면 `—`) */
   authorLabel?: string;
 };
 
 const previewLimit = 5;
 
-function toPreview(p: { id: string; title: string; createdAt: string }): HomeLatestPostPreview {
-  return {
-    id: p.id,
-    title: p.title,
-    dateLabel: p.createdAt.slice(0, 10),
-  };
+/**
+ * `created_at` 을 YYYY-MM-DD 로만 쓰기 위한 정규화.
+ * PostgREST 는 보통 ISO 문자열을 주지만, null·예외 형태에 대해 홈 전체가 깨지지 않게 막는다.
+ */
+function dateLabelFromCreatedAt(createdAt: unknown): string {
+  if (createdAt == null) return "";
+  if (typeof createdAt === "string") {
+    return createdAt.length >= 10 ? createdAt.slice(0, 10) : createdAt;
+  }
+  if (createdAt instanceof Date) {
+    return createdAt.toISOString().slice(0, 10);
+  }
+  return String(createdAt).slice(0, 10);
 }
 
-/**
- * 콘텐츠 토픽 글(부모이야기·발달) — 홈에서도 목록/상세와 같이 `authorNickname` 을 짧게 보여 준다.
- */
-function toPreviewWithAuthor(p: ContentTopicPostRecord): HomeLatestPostPreview {
-  return {
-    ...toPreview(p),
-    authorLabel: p.authorNickname?.trim() ? p.authorNickname : "—",
-  };
+/** 슈파베이스에서 데이터를 가져오는 핵심 함수 — `posts` 에 `category`·`nickname` 컬럼이 있어야 필터·표시가 된다. */
+async function fetchLatestByCategory(category: string): Promise<HomeLatestPostPreview[]> {
+  const { data, error } = await supabase
+    .from("posts")
+    .select("id, title, created_at, nickname")
+    .eq("category", category)
+    .order("created_at", { ascending: false })
+    .limit(previewLimit);
+
+  if (error) {
+    // 스키마에 컬럼이 없거나 RLS 로 SELECT 가 막히면 여기로 온다. 홈은 빈 목록으로라도 올리고 서버 로그로 원인을 남긴다.
+    console.error(`[homeLatestPosts] "${category}" 로드 실패:`, error.message, error);
+    return [];
+  }
+
+  if (!data) return [];
+
+  return data.map((p) => ({
+    id: String(p.id),
+    title: typeof p.title === "string" && p.title.trim() !== "" ? p.title : "제목 없음",
+    dateLabel: dateLabelFromCreatedAt(p.created_at),
+    authorLabel: (typeof p.nickname === "string" && p.nickname.trim() !== "" ? p.nickname : null) || "—",
+  }));
 }
 
-/**
- * 부모이야기·발달·꼬꼬마·정보 — 각각 최신 5개(콘텐츠 토픽 3종 + 꼬꼬마 커뮤니티 1종).
- * 스토어는 “최신이 앞” 순서(역순 정렬)로 이미 맞춰 두었으므로 `slice` 만 한다.
- */
-export function getHomeLatestPostPreviews() {
+/** 메인 페이지에서 호출하는 함수 */
+export async function getHomeLatestPostPreviews() {
+  const [babyStory, parentStories, kokkoma, info] = await Promise.all([
+    fetchLatestByCategory("아기이야기"),
+    fetchLatestByCategory("부모이야기"),
+    fetchLatestByCategory("꼬꼬마"),
+    fetchLatestByCategory("정보"),
+  ]);
+
   return {
-    parentStories: getPostsByTopic("parentStories")
-      .slice(0, previewLimit)
-      .map(toPreviewWithAuthor),
-    development: getPostsByTopic("development")
-      .slice(0, previewLimit)
-      .map(toPreviewWithAuthor),
-    kokkoma: getPostsByBoardKind("kokkoma").slice(0, previewLimit).map(toPreview),
-    info: getPostsByTopic("info").slice(0, previewLimit).map(toPreview),
+    babyStory,
+    parentStories,
+    kokkoma,
+    info,
   };
 }

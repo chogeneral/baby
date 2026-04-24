@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import nestForm from "@/app/nestForm.module.css";
 import {
-  communityRoomLabels,
-  communityRoomPath,
   getCommunityRoomFromBirthYears,
   type CommunityRoomKind,
 } from "@/lib/communityRoom";
@@ -20,11 +18,15 @@ import {
 } from "@/lib/boardSinglePhotoHtml";
 import { htmlToPlainText } from "@/lib/postHtmlUtils";
 
-const PREFIXES_BY_ROOM: Record<string, readonly string[]> = {
-  youngInfant: ["언어", "놀이", "성장", "식습관"],
-  toddler: ["언어", "놀이", "성장", "식습관"],
-  preschool: ["언어", "놀이", "성장", "식습관"],
-};
+/** 아기이야기 말머리 — 연령 방 분리를 없앤 뒤 단일 목록만 쓴다 */
+const babyStoryPrefixes = [
+  "언어",
+  "놀이",
+  "성장",
+  "발달",
+  "식습관",
+  "질문있어요",
+] as const;
 
 export default function WritePage() {
   const router = useRouter();
@@ -54,8 +56,7 @@ export default function WritePage() {
       session.primaryChildIndex ?? 0,
     );
     setRoomKind(room);
-    if (room)
-      setPrefix((PREFIXES_BY_ROOM[room] ?? PREFIXES_BY_ROOM.youngInfant)[0]);
+    if (room) setPrefix(babyStoryPrefixes[0]);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [router]);
 
@@ -108,11 +109,7 @@ export default function WritePage() {
       }
 
       await res.json();
-      if (roomKind) {
-        router.push(communityRoomPath[roomKind]);
-      } else {
-        router.push("/community");
-      }
+      router.push("/community/baby-story");
     } finally {
       setIsSubmitting(false);
     }
@@ -120,15 +117,12 @@ export default function WritePage() {
 
   if (!authorEmail) return null;
 
-  const roomLabel = roomKind ? communityRoomLabels[roomKind] : null;
-
   if (!roomKind) {
     return (
       <main className={nestForm.nestPage}>
         <h1 className={nestForm.nestTitle}>글쓰기</h1>
         <p className={nestForm.nestLead}>
-          아이 대표 출생 연도가 없으면 영아방·토들러방·유아방 중 어디에 글을
-          올릴지 정할 수 없어요.
+          프로필에 자녀 출생 연도가 없으면 아기이야기에 글을 올 수 없어요.
         </p>
         <Link
           href="/mypage"
@@ -143,21 +137,13 @@ export default function WritePage() {
 
   return (
     <main className={nestForm.nestPage}>
-      <h1 className={nestForm.nestTitle}>{roomLabel?.roomName}</h1>
+      <h1 className={nestForm.nestTitle}>아기이야기</h1>
 
       <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
-        글 등록 안내
+      우리 아이들의 이야기를 함께 나누고 공유해요
       </p>
 
-      <div className={nestForm.nestNotice}>
-        <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
-          이 방은 마이페이지에 등록한 <strong>대표 자녀 출생 연도</strong>에
-          따라 자동으로 정해져요. 글과 댓글에는 커뮤니티에서 사용 중인{" "}
-          <strong>닉네임</strong>이 함께 표시돼요. 말머리와 본문 서식을 활용해
-          읽기 좋게 작성해 주세요. 수정 비밀번호를 설정해 두면 글 수정 전에 한
-          번 더 확인할 수 있어요.
-        </p>
-      </div>
+     
 
       <form onSubmit={handleSubmit} className={nestForm.nestForm}>
         <div>
@@ -170,13 +156,11 @@ export default function WritePage() {
             onChange={(e) => setPrefix(e.target.value)}
             className={nestForm.nestSelect}
           >
-            {(PREFIXES_BY_ROOM[roomKind] ?? PREFIXES_BY_ROOM.youngInfant).map(
-              (p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ),
-            )}
+            {babyStoryPrefixes.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -244,7 +228,7 @@ export default function WritePage() {
 
         <div className={nestForm.nestActions}>
           <Link
-            href={roomKind ? communityRoomPath[roomKind] : "/community"}
+            href="/community/baby-story"
             className={`${nestForm.nestBtnSecondary} ${nestForm.flex1}`}
           >
             취소

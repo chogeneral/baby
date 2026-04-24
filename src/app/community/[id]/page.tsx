@@ -8,9 +8,10 @@ import { displayCommunityNickname } from "@/lib/communityBoard";
 import {
   communityRoomLabels,
   communityRoomPath,
-  inferBoardKindFromBirthYear,
+  effectiveBoardKind,
   isKokkomaBoard,
   type CommunityRoomKind,
+  type StoredCommunityBoardKind,
 } from "@/lib/communityRoom";
 import { readLoginSession } from "@/lib/loginSession";
 import { formatDate } from "@/lib/formatDate";
@@ -24,9 +25,9 @@ type Post = {
   authorEmail: string;
   authorNickname: string;
   childBirthYear: number;
-  boardKind?: CommunityRoomKind;
+  boardKind?: StoredCommunityBoardKind;
   createdAt: string;
-  /** 연령방에서만 사용 — 있으면 수정 모달에서 검증한다 */
+  /** 있으면 상세에서 수정 전 모달로 검증한다(아기이야기·꼬꼬마 동일) */
   editPassword?: string;
 };
 
@@ -58,7 +59,7 @@ export default function PostDetailPage({
   const [isReplySubmitting, setIsReplySubmitting] = useState(false);
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  /** 연령방 수정 — 비밀번호 확인 후에만 편집 URL 로 이동 */
+  /** 수정 비밀번호가 있으면 모달에서 확인한 뒤 편집 URL 로 이동 */
   const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
   const [editPasswordInput, setEditPasswordInput] = useState("");
   const [editPasswordError, setEditPasswordError] = useState("");
@@ -163,16 +164,14 @@ export default function PostDetailPage({
     );
   }
 
-  const postRoom =
-    post.boardKind ?? inferBoardKindFromBirthYear(post.childBirthYear);
-  const postRoomName = communityRoomLabels[postRoom].roomName;
+  const postRoom: CommunityRoomKind = effectiveBoardKind(post);
   const anonymousMode = isKokkomaBoard(postRoom);
   const listHref = anonymousMode ? "/community/kokkoma" : communityRoomPath[postRoom];
   const canEditPost =
     !!authorEmail && !!post.authorEmail && post.authorEmail === authorEmail;
 
-  /** 꼬꼬마는 기존처럼 바로 수정 URL 로 이동하고, 연령방은 모달에서 비밀번호를 거친다 */
-  function handleEditClickAgeBoard() {
+  /** 아기이야기·꼬꼬마 공통 — 저장된 수정 비밀번호가 있으면 모달에서 맞춘 뒤 edit 로 이동 */
+  function handleEditClickWithPasswordGate() {
     setEditPasswordInput("");
     setEditPasswordError("");
     setShowEditPasswordModal(true);
@@ -212,7 +211,10 @@ export default function PostDetailPage({
 
   return (
     <main className={nestForm.nestPage}>
-      <p className={nestForm.nestTag}>{postRoomName}</p>
+      {/* 아기이야기는 제목이 곧 문맥이라 상단 방 라벨을 두지 않고, 꼬꼬마만 게시판명을 짧게 표시한다 */}
+      {anonymousMode ? (
+        <p className={nestForm.nestTag}>{communityRoomLabels[postRoom].roomName}</p>
+      ) : null}
 
       <article className={nestForm.nestArticle}>
         <h1 className={nestForm.nestArticleTitle}>{post.title}</h1>
@@ -244,19 +246,13 @@ export default function PostDetailPage({
           목록
         </button>
         {canEditPost ? (
-          anonymousMode ? (
-            <Link href={`/community/${post.id}/edit`} className={nestForm.nestBtnEditBrown}>
-              수정하기
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={handleEditClickAgeBoard}
-              className={nestForm.nestBtnEditBrown}
-            >
-              수정하기
-            </button>
-          )
+          <button
+            type="button"
+            onClick={handleEditClickWithPasswordGate}
+            className={nestForm.nestBtnEditBrown}
+          >
+            수정하기
+          </button>
         ) : null}
       </div>
 

@@ -195,8 +195,9 @@ export function ContentTopicDetail({ id, topic }: Props) {
     return acc;
   }, {});
 
-  /* 발달·부모이야기만 — 정보 게시판은 기존 톤 유지(요청 범위 밖) */
-  const showAuthorInMeta = topic === "development" || topic === "parentStories";
+  /* 부모이야기에서만 상단에 글쓴이를 노출한다. `ContentTopicKind` 에서 발달(development) 토픽은 제거돼
+   * 타입에 없으므로 `parentStories` 일 때만 비교한다. 정보(info) 는 기존처럼 날짜·조회만 둔다. */
+  const showAuthorInMeta = topic === "parentStories";
   const authorLabel = post.authorNickname?.trim() ? post.authorNickname : "—";
 
   return (

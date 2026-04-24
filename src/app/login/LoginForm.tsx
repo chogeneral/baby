@@ -145,9 +145,6 @@ export function LoginForm() {
           아직 계정이 없으신가요? <Link href="/signup">회원가입</Link>
         </p>
 
-        <Link className={styles.homeLink} href="/">
-          ← 홈으로
-        </Link>
       </div>
     </div>
   );

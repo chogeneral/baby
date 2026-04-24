@@ -1,28 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { effectiveBoardKind } from "@/lib/communityRoom";
+import { effectiveBoardKind, isKokkomaBoard } from "@/lib/communityRoom";
 import {
   getPostById,
   incrementViewCount,
   updateCommunityPost,
 } from "@/lib/postStore";
 import { findByEmail } from "@/lib/userStore";
-import { isKokkomaBoard } from "@/lib/communityRoom";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const post = getPostById(id);
+  const post = await getPostById(id);
 
   if (!post) {
     return NextResponse.json({ message: "게시글을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  /* 수정 화면 등에서 불러올 때는 조회수를 올리지 않는다 */
   const skipView = new URL(req.url).searchParams.get("skipView") === "1";
   if (!skipView) {
-    incrementViewCount(id);
+    await incrementViewCount(id);
     return NextResponse.json({ ...post, viewCount: (post.viewCount ?? 0) + 1 });
   }
   return NextResponse.json(post);
@@ -51,12 +49,12 @@ export async function PUT(
     return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
   }
 
-  const existing = getPostById(id);
+  const existing = await getPostById(id);
   if (!existing) {
     return NextResponse.json({ message: "게시글을 찾을 수 없습니다." }, { status: 404 });
   }
 
-  const result = updateCommunityPost(
+  const result = await updateCommunityPost(
     id,
     authorEmail,
     {

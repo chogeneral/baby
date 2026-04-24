@@ -22,11 +22,15 @@ import {
 import { htmlToPlainText } from "@/lib/postHtmlUtils";
 import type { PostRecord } from "@/lib/postStore";
 
-const PREFIXES_BY_ROOM: Record<string, readonly string[]> = {
-  youngInfant: ["언어", "놀이", "성장", "식습관"],
-  toddler: ["언어", "놀이", "성장", "식습관"],
-  preschool: ["언어", "놀이", "성장", "식습관"],
-};
+/** 아기이야기 말머리 — 작성 화면과 동일한 후보를 둔다 */
+const babyStoryPrefixes = [
+  "언어",
+  "놀이",
+  "성장",
+  "발달",
+  "식습관",
+  "질문있어요",
+] as const;
 
 function CommunityPostEditInner({
   params,
@@ -76,10 +80,9 @@ function CommunityPostEditInner({
         }
 
         const kind = effectiveBoardKind(p);
-        const ageBoard = !isKokkomaBoard(kind);
         const storedPw = p.editPassword;
-        if (ageBoard && storedPw != null && storedPw.length > 0 && pwParam !== storedPw) {
-          /* URL 에 비밀번호가 없거나 틀리면 모달을 거치지 않은 접근으로 본다 */
+        if (storedPw != null && storedPw.length > 0 && pwParam !== storedPw) {
+          /* URL 에 비밀번호가 없거나 틀리면 상세 모달을 거치지 않은 접근으로 본다 */
           setPost(null);
           setIsLoading(false);
           return;
@@ -91,11 +94,11 @@ function CommunityPostEditInner({
         setContent(split.bodyHtml);
         setAttachedPhoto(split.photoDataUrl);
         setEditPasswordForSubmit(
-          ageBoard && storedPw != null && storedPw.length > 0 ? pwParam : "",
+          storedPw != null && storedPw.length > 0 ? pwParam : "",
         );
         if (!isKokkomaBoard(kind)) {
-          const list = PREFIXES_BY_ROOM[kind] ?? PREFIXES_BY_ROOM.youngInfant;
-          setPrefix(p.prefix && list.includes(p.prefix) ? p.prefix : list[0]);
+          const list = babyStoryPrefixes as readonly string[];
+          setPrefix(p.prefix && list.includes(p.prefix) ? p.prefix : babyStoryPrefixes[0]);
         }
         setIsLoading(false);
       });
@@ -135,9 +138,7 @@ function CommunityPostEditInner({
 
     try {
       const needsEditPw =
-        !kokkomaMode &&
-        !!post.editPassword &&
-        post.editPassword.length > 0;
+        !!post.editPassword && post.editPassword.length > 0;
 
       const res = await fetch(`/api/posts/${id}`, {
         method: "PUT",
@@ -211,7 +212,7 @@ function CommunityPostEditInner({
               onChange={(e) => setPrefix(e.target.value)}
               className={nestForm.nestSelect}
             >
-              {(PREFIXES_BY_ROOM[roomKind] ?? PREFIXES_BY_ROOM.youngInfant).map((p) => (
+              {babyStoryPrefixes.map((p) => (
                 <option key={p} value={p}>
                   {p}
                 </option>

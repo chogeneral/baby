@@ -46,12 +46,6 @@ export function Footer() {
               부모이야기
             </Link>
             <Link
-              href="/development"
-              className="text-xs text-[#6b6560] hover:text-[#2d2926] transition-colors duration-200"
-            >
-              발달
-            </Link>
-            <Link
               href="/community/kokkoma"
               className="text-xs text-[#6b6560] hover:text-[#2d2926] transition-colors duration-200"
             >

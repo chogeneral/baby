@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import React, { useLayoutEffect, useState, useCallback, useRef } from "react";
-import { readLoginSession } from "@/lib/loginSession";
 import styles from "@/components/rightQuickMenu.module.css";
 
 /**
@@ -56,12 +55,11 @@ function scrollToTopIcon() {
 }
 
 /**
- * 우측 하단 퀵 메뉴: 로그인 시 아기 성장·일상 기록 페이지(`/record`)로 이동한다.
- * 비로그인이면 로그인 후 다시 누르면 기록으로 갈 수 있게 `/login` 으로 보낸다.
+ * 우측 하단 퀵 메뉴.
+ * 갈색 연필은 항상 **아이기록 입력**(`/record`)로 보낸다. 비로그인이면 `record/page` 가 `/login` 으로 넘기므로
+ * 여기서 로그인 여부로 href 를 나누지 않는다(첫 렌더에서 session 미반영으로 `/login` 으로 잘못 가는 것도 방지).
  */
 export function RightQuickMenu() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
- 
   const [inlineBottom, setInlineBottom] = useState<string | undefined>(undefined);
   /**
    * `rightQuickMenu.module.css` 의 `bottom` — 인라인을 쓰지 않을 때만 `getComputedStyle` 으로 갱신
@@ -71,11 +69,6 @@ export function RightQuickMenu() {
   const menuWrapperRef = useRef<HTMLDivElement>(null);
   const inlineBottomRef = useRef<string | undefined>(undefined);
   inlineBottomRef.current = inlineBottom;
-
-  useLayoutEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage 는 클라이언트에서만 읽는다
-    setIsLoggedIn(!!readLoginSession());
-  }, []);
 
   const updateBottomAboveFooter = useCallback(() => {
     const menu = menuWrapperRef.current;
@@ -126,9 +119,6 @@ export function RightQuickMenu() {
     };
   }, [updateBottomAboveFooter]);
 
-  const href = isLoggedIn ? "/record" : "/login";
-  const title = "아기 기록";
-
   const handleScrollToTop = () => {
     // `scroll-behavior: smooth` 가 없는 환경에서도 부드럽게 맞추기 위해 options 사용(지원 시)
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
@@ -145,10 +135,10 @@ export function RightQuickMenu() {
       aria-label="빠른 메뉴"
     >
       <Link
-        href={href}
+        href="/record"
         className={`${styles.rightQuickMenuItem} ${styles.rightQuickMenuItemBrown}`}
-        title={title}
-        aria-label="아기 기록 — 몸무게·키·일상 입력"
+        title="아기 기록 입력"
+        aria-label="아이기록 입력 — 몸무게·키·일상"
       >
         {pencilIcon()}
       </Link>

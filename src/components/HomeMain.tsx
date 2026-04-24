@@ -7,7 +7,7 @@ import { contentTopicDetailPath } from "@/lib/contentTopic";
 import type { HomeLatestPostPreview } from "@/lib/homeLatestPosts";
 
 /**
- * 메인 랜딩 — 히어로 아래 2×2 격자: 1행 부모이야기·발달(각 50%), 2행 꼬꼬마·정보(각 50% — 데스크톱 `grid` 2열).
+ * 메인 랜딩 — 히어로 아래 2×2 격자: 1행 아기이야기·부모이야기, 2행 꼬꼬마·정보(데스크톱 `grid` 2열).
  * `latest` 는 서버 `page.tsx` 에서 스토어를 읽어 내려주므로 클라이언트에서 다시 fetch 하지 않는다.
  */
 
@@ -20,8 +20,8 @@ const heroImageSrc = "/hero-baby-summer.png";
 
 type HomeMainProps = {
   latest: {
+    babyStory: HomeLatestPostPreview[];
     parentStories: HomeLatestPostPreview[];
-    development: HomeLatestPostPreview[];
     kokkoma: HomeLatestPostPreview[];
     info: HomeLatestPostPreview[];
   };
@@ -30,7 +30,7 @@ type HomeMainProps = {
 /**
  * 한 섹션(부모이야기 / 발달 / 꼬꼬마 / 정보)의 제목·목록·빈 상태를 동일한 마크업으로 그린다.
  * `hrefForId` 는 게시판 종류마다 상세 URL 규칙이 달라서(id 앞 경로만 다름) 부모에서 넘긴다.
- * `showAuthor` 는 부모이야기·발달만 — `authorLabel` 을 **날짜 왼쪽**에만 닉네임으로 보이게 한다(‘글쓴이’ 접두어 없음).
+ * `showAuthor` 가 true 이면 `authorLabel` 을 **날짜 왼쪽**에만 닉네임으로 보인다(‘글쓴이’ 접두어 없음).
  */
 function HomeLatestSectionBlock(props: {
   title: string;
@@ -116,15 +116,15 @@ export function HomeMain({ latest }: HomeMainProps) {
         <div className={`${styles.homeContainer} ${styles.homeLatestInner}`}>
           <div className={styles.homeLatestGrid}>
             <HomeLatestSectionBlock
-              title="부모이야기"
-              items={latest.parentStories}
-              hrefForId={(id) => contentTopicDetailPath("parentStories", id)}
+              title="아기이야기"
+              items={latest.babyStory}
+              hrefForId={(id) => `/community/${id}`}
               showAuthor
             />
             <HomeLatestSectionBlock
-              title="발달"
-              items={latest.development}
-              hrefForId={(id) => contentTopicDetailPath("development", id)}
+              title="부모이야기"
+              items={latest.parentStories}
+              hrefForId={(id) => contentTopicDetailPath("parentStories", id)}
               showAuthor
             />
             <HomeLatestSectionBlock

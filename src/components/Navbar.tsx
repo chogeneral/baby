@@ -4,13 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useState } from "react";
-import { communityBoardTitle } from "@/lib/communityBoard";
-import {
-  communityRoomLabels,
-  communityRoomPath,
-  getCommunityRoomFromBirthYears,
-  type CommunityRoomKind,
-} from "@/lib/communityRoom";
 import { getNavPrimaryChildAgeLabel } from "@/lib/primaryChildAgeLabel";
 import { clearLoginSession, readLoginSession } from "@/lib/loginSession";
 
@@ -18,15 +11,6 @@ function readSessionNickname(): string | null {
   const session = readLoginSession();
   const nick = session?.nickname?.trim();
   return nick || session?.email || null;
-}
-
-function readSessionRoomKind(): CommunityRoomKind | null {
-  const session = readLoginSession();
-  return getCommunityRoomFromBirthYears(
-    session?.childBirthYears,
-    new Date(),
-    session?.primaryChildIndex ?? 0,
-  );
 }
 
 /** 프로필 원형 아이콘 — 로그인 여부와 무관하게 동일한 실루엣으로 통일 */
@@ -58,7 +42,6 @@ export function Navbar() {
    * 새로고침 시 깜빡임(skeleton → 로그인 → 닉네임)을 방지한다.
    */
   const [nickname, setNickname] = useState<string | null>(null);
-  const [myRoomKind, setMyRoomKind] = useState<CommunityRoomKind | null>(null);
   /** session에 있는 기준 아이 datepicker(YYYY-MM-DD)로 둔 나이 — ‘아이기록’ 링크 왼쪽 */
   const [primaryChildAgeLabel, setPrimaryChildAgeLabel] = useState<string | null>(null);
 
@@ -66,7 +49,6 @@ export function Navbar() {
   useLayoutEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 클라이언트 네비게이션 후 세션과 경로를 맞추기 위한 동기 읽기
     setNickname(readSessionNickname());
-    setMyRoomKind(readSessionRoomKind());
     const s = readLoginSession();
     setPrimaryChildAgeLabel(
       s
@@ -128,17 +110,14 @@ export function Navbar() {
   function handleLogout() {
     clearLoginSession();
     setNickname(null);
-    setMyRoomKind(null);
     setPrimaryChildAgeLabel(null);
     router.push("/");
     router.refresh();
   }
 
-  const boardNavHref = myRoomKind ? communityRoomPath[myRoomKind] : "/community";
-  /** 대표 연도가 있으면 영아·토들러·유아 방 이름만, 없으면 브랜드명만(닉네임 표시 문구는 네비에 쓰지 않음) */
-  const boardNavLabel = myRoomKind
-    ? communityRoomLabels[myRoomKind].roomName
-    : communityBoardTitle;
+  const babyStoryIsActive =
+    pathname.startsWith("/community") &&
+    !pathname.startsWith("/community/kokkoma");
 
   function isActive(href: string): boolean {
     if (href === "/") return pathname === "/";
@@ -159,32 +138,22 @@ export function Navbar() {
    */
   const mainNavItems = (
     <>
-      {nickname && (
-        <Link
-          href={boardNavHref}
-          title={
-            myRoomKind
-              ? `${communityRoomLabels[myRoomKind].roomName}(대표 연도 기준)`
-              : "마이페이지에서 대표 연도를 설정하면 맞는 방으로 안내돼요"
-          }
-          className={`${navLinkBase} ${pathname.startsWith("/community") && !pathname.startsWith("/community/kokkoma") ? "font-semibold text-[#2d2926]" : "text-[#5c5652]"}`}
-        >
-          {boardNavLabel}
-        </Link>
-      )}
+      <Link
+        href="/community/baby-story"
+        className={`${navLinkBase} ${babyStoryIsActive ? "font-semibold text-[#2d2926]" : "text-[#5c5652]"}`}
+      >
+        아기이야기
+      </Link>
       <Link href="/parent-stories" className={navLinkClass("/parent-stories")}>
         부모이야기
       </Link>
-      <Link href="/development" className={navLinkClass("/development")}>
-        발달
-      </Link>
       {/*
-        - max-lg(2행 GNB): 행이 뷰포트 너비를 쓰므로 `ml-auto`로 꼬꼬마·정보·지역을 오른쪽 뭉치로 밀 수 있다.
-        - lg~: 가운데 GNB 래퍼는 내용만큼만 너비를 가져 `ml-auto` 효과가 없으므로 `lg:ml-0`으로 해제한다.
+        꼬꼬마에 `ml-auto` 를 두면 모바일(2행·flex-wrap)에서 부모이야기 다음 칸 전체가 비는 것처럼 보여
+        텍스트 좌측에 불필요한 여백이 생긴다 — 데스크톱(lg) 중앙 GNB도 gap 만으로 간격이 나오므로 auto 마진은 쓰지 않는다.
       */}
       <Link
         href="/community/kokkoma"
-        className={`${navLinkClass("/community/kokkoma")} ml-auto shrink-0 lg:ml-0`}
+        className={`${navLinkClass("/community/kokkoma")} shrink-0`}
       >
         꼬꼬마
       </Link>
@@ -208,14 +177,15 @@ export function Navbar() {
       <div className="relative mx-auto flex max-w-6xl flex-col gap-3 py-4 lg:gap-0">
         <div className="relative flex min-h-[2.5rem] items-center justify-between gap-2 sm:gap-3 md:gap-6">
           {/*
-            public/logo.svg 원본(600×150)이 커서 높이만 h-16로 고정하고 w-auto로 비율 유지.
-            SVG 안에 ‘육아박사’ 타이포가 있어 별도 텍스트 로고는 두지 않는다.
+            브랜드 심볼(PNG) + wordmark(logo.svg) — 심볼은 학사모·하트로 ‘전문+돌봄’을 직관적으로 보여 주고,
+            alt 는 wordmark 한 곳에만 둬 스크린리더가 같은 문구를 두 번 읽지 않게 한다.
           */}
           <Link
             href="/"
-            className="shrink-0 flex items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c57b67]/40"
+            className="shrink-0 flex items-center gap-2 sm:gap-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c57b67]/40"
             aria-label="육아박사 홈"
           >
+            
             <Image
               src="/logo.svg"
               alt="육아박사"
@@ -300,9 +270,7 @@ export function Navbar() {
 
         {/*
           1024px 미만 전용 2번째 행: 상단과 동일한 mainNavItems를 재사용해
-          육아박사 타이틀 시작선과 맞춰 왼쪽부터 가로 나열한다(햄버거/가로 스크롤 단일 행 대신 flex-wrap).
-          우하단 `RightQuickMenu`(고정 ~3.25rem 열)와 같은 세로 띠에 텍스트가 닿지 않게 `pr` 로 오른쪽을 비워
-          `ml-auto`로 붙은 꼬꼬마·정보·지역이 ‘퀵메뉴 직왼쪽’에 달라붙는 느낌을 없앤다.
+          왼쪽부터 gap 만으로 나열한다. 우하단 RightQuickMenu(~3.25rem)와 겹치지 않게 행 전체에 pr 을 둔다.
         */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pr-16 sm:gap-x-4 sm:pr-20 lg:hidden">
           {mainNavItems}

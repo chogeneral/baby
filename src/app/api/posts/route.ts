@@ -1,7 +1,6 @@
 /**
- * 게시글 REST API.
- * `postStore` 는 예전 JSON 파일 기반이 아니라 Supabase를 쓰므로 `generatePostId`·`getAllPosts` 같은
- * 예전 export 는 존재하지 않는다. ID는 DB가 부여하고, 목록은 `getPostsByAuthorEmail` / `getPostsByBoardKind` 로만 가져온다.
+ * 커뮤니티 게시글 API (Supabase `posts` 테이블).
+ * 글 ID는 insert 시 DB가 부여한다. 목록은 이메일/게시판 필터용 함수로만 조회한다.
  */
 import { NextRequest, NextResponse } from "next/server";
 import {

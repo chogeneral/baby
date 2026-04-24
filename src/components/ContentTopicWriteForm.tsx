@@ -96,8 +96,6 @@ export function ContentTopicWriteForm({ topic }: Props) {
    * 메뉴마다 기대하는 톤이 달라 주제별로 한 줄씩만 나눠 두었다(공통 문장을 합치면 안내가 길어진다).
    */
   const noticeByTopic: Record<ContentTopicKind, string> = {
-    development:
-      "아이 발달에 관한 경험과 정보를 나누는 공간이에요. 등록한 글은 닉네임과 함께 목록에 표시돼요. 수정 비밀번호를 설정해 두면 나중에 글을 고칠 수 있어요.",
     parentStories:
       "부모로서의 솔직한 이야기를 나누는 공간이에요. 등록한 글은 닉네임과 함께 목록에 표시돼요. 수정 비밀번호를 설정해 두면 나중에 글을 고칠 수 있어요.",
     info:

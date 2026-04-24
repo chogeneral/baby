@@ -131,7 +131,11 @@ export default function RecordPage() {
     <main className={nestForm.nestPage}>
       <div className={nestForm.nestStack}>
         <div>
-          <h1 className={nestForm.nestTitle}>아기 성장·일상</h1>
+          <h1 className={nestForm.nestTitle}>아이기록</h1>
+          {/*
+            nestLead: 목록·폼 상단에서 쓰는 nestForm 공통 보조 문구 톤으로, 제목 바로 아래 입력 목적만 짧게 적는다.
+          */}
+          <p className={nestForm.nestLead}>우리아이의 성장 기록을 입력하세요.</p>
         </div>
 
         {/* 아이 탭 — 2명 이상일 때만 표시 */}
@@ -243,7 +247,7 @@ export default function RecordPage() {
 
           <div className={nestForm.nestActions}>
             <Link href="/" className={`${nestForm.nestBtnSecondary} ${nestForm.flex1}`}>
-              홈
+              육아박사
             </Link>
             <button
               type="submit"

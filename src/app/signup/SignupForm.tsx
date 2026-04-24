@@ -404,9 +404,6 @@ export function SignupForm() {
           이미 계정이 있으신가요? <Link href="/login">로그인</Link>
         </p>
 
-        <Link className={styles.homeLink} href="/">
-          ← 홈으로
-        </Link>
       </div>
     </div>
   );

@@ -8,13 +8,10 @@ import { formatKoreanPhoneInput, onlyDigits } from "@/lib/formatKoreanPhone";
 import { readLoginSession, saveLoginSession } from "@/lib/loginSession";
 import { formatDate } from "@/lib/formatDate";
 import { isIsoDateInRange } from "@/lib/birthDateParts";
-import {
-  communityRoomLabels,
-  inferBoardKindFromBirthYear,
-} from "@/lib/communityRoom";
+import { communityRoomLabels } from "@/lib/communityRoom";
 
 type ChildRow = {
-  /** 아이 호칭 — 가입 폼과 동일(저장·연령방·기준아이) */
+  /** 아이 호칭 — 가입 폼과 동일(저장·기준 아이) */
   name: string;
   /** YYYY-MM-DD (input type=date) */
   birthDate: string;
@@ -378,15 +375,15 @@ export default function MyPage() {
 
             <hr className={nestForm.nestMypageDivider} aria-hidden="true" />
 
-            {/* 휴대폰 직후: 네비·맞춤 연령 방은 기준 아이 1명으로 정해짐 — 자녀 상세(이름·생일)는 아래에서 입력·저장 */}
+            {/* 휴대폰 직후: 아기이야기 글쓰기 등은 기준 아이 1명 기준 — 자녀 상세(이름·생일)는 아래에서 입력·저장 */}
             <div
               className={`${nestForm.nestNotice} ${nestForm.nestMypageAfterPhone}`}
             >
               <h3 className={nestForm.nestNoticeTitle}>맞춤·게시판 기준 아이</h3>
               <p className={nestForm.nestNoticeSub} style={{ marginTop: "0.35rem" }}>
-                홈·네비의 연령 방(영아방·토들러방·유아방)이 여기서 고른 아이의 나이에 맞게
-                정해져요. 이름·생일은 바로 이어지는 자녀 정보에서 입력한 뒤 저장하면
-                같이 반영돼요. 둘째·셋째를 기준으로 쓰고 싶다면 이 목록에서 골라 주세요.
+                아기이야기 글쓰기·프로필 연동은 여기서 고른 기준 아이를 바탕으로 맞춰져요.
+                이름·생일은 바로 이어지는 자녀 정보에서 입력한 뒤 저장하면 같이 반영돼요.
+                둘째·셋째를 기준으로 쓰고 싶다면 이 목록에서 골라 주세요.
               </p>
             </div>
 
@@ -405,41 +402,20 @@ export default function MyPage() {
                   className={nestForm.nestSelect}
                 >
                   {childRows.map((row, i) => {
-                    const yForRoom =
-                      row.birthDate && /^\d{4}-\d{2}-\d{2}$/.test(row.birthDate)
-                        ? Number.parseInt(row.birthDate.slice(0, 4), 10)
-                        : (info?.childBirthYears?.[i] ?? new Date().getFullYear() - 1);
                     const name = row.name.trim() || `${i + 1}번째 아이`;
-                    const roomKind = inferBoardKindFromBirthYear(yForRoom);
-                    const roomName = communityRoomLabels[roomKind].roomName;
                     const birthPart =
                       row.birthDate && /^\d{4}-\d{2}-\d{2}$/.test(row.birthDate)
                         ? `${row.birthDate.slice(0, 10).replace(/-/g, ".")} 생`
                         : "생일을 선택하면 정확히 보여요";
                     return (
                       <option key={i} value={String(i)}>
-                        {name} — {roomName} · {birthPart}
+                        {name} · {birthPart}
                       </option>
                     );
                   })}
                 </select>
                 <p className={nestForm.nestHint} style={{ marginTop: "0.35rem" }}>
-                  {(() => {
-                    const idx = Math.max(
-                      0,
-                      Math.min(
-                        Number.parseInt(primaryChildIndex, 10) || 0,
-                        childRows.length - 1,
-                      ),
-                    );
-                    const row = childRows[idx]!;
-                    const yHint =
-                      row.birthDate && /^\d{4}-\d{2}-\d{2}$/.test(row.birthDate)
-                        ? Number.parseInt(row.birthDate.slice(0, 4), 10)
-                        : (info?.childBirthYears?.[idx] ?? new Date().getFullYear() - 1);
-                    const kind = inferBoardKindFromBirthYear(yHint);
-                    return `선택한 아이는 지금·${communityRoomLabels[kind].roomName} 안내 기준이에요. (${communityRoomLabels[kind].ageHint})`;
-                  })()}
+                  {`선택한 아이가 아기이야기·프로필 기준이에요. (${communityRoomLabels.babyStory.ageHint})`}
                 </p>
               </div>
             ) : null}
