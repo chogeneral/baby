@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ContentTopicKind } from "@/lib/contentTopic";
 import { contentTopicEditPath, contentTopicPageInfo } from "@/lib/contentTopic";
 import styles from "@/app/contentPage.module.css";
@@ -39,6 +40,9 @@ export function ContentTopicDetail({ id, topic }: Props) {
   const router = useRouter();
   const [post, setPost] = useState<Post | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -324,7 +328,7 @@ export function ContentTopicDetail({ id, topic }: Props) {
       </section>
 
       {/* 비밀번호 확인 모달 */}
-      {showPasswordModal && (
+      {showPasswordModal && mounted && createPortal(
         <div className={nestForm.nestModalBackdrop} onClick={() => setShowPasswordModal(false)}>
           <div
             className={nestForm.nestModal}
@@ -370,11 +374,12 @@ export function ContentTopicDetail({ id, topic }: Props) {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {/* 대댓글 모달 */}
-      {replyTarget && (
+      {replyTarget && mounted && createPortal(
         <div className={nestForm.nestModalBackdrop} onClick={() => setReplyTarget(null)}>
           <div
             className={nestForm.nestModal}
@@ -421,7 +426,8 @@ export function ContentTopicDetail({ id, topic }: Props) {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </main>
   );

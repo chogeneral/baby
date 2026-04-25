@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import nestForm from "@/app/nestForm.module.css";
 import { displayCommunityNickname } from "@/lib/communityBoard";
 import {
@@ -58,6 +59,9 @@ export default function PostDetailPage({
   const [replyText, setReplyText] = useState("");
   const [isReplySubmitting, setIsReplySubmitting] = useState(false);
   const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   /** 수정 비밀번호가 있으면 모달에서 확인한 뒤 편집 URL 로 이동 */
   const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
@@ -362,7 +366,7 @@ export default function PostDetailPage({
         )}
       </section>
 
-      {showEditPasswordModal && (
+      {showEditPasswordModal && mounted && createPortal(
         <div
           className={nestForm.nestModalBackdrop}
           onClick={() => setShowEditPasswordModal(false)}
@@ -372,10 +376,10 @@ export default function PostDetailPage({
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-label="수정 비밀번호 확인"
+            aria-label="비밀번호 입력"
           >
             <div className={nestForm.nestModalHeader}>
-              <p className={nestForm.nestModalTitle}>수정 비밀번호 확인</p>
+              <p className={nestForm.nestModalTitle}>비밀번호 입력</p>
               <button
                 type="button"
                 onClick={() => setShowEditPasswordModal(false)}
@@ -418,10 +422,11 @@ export default function PostDetailPage({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
-      {replyTarget && (
+      {replyTarget && mounted && createPortal(
         <div className={nestForm.nestModalBackdrop} onClick={() => setReplyTarget(null)}>
           <div
             className={nestForm.nestModal}
@@ -472,7 +477,8 @@ export default function PostDetailPage({
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </main>
   );
