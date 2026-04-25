@@ -22,8 +22,6 @@ export default function KokkomaWritePage() {
   const [error, setError] = useState("");
   const [authorEmail, setAuthorEmail] = useState<string | null>(null);
   /** 나중에 수정할 때 모달·API 검증에 쓰는 선택 비밀번호 — 아기이야기와 동일 UX */
-  const [editPassword, setEditPassword] = useState("");
-
   useEffect(() => {
     const session = readLoginSession();
     if (!session) {
@@ -59,7 +57,6 @@ export default function KokkomaWritePage() {
           content: mergeTrailingSinglePhotoHtml(content, attachedPhoto),
           authorEmail,
           boardKind: "kokkoma",
-          ...(editPassword.trim() ? { editPassword: editPassword.trim() } : {}),
         }),
       });
 
@@ -127,33 +124,6 @@ export default function KokkomaWritePage() {
           value={attachedPhoto}
           onChange={setAttachedPhoto}
         />
-
-        <div>
-          <label
-            htmlFor="kokkomaWriteEditPassword"
-            className={nestForm.nestLabel}
-          >
-            수정 비밀번호{" "}
-            <span
-              style={{
-                fontWeight: 400,
-                color: "var(--colorMuted)",
-                fontSize: "0.8em",
-              }}
-            >
-              (선택 — 나중에 수정할 때 사용해요)
-            </span>
-          </label>
-          <input
-            id="kokkomaWriteEditPassword"
-            type="password"
-            maxLength={50}
-            value={editPassword}
-            onChange={(e) => setEditPassword(e.target.value)}
-            placeholder="비밀번호를 입력해 주세요"
-            className={nestForm.nestInput}
-          />
-        </div>
 
         {error ? <p className={nestForm.nestError}>{error}</p> : null}
 
