@@ -49,7 +49,7 @@ export function ContentTopicBoard({ topic, children }: Props) {
 
   useEffect(() => {
     setPage(1);
-    fetch(`/api/content-topic-posts?topic=${topic}`)
+    fetch(`/api/content-topic-posts?topic=${encodeURIComponent(topic)}`)
       .then((r) => r.json())
       .then((data) => setPosts(data as Post[]))
       .finally(() => setIsLoading(false));
@@ -59,7 +59,7 @@ export function ContentTopicBoard({ topic, children }: Props) {
   const pagePosts = posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   /* 정보 게시판은 기존 열 구성을 유지하고, 부모이야기만 ‘글쓴이’ 열·모바일 닉네임을 보여 준다. */
-  const showAuthorColumn = topic === "parentStories";
+  const showAuthorColumn = topic === "부모이야기";
 
   const stackEntries = pagePosts.map((post) => {
     const hasPhoto = !!firstDataImageSrcFromPostHtml(post.content ?? "");
@@ -191,7 +191,7 @@ export function ContentTopicBoard({ topic, children }: Props) {
         <Link href="/" className={styles.detailBtnSecondary}>
           ← 목록
         </Link>
-        {topic === "parentStories" ? (
+        {topic === "부모이야기" ? (
           <Link
             href={isLoggedIn ? info.writePath : "/login"}
             className={styles.contentWriteLink}

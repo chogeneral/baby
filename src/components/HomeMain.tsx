@@ -124,7 +124,7 @@ export function HomeMain({ latest }: HomeMainProps) {
             <HomeLatestSectionBlock
               title="부모이야기"
               items={latest.parentStories}
-              hrefForId={(id) => contentTopicDetailPath("parentStories", id)}
+              hrefForId={(id) => contentTopicDetailPath("부모이야기", id)}
               showAuthor
             />
             <HomeLatestSectionBlock
@@ -135,7 +135,7 @@ export function HomeMain({ latest }: HomeMainProps) {
             <HomeLatestSectionBlock
               title="정보"
               items={latest.info}
-              hrefForId={(id) => contentTopicDetailPath("info", id)}
+              hrefForId={(id) => contentTopicDetailPath("정보", id)}
             />
           </div>
         </div>

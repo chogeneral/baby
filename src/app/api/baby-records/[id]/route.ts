@@ -14,11 +14,11 @@ export async function GET(
   if (!authorEmail) {
     return NextResponse.json({ message: "authorEmail이 필요합니다." }, { status: 400 });
   }
-  const user = findByEmail(authorEmail);
+  const user = await findByEmail(authorEmail);
   if (!user) {
     return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
   }
-  const record = getBabyRecordById(id);
+  const record = await getBabyRecordById(id);
   if (!record || record.authorEmail !== authorEmail) {
     return NextResponse.json({ message: "기록을 찾을 수 없습니다." }, { status: 404 });
   }

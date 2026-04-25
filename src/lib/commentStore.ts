@@ -1,7 +1,6 @@
-import fs from "fs";
-import path from "path";
+import { supabase } from "./supabaseClient";
 
-const DATA_PATH = path.join(process.cwd(), "data", "comments.json");
+const TABLE = "content_topic_comments";
 
 export type CommentRecord = {
   id: string;
@@ -10,31 +9,47 @@ export type CommentRecord = {
   authorEmail: string;
   authorNickname: string;
   createdAt: string;
-  /** 대댓글인 경우 부모 댓글 id */
   parentId?: string;
 };
 
-function readAll(): CommentRecord[] {
-  try {
-    const raw = fs.readFileSync(DATA_PATH, "utf-8");
-    return JSON.parse(raw) as CommentRecord[];
-  } catch {
-    return [];
+function rowToComment(row: Record<string, unknown>): CommentRecord {
+  return {
+    id: String(row.id),
+    postId: String(row.post_id),
+    content: String(row.content ?? ""),
+    authorEmail: String(row.author_email ?? ""),
+    authorNickname: String(row.author_nickname ?? ""),
+    createdAt: row.created_at as string,
+    parentId: row.parent_id != null ? String(row.parent_id) : undefined,
+  };
+}
+
+/** 부모이야기·정보 글(id=문자열)에 달리는 댓글 — public.content_topic_comments */
+export async function getCommentsByPostId(
+  postId: string,
+): Promise<CommentRecord[]> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("post_id", postId)
+    .order("created_at", { ascending: true });
+  if (error || !data) return [];
+  return (data as Record<string, unknown>[]).map(rowToComment);
+}
+
+export async function appendComment(comment: CommentRecord): Promise<void> {
+  const { error } = await supabase.from(TABLE).insert({
+    id: comment.id,
+    post_id: comment.postId,
+    content: comment.content,
+    author_email: comment.authorEmail,
+    author_nickname: comment.authorNickname,
+    parent_id: comment.parentId ?? null,
+    created_at: comment.createdAt,
+  });
+  if (error) {
+    throw new Error(error.message);
   }
-}
-
-function writeAll(comments: CommentRecord[]): void {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(comments, null, 2), "utf-8");
-}
-
-export function getCommentsByPostId(postId: string): CommentRecord[] {
-  return readAll().filter((c) => c.postId === postId);
-}
-
-export function appendComment(comment: CommentRecord): void {
-  const comments = readAll();
-  comments.push(comment);
-  writeAll(comments);
 }
 
 export function generateCommentId(): string {

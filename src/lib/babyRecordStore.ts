@@ -1,60 +1,72 @@
-import fs from "fs";
-import path from "path";
+import { supabase } from "./supabaseClient";
 
-const DATA_PATH = path.join(process.cwd(), "data", "babyRecords.json");
+const TABLE = "baby_records";
 
-/**
- * 아기 성장·일상 기록 한 건 — 데모용으로 data/babyRecords.json 에 누적 저장한다.
- */
 export type BabyRecord = {
   id: string;
   authorEmail: string;
   recordedAt: string;
-  /**
-   * 마이·가입에 등록한 자녀 순서 인덱스(0=첫째) — 필드가 없는 옛 기록은 0으로 취급
-   */
   childIndex?: number;
-  /** kg, 소수 허용 */
   weightKg?: number | null;
-  /** cm */
   heightCm?: number | null;
-  /** cm */
   headCircumferenceCm?: number | null;
-  /** 오늘의 일상 메모 */
   dailyNote: string;
 };
 
-function readAll(): BabyRecord[] {
-  try {
-    const raw = fs.readFileSync(DATA_PATH, "utf-8");
-    return JSON.parse(raw) as BabyRecord[];
-  } catch {
-    return [];
+function rowToRecord(row: Record<string, unknown>): BabyRecord {
+  return {
+    id: String(row.id),
+    authorEmail: String(row.author_email),
+    recordedAt: row.recorded_at as string,
+    childIndex: (row.child_index as number) ?? 0,
+    weightKg: row.weight_kg != null ? Number(row.weight_kg) : undefined,
+    heightCm: row.height_cm != null ? Number(row.height_cm) : undefined,
+    headCircumferenceCm:
+      row.head_circumference_cm != null
+        ? Number(row.head_circumference_cm)
+        : undefined,
+    dailyNote: String(row.daily_note ?? ""),
+  };
+}
+
+export async function appendBabyRecord(record: BabyRecord): Promise<void> {
+  const { error } = await supabase.from(TABLE).insert({
+    id: record.id,
+    author_email: record.authorEmail,
+    recorded_at: record.recordedAt,
+    child_index: record.childIndex ?? 0,
+    weight_kg: record.weightKg ?? null,
+    height_cm: record.heightCm ?? null,
+    head_circumference_cm: record.headCircumferenceCm ?? null,
+    daily_note: record.dailyNote,
+  });
+  if (error) {
+    throw new Error(error.message);
   }
 }
 
-function writeAll(rows: BabyRecord[]) {
-  fs.mkdirSync(path.dirname(DATA_PATH), { recursive: true });
-  fs.writeFileSync(DATA_PATH, JSON.stringify(rows, null, 2), "utf-8");
+export async function getBabyRecordsByEmail(
+  email: string,
+): Promise<BabyRecord[]> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("author_email", email)
+    .order("recorded_at", { ascending: false });
+  if (error || !data) return [];
+  return (data as Record<string, unknown>[]).map(rowToRecord);
 }
 
-export function appendBabyRecord(record: BabyRecord) {
-  const rows = readAll();
-  rows.push(record);
-  writeAll(rows);
-}
-
-/** 최신순으로 해당 이메일 기록만 반환 */
-export function getBabyRecordsByEmail(email: string): BabyRecord[] {
-  return readAll()
-    .filter((r) => r.authorEmail === email)
-    .slice()
-    .sort((a, b) => (a.recordedAt < b.recordedAt ? 1 : -1));
-}
-
-/** id 로 한 건만 조회 — 상세 API·화면에서 사용 */
-export function getBabyRecordById(id: string): BabyRecord | undefined {
-  return readAll().find((r) => r.id === id);
+export async function getBabyRecordById(
+  id: string,
+): Promise<BabyRecord | undefined> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) return undefined;
+  return rowToRecord(data as Record<string, unknown>);
 }
 
 export function generateBabyRecordId(): string {

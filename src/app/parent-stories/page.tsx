@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ParentStoriesPage() {
-  return <ContentTopicBoard topic="parentStories" />;
+  return <ContentTopicBoard topic="부모이야기" />;
 }

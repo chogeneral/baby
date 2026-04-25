@@ -11,11 +11,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const post = getPostById(id);
+  const post = await getPostById(id);
   if (!post) {
     return NextResponse.json({ message: "글을 찾을 수 없습니다." }, { status: 404 });
   }
-  incrementViewCount(id);
+  await incrementViewCount(id);
   return NextResponse.json(post);
 }
 
@@ -37,7 +37,7 @@ export async function PUT(
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
   }
 
-  const result = updateContentTopicPost(
+  const result = await updateContentTopicPost(
     id,
     { title, content },
     { password, authorEmail },
@@ -63,7 +63,7 @@ export async function DELETE(
   const { id } = await params;
   const body = await req.json() as { authorEmail?: string; password?: string };
 
-  const result = deleteContentTopicPost(id, body);
+  const result = await deleteContentTopicPost(id, body);
   if (result === "not_found") {
     return NextResponse.json({ message: "글을 찾을 수 없습니다." }, { status: 404 });
   }

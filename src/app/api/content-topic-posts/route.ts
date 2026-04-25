@@ -5,30 +5,24 @@ import {
   getPostsByTopic,
   type ContentTopicPostRecord,
 } from "@/lib/contentTopicPostStore";
-import {
-  type ContentTopicKind,
-  isContentTopicWriteAllowedEmail,
-} from "@/lib/contentTopic";
-import { findByEmail } from "@/lib/userStore";
 import { getCommentsByPostId } from "@/lib/commentStore";
-
-function isContentTopicKind(value: string): value is ContentTopicKind {
-  return (
-    value === "development" ||
-    value === "parentStories" ||
-    value === "info"
-  );
-}
+import { isContentTopicWriteAllowedEmail, normalizeContentTopicInput } from "@/lib/contentTopic";
+import { findByEmail } from "@/lib/userStore";
 
 export async function GET(req: NextRequest) {
-  const topic = new URL(req.url).searchParams.get("topic");
-  if (!topic || !isContentTopicKind(topic)) {
+  const raw = new URL(req.url).searchParams.get("topic");
+  const topic = raw ? normalizeContentTopicInput(raw) : null;
+  if (!topic) {
     return NextResponse.json([]);
   }
-  const posts = getPostsByTopic(topic);
-  return NextResponse.json(
-    posts.map((p) => ({ ...p, commentCount: getCommentsByPostId(p.id).length }))
+  const posts = await getPostsByTopic(topic);
+  const withCounts = await Promise.all(
+    posts.map(async (p) => ({
+      ...p,
+      commentCount: (await getCommentsByPostId(p.id)).length,
+    })),
   );
+  return NextResponse.json(withCounts);
 }
 
 export async function POST(req: NextRequest) {
@@ -46,11 +40,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
   }
 
-  if (!rawTopic || !isContentTopicKind(rawTopic)) {
+  const topic = rawTopic ? normalizeContentTopicInput(rawTopic) : null;
+  if (!topic) {
     return NextResponse.json({ message: "유효하지 않은 주제입니다." }, { status: 400 });
   }
 
-  const user = findByEmail(authorEmail);
+  const user = await findByEmail(authorEmail);
   if (!user) {
     return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
   }
@@ -64,7 +59,7 @@ export async function POST(req: NextRequest) {
 
   const post: ContentTopicPostRecord = {
     id: generateContentTopicPostId(),
-    topic: rawTopic,
+    topic,
     title: title.trim(),
     content: content.trim(),
     authorEmail: user.email,
@@ -73,6 +68,6 @@ export async function POST(req: NextRequest) {
     ...(password?.trim() ? { password: password.trim() } : {}),
   };
 
-  appendPost(post);
+  await appendPost(post);
   return NextResponse.json(post, { status: 201 });
 }

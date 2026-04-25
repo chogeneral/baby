@@ -59,11 +59,11 @@ export async function GET(req: NextRequest) {
   if (!email) {
     return NextResponse.json({ message: "authorEmail이 필요합니다." }, { status: 400 });
   }
-  const user = findByEmail(email);
+  const user = await findByEmail(email);
   if (!user) {
     return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
   }
-  return NextResponse.json(getBabyRecordsByEmail(email));
+  return NextResponse.json(await getBabyRecordsByEmail(email));
 }
 
 export async function POST(req: NextRequest) {
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "로그인 정보가 없습니다." }, { status: 400 });
   }
 
-  const user = findByEmail(authorEmail);
+  const user = await findByEmail(authorEmail);
   if (!user) {
     return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 401 });
   }
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
   }
 
   for (const r of toAppend) {
-    appendBabyRecord(r);
+    await appendBabyRecord(r);
   }
 
   return NextResponse.json(

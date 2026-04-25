@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
   }
 
-  const user = findByEmail(authorEmail);
+  const user = await findByEmail(authorEmail);
   if (!user) {
     return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
   }

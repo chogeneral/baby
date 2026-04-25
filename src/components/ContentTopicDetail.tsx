@@ -234,9 +234,8 @@ export function ContentTopicDetail({ id, topic }: Props) {
     return acc;
   }, {});
 
-  /* 부모이야기에서만 상단에 글쓴이를 노출한다. `ContentTopicKind` 에서 발달(development) 토픽은 제거돼
-   * 타입에 없으므로 `parentStories` 일 때만 비교한다. 정보(info) 는 기존처럼 날짜·조회만 둔다. */
-  const showAuthorInMeta = topic === "parentStories";
+  /* 부모이야기에서만 메타 영역에 닉·이메일을 노출하고, 정보 토픽은 날짜·조회만 둔다. */
+  const showAuthorInMeta = topic === "부모이야기";
   const authorLabel = post.authorNickname?.trim() ? post.authorNickname : "—";
 
   return (
@@ -249,7 +248,7 @@ export function ContentTopicDetail({ id, topic }: Props) {
         <p className={nestForm.nestTagLg}>{info.detailTagLabel}</p>
       ) : null}
       <h1 className={styles.contentTitle}>{post.title}</h1>
-      {topic === "parentStories" || topic === "info" ? (
+      {topic === "부모이야기" || topic === "정보" ? (
         <p
           className={nestForm.nestLead}
           style={{ marginBottom: "0.75rem" }}

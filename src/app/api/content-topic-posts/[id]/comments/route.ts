@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  return NextResponse.json(getCommentsByPostId(id));
+  return NextResponse.json(await getCommentsByPostId(id));
 }
 
 export async function POST(
@@ -17,7 +17,7 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  const post = getPostById(id);
+  const post = await getPostById(id);
   if (!post) {
     return NextResponse.json({ message: "게시글을 찾을 수 없습니다." }, { status: 404 });
   }
@@ -29,7 +29,7 @@ export async function POST(
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
   }
 
-  const user = findByEmail(authorEmail);
+  const user = await findByEmail(authorEmail);
   if (!user) {
     return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
   }
@@ -44,6 +44,6 @@ export async function POST(
     ...(parentId ? { parentId } : {}),
   };
 
-  appendComment(comment);
+  await appendComment(comment);
   return NextResponse.json(comment, { status: 201 });
 }

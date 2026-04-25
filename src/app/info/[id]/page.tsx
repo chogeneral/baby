@@ -4,5 +4,5 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function InfoDetailPage({ params }: Props) {
   const { id } = await params;
-  return <ContentTopicDetail id={id} topic="info" />;
+  return <ContentTopicDetail id={id} topic="정보" />;
 }

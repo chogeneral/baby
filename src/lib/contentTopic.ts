@@ -1,11 +1,11 @@
 /**
  * 부모이야기·정보 등 정적 콘텐츠 메뉴별로 나누는 주제 키.
- * API·JSON과 동일한 문자열을 쓰므로 오타로 깨지지 않게 한곳에서만 정의한다.
+ * Supabase `content_topic_posts.topic` 및 API·클라이언트에서 **한글**로 통일한다.
  */
-export type ContentTopicKind = "parentStories" | "info";
+export type ContentTopicKind = "부모이야기" | "정보";
 
 /**
- * 발달·부모이야기·정보 게시판에 ‘새 글’을 등록할 수 있는 계정(단일).
+ * 부모이야기·정보 게시판에 ‘새 글’을 등록할 수 있는 계정(단일).
  * 목록의 글쓰기 버튼 노출, 글쓰기 페이지 진입, API POST 가 모두 이 이메일과 일치하는지 검사해
  * URL 직접 입력으로 우회하는 것을 막는다.
  */
@@ -22,8 +22,19 @@ export function isContentTopicWriteAllowedEmail(
 }
 
 /**
+ * 쿼리/POST body 등에서 온 문자열을 `ContentTopicKind` 로 통일한다.
+ * 구 API·북마크 호환: `parentStories` → 부모이야기, `info` → 정보
+ */
+export function normalizeContentTopicInput(raw: string): ContentTopicKind | null {
+  const t = raw.trim();
+  if (t === "부모이야기" || t === "parentStories") return "부모이야기";
+  if (t === "정보" || t === "info") return "정보";
+  return null;
+}
+
+/**
  * 각 주제의 화면 제목·리드 문구·목록/글쓰기 경로
- * - detailTagLabel: 상세 h1 **위**에 붙이는 짧은 게시판명(커뮤니티 `nestTagLg`·네비 "부모이야기"와 맞춤)
+ * - detailTagLabel: 상세 h1 **위**에 붙이는 짧은 게시판명(커뮤니티 `nestTagLg`·네비와 맞춤)
  */
 export const contentTopicPageInfo: Record<
   ContentTopicKind,
@@ -36,7 +47,7 @@ export const contentTopicPageInfo: Record<
     detailTagLabel?: string;
   }
 > = {
-  parentStories: {
+  부모이야기: {
     title: "부모 이야기",
     subtext: "완벽하지 않아도 괜찮아요. 우리 모두 처음이니까요. 당신의 솔직한 이야기를 들려주세요.",
     backPath: "/parent-stories",
@@ -44,26 +55,25 @@ export const contentTopicPageInfo: Record<
     detailTagLabel: "부모이야기",
   },
 
-  info: {
+  정보: {
     title: "정보",
     subtext:
       "육아와 가족 생활에 도움이 되는 안내·자료·팁을 차분히 모아 두는 공간이에요.",
     backPath: "/info",
     writePath: "/info/write",
-    /** 상세 h1 위 — 네비·게시판명과 동일한 짧은 라벨 */
     detailTagLabel: "정보",
   },
 };
 
 /**
- * 주제 키(camelCase, API topic 값)를 URL 첫 경로 세그먼트로 바꾼다.
- * parentStories만 폴더명이 kebab-case(parent-stories)라 예외로 매핑하고, 나머지는 그대로 쓴다.
+ * 주제 키를 URL 첫 경로 세그먼트로 바꾼다.
+ * 부모이야기만 폴더명이 kebab-case(parent-stories)라 예외로 매핑하고, 나머지는 그대로 쓴다.
  */
 export function contentTopicUrlSegment(topic: ContentTopicKind): string {
   switch (topic) {
-    case "parentStories":
+    case "부모이야기":
       return "parent-stories";
-    case "info":
+    case "정보":
       return "info";
   }
 }

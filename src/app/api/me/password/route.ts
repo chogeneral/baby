@@ -19,7 +19,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ message: "새 비밀번호는 8자 이상이어야 합니다." }, { status: 400 });
   }
 
-  const user = findByEmail(email);
+  const user = await findByEmail(email);
   if (!user) {
     return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
   }
@@ -30,7 +30,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 12);
-  updateUser(email, { passwordHash });
+  await updateUser(email, { passwordHash });
 
   return NextResponse.json({ message: "비밀번호가 변경되었습니다." });
 }

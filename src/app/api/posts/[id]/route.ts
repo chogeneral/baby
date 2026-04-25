@@ -46,7 +46,7 @@ export async function PUT(
     return NextResponse.json({ message: "필수 항목이 누락되었습니다." }, { status: 400 });
   }
 
-  if (!findByEmail(authorEmail)) {
+  if (!(await findByEmail(authorEmail))) {
     return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
   }
 

@@ -43,14 +43,14 @@ export async function POST(req: NextRequest) {
     childBirthYears,
   } = childValid;
 
-  if (emailExists(emailTrimmed)) {
+  if (await emailExists(emailTrimmed)) {
     return NextResponse.json({ message: "이미 사용 중인 이메일입니다." }, { status: 409 });
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
 
-  appendUser({
-    email: emailTrimmed,
+  await appendUser({
+    email: emailTrimmed.toLowerCase(),
     nickname: nicknameTrimmed,
     phone,
     passwordHash,

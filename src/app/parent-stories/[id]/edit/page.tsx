@@ -7,7 +7,7 @@ export default async function ParentStoriesEditPage({ params }: Props) {
   const { id } = await params;
   return (
     <Suspense>
-      <ContentTopicEditForm id={id} topic="parentStories" />
+      <ContentTopicEditForm id={id} topic="부모이야기" />
     </Suspense>
   );
 }

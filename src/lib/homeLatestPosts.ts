@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient";
+import type { ContentTopicKind } from "@/lib/contentTopic";
 
 export type HomeLatestPostPreview = {
   id: string;
@@ -24,7 +25,7 @@ function dateLabelFromCreatedAt(createdAt: unknown): string {
   return String(createdAt).slice(0, 10);
 }
 
-/** 슈파베이스에서 데이터를 가져오는 핵심 함수 — `posts` 에 `category`·`nickname` 컬럼이 있어야 필터·표시가 된다. */
+/** 슈파베이스 `posts` — category 가 아기이야기·꼬꼬마 인 커뮤니티 글 */
 async function fetchLatestByCategory(category: string): Promise<HomeLatestPostPreview[]> {
   const { data, error } = await supabase
     .from("posts")
@@ -34,7 +35,6 @@ async function fetchLatestByCategory(category: string): Promise<HomeLatestPostPr
     .limit(previewLimit);
 
   if (error) {
-    // 스키마에 컬럼이 없거나 RLS 로 SELECT 가 막히면 여기로 온다. 홈은 빈 목록으로라도 올리고 서버 로그로 원인을 남긴다.
     console.error(`[homeLatestPosts] "${category}" 로드 실패:`, error.message, error);
     return [];
   }
@@ -49,13 +49,39 @@ async function fetchLatestByCategory(category: string): Promise<HomeLatestPostPr
   }));
 }
 
+/** 부모이야기·정보 — public.content_topic_posts (topic 키로 구분, posts.category 와 별도) */
+async function fetchLatestContentTopic(topic: ContentTopicKind): Promise<HomeLatestPostPreview[]> {
+  const { data, error } = await supabase
+    .from("content_topic_posts")
+    .select("id, title, created_at, author_nickname")
+    .eq("topic", topic)
+    .order("created_at", { ascending: false })
+    .limit(previewLimit);
+
+  if (error) {
+    console.error(`[homeLatestPosts] content_topic topic=${topic}:`, error.message, error);
+    return [];
+  }
+  if (!data) return [];
+
+  return data.map((p) => ({
+    id: String(p.id),
+    title: typeof p.title === "string" && p.title.trim() !== "" ? p.title : "제목 없음",
+    dateLabel: dateLabelFromCreatedAt(p.created_at),
+    authorLabel:
+      (typeof p.author_nickname === "string" && p.author_nickname.trim() !== ""
+        ? p.author_nickname
+        : null) || "—",
+  }));
+}
+
 /** 메인 페이지에서 호출하는 함수 */
 export async function getHomeLatestPostPreviews() {
   const [babyStory, parentStories, kokkoma, info] = await Promise.all([
     fetchLatestByCategory("아기이야기"),
-    fetchLatestByCategory("부모이야기"),
+    fetchLatestContentTopic("부모이야기"),
     fetchLatestByCategory("꼬꼬마"),
-    fetchLatestByCategory("정보"),
+    fetchLatestContentTopic("정보"),
   ]);
 
   return {

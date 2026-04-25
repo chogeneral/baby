@@ -87,6 +87,41 @@ export async function getPostById(id: string): Promise<PostRecord | undefined> {
   return rowToPost(data as Record<string, unknown>);
 }
 
+/**
+ * SEO·Open Graph / 사이트맵용: 커뮤니티(아기이야기·꼬꼬마) 글만 가져온다.
+ * 다른 `category` 의 글 id 로는 undefined — 상세 URL 과 일치를 맞춘다.
+ */
+export async function getCommunityPostByIdForSeo(
+  id: string,
+): Promise<PostRecord | undefined> {
+  const numId = Number(id);
+  if (isNaN(numId)) return undefined;
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("id", numId)
+    .in("category", COMMUNITY_CATEGORIES)
+    .maybeSingle();
+  if (error || !data) return undefined;
+  return rowToPost(data as Record<string, unknown>);
+}
+
+/** sitemap: 커뮤니티 글 id·갱신 시각(= created_at) */
+export async function listCommunityPostIdsForSitemap(): Promise<
+  { id: number; createdAt: string | null }[]
+> {
+  const { data, error } = await supabase
+    .from("posts")
+    .select("id, created_at")
+    .in("category", COMMUNITY_CATEGORIES)
+    .order("id", { ascending: true });
+  if (error || !data) return [];
+  return (data as { id: number; created_at: string | null }[]).map((r) => ({
+    id: r.id,
+    createdAt: r.created_at,
+  }));
+}
+
 export async function incrementViewCount(id: string): Promise<void> {
   const numId = Number(id);
   if (isNaN(numId)) return;

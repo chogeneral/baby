@@ -7,7 +7,7 @@ export default async function InfoEditPage({ params }: Props) {
   const { id } = await params;
   return (
     <Suspense>
-      <ContentTopicEditForm id={id} topic="info" />
+      <ContentTopicEditForm id={id} topic="정보" />
     </Suspense>
   );
 }

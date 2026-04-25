@@ -6,7 +6,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const post = getPostById(id);
+  const post = await getPostById(id);
   if (!post) {
     return NextResponse.json({ message: "글을 찾을 수 없습니다." }, { status: 404 });
   }

@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: "이메일이 필요합니다." }, { status: 400 });
   }
 
-  const user = findByEmail(email);
+  const user = await findByEmail(email);
   if (!user) {
     return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
   }
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ message: "이메일이 필요합니다." }, { status: 400 });
   }
 
-  const user = findByEmail(email);
+  const user = await findByEmail(email);
   if (!user) {
     return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
   }
@@ -122,6 +122,6 @@ export async function PATCH(req: NextRequest) {
     updates.childBirthYear = yearsAfter[newPrimary];
   }
 
-  updateUser(email, updates);
+  await updateUser(email, updates);
   return NextResponse.json({ message: "정보가 수정되었습니다." });
 }
