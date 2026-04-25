@@ -219,3 +219,7 @@
 .specialClose:hover {
   background: rgba(45, 41, 38, 0.12);
 }
+
+.imageInput {
+  display: none;
+}
