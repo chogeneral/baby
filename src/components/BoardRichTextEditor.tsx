@@ -2,7 +2,6 @@
 
 import { forwardRef, useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
 import styles from "@/components/boardRichTextEditor.module.css";
-import { uploadPostImage } from "@/lib/uploadPostImage";
 
 const SPECIAL_CHARS = [
   "※", "★", "☆", "♥", "♡", "◆", "◇", "■", "□", "▲", "△", "▼", "▽",
@@ -39,10 +38,8 @@ export const BoardRichTextEditor = forwardRef<BoardRichTextEditorHandle, Props>(
     const foreColorRef = useRef<HTMLInputElement>(null);
     const backColorRef = useRef<HTMLInputElement>(null);
     const [showSpecial, setShowSpecial] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
     const lastSyncedRef = useRef<string | null>(null);
     const savedSelectionRef = useRef<Range | null>(null);
-    const imageInputRef = useRef<HTMLInputElement>(null);
 
     const captureSelectionFromEditor = () => {
       const editor = editorRef.current;
@@ -224,19 +221,6 @@ export const BoardRichTextEditor = forwardRef<BoardRichTextEditorHandle, Props>(
       emitHtml();
     };
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      e.target.value = "";
-      if (!file) return;
-      setIsUploading(true);
-      try {
-        const url = await uploadPostImage(file);
-        if (url) insertImage(url);
-      } finally {
-        setIsUploading(false);
-      }
-    };
-
     const insertChar = (ch: string) => {
       focusEditor();
       document.execCommand("insertText", false, ch);
@@ -327,23 +311,6 @@ export const BoardRichTextEditor = forwardRef<BoardRichTextEditorHandle, Props>(
             <button type="button" className={styles.toolbarBtn} aria-label="아래첨자" onClick={() => run("subscript")}>T₁</button>
             <button type="button" className={styles.toolbarBtn} aria-label="특수문자" onClick={() => setShowSpecial(true)}>※</button>
             <button type="button" className={styles.toolbarBtn} aria-label="링크" onClick={insertLink}>🔗</button>
-            <span className={styles.toolbarDivider} aria-hidden />
-            <button
-              type="button"
-              className={styles.toolbarBtn}
-              aria-label="이미지 삽입"
-              disabled={isUploading}
-              onClick={() => imageInputRef.current?.click()}
-            >
-              {isUploading ? "…" : "🖼"}
-            </button>
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              className={styles.imageInput}
-              onChange={handleImageUpload}
-            />
           </div>
         )}
 
