@@ -32,6 +32,7 @@ export function ContentTopicWriteForm({ topic }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [authorEmail, setAuthorEmail] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     const session = readLoginSession();
@@ -72,6 +73,7 @@ export function ContentTopicWriteForm({ topic }: Props) {
           content: mergeTrailingSinglePhotoHtml(content, attachedPhoto),
           authorEmail,
           topic,
+          ...(password.trim() ? { password: password.trim() } : {}),
         }),
       });
 
@@ -147,6 +149,21 @@ export function ContentTopicWriteForm({ topic }: Props) {
           value={attachedPhoto}
           onChange={setAttachedPhoto}
         />
+
+        <div>
+          <label htmlFor="contentTopicPassword" className={nestForm.nestLabel}>
+            비밀번호
+          </label>
+          <input
+            id="contentTopicPassword"
+            type="password"
+            maxLength={50}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="비밀번호를 입력해 주세요"
+            className={nestForm.nestInput}
+          />
+        </div>
 
         {error ? <p className={nestForm.nestError}>{error}</p> : null}
 

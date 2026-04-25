@@ -38,7 +38,7 @@ export default function WritePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [authorEmail, setAuthorEmail] = useState<string | null>(null);
-  /** 발달·부모이야기 글쓰기와 같이 선택 입력 — 나중에 수정할 때 검증에 쓴다 */
+  const [editPassword, setEditPassword] = useState("");
   const [roomKind, setRoomKind] = useState<CommunityRoomKind | null>(null);
 
   useEffect(() => {
@@ -97,6 +97,7 @@ export default function WritePage() {
           content: mergeTrailingSinglePhotoHtml(content, attachedPhoto),
           authorEmail,
           prefix,
+          ...(editPassword.trim() ? { editPassword: editPassword.trim() } : {}),
         }),
       });
 
@@ -194,6 +195,21 @@ export default function WritePage() {
           value={attachedPhoto}
           onChange={setAttachedPhoto}
         />
+
+        <div>
+          <label htmlFor="communityWriteEditPassword" className={nestForm.nestLabel}>
+            비밀번호
+          </label>
+          <input
+            id="communityWriteEditPassword"
+            type="password"
+            maxLength={50}
+            value={editPassword}
+            onChange={(e) => setEditPassword(e.target.value)}
+            placeholder="비밀번호를 입력해 주세요"
+            className={nestForm.nestInput}
+          />
+        </div>
 
         {error ? <p className={nestForm.nestError}>{error}</p> : null}
 
