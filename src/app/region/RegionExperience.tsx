@@ -14,7 +14,7 @@ export function RegionExperience() {
       
       <p className={styles.contentLead} style={{ marginTop: "0.75rem" }}>
         <strong>소아과·야간소아과</strong>, <strong>어린이집·유치원</strong>,{" "}
-        <strong>키즈카페</strong>는 카카오 로컬 키워드 검색 결과입니다.
+        <strong>키즈카페</strong>는 카카오 지도 기준 검색 결과입니다.
       </p>
 
       <RegionLiveNearbyBlock />
