@@ -97,8 +97,7 @@ export function ContentTopicWriteForm({ topic }: Props) {
 
       {topic === "parentStories" && (
         <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
-          완벽하지 않아도 괜찮아요. 우리 모두 처음이니까요.<br />
-          당신의 솔직한 이야기를 들려주세요.
+          완벽하지 않아도 괜찮아요. 우리 모두 처음이니까요. 당신의 솔직한 이야기를 들려주세요.
         </p>
       )}
 
