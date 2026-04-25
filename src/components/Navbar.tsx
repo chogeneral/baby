@@ -250,15 +250,14 @@ export function Navbar() {
 
   return (
     <nav
-      className={`w-full shrink-0 border-b border-[#2d2926]/[0.06] bg-[#faf9f6] px-4 sm:px-6 lg:sticky lg:top-0 lg:z-30 transition-shadow duration-200 ${isScrolled ? "lg:shadow-[0_2px_16px_rgba(45,41,38,0.09)]" : ""}`}
+      className={`w-full shrink-0 border-b border-[#2d2926]/[0.06] bg-[#faf9f6] px-4 sm:px-6 sticky top-0 z-30 transition-shadow duration-200 ${isScrolled ? "shadow-[0_2px_16px_rgba(45,41,38,0.09)]" : ""}`}
       style={{
         /* 전역 @theme --font-sans(로컬 Pretendard) — 로고 링크만 `font-serif`로 덮어씀 */
         fontFamily: "var(--font-sans)",
       }}
     >
       {/*
-        `lg`(1024px) 이상에서만 `sticky` — 1024px 미만은 일반 흐름으로 두고
-        풀스크린 사이드 메뉴와의 겹침·레이아웃 꼬임을 줄인다. `z-30` 은 `RightQuickMenu` z-40, 전면 사이드 z-50 아래.
+        모든 화면에서 `sticky` — `z-30` 은 `RightQuickMenu` z-40, 전면 사이드 z-50 아래.
       */}
       <div className="relative mx-auto flex max-w-6xl flex-col gap-3 py-4 lg:gap-0">
         <div className="relative flex min-h-[2.5rem] items-center justify-between gap-2 sm:gap-3 md:gap-6">
