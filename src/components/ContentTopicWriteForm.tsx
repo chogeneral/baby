@@ -28,7 +28,7 @@ export function ContentTopicWriteForm({ topic }: Props) {
   const info = contentTopicPageInfo[topic];
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
+  const [attachedPhotos, setAttachedPhotos] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [authorEmail, setAuthorEmail] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export function ContentTopicWriteForm({ topic }: Props) {
       setError("제목을 입력해 주세요.");
       return;
     }
-    if (isMergedPostBodyEmpty(content, attachedPhoto)) {
+    if (isMergedPostBodyEmpty(content, attachedPhotos)) {
       setError("내용을 입력해 주세요.");
       return;
     }
@@ -70,7 +70,7 @@ export function ContentTopicWriteForm({ topic }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
-          content: mergeTrailingSinglePhotoHtml(content, attachedPhoto),
+          content: mergeTrailingSinglePhotoHtml(content, attachedPhotos),
           authorEmail,
           topic,
           ...(password.trim() ? { password: password.trim() } : {}),
@@ -91,30 +91,16 @@ export function ContentTopicWriteForm({ topic }: Props) {
 
   if (!authorEmail) return null;
 
-  /**
-   * 꼬꼬마 글쓰기의 nestNotice 와 같은 위치·역할이다.
-   * 메뉴마다 기대하는 톤이 달라 주제별로 한 줄씩만 나눠 두었다(공통 문장을 합치면 안내가 길어진다).
-   */
-  const noticeByTopic: Record<ContentTopicKind, string> = {
-    parentStories:
-      "부모로서의 솔직한 이야기를 나누는 공간이에요. 등록한 글은 닉네임과 함께 목록에 표시돼요. 수정 비밀번호를 설정해 두면 나중에 글을 고칠 수 있어요.",
-    info:
-      "육아·가족에 도움이 되는 안내와 자료를 정리해 두는 공간이에요. 등록한 글은 닉네임과 함께 목록에 표시돼요. 수정 비밀번호를 설정해 두면 나중에 글을 고칠 수 있어요.",
-  };
-
   return (
     <main className={nestForm.nestPage}>
       <h1 className={nestForm.nestTitle}>{info.title}</h1>
 
-      <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
-        글 등록 안내
-      </p>
-
-      <div className={nestForm.nestNotice}>
-        <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
-          {noticeByTopic[topic]}
+      {topic === "parentStories" && (
+        <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
+          완벽하지 않아도 괜찮아요. 우리 모두 처음이니까요.<br />
+          당신의 솔직한 이야기를 들려주세요.
         </p>
-      </div>
+      )}
 
       <form onSubmit={handleSubmit} className={nestForm.nestForm}>
         <div>
@@ -146,8 +132,8 @@ export function ContentTopicWriteForm({ topic }: Props) {
 
         <BoardSinglePhotoSection
           sectionId="contentTopicPhoto"
-          value={attachedPhoto}
-          onChange={setAttachedPhoto}
+          value={attachedPhotos}
+          onChange={setAttachedPhotos}
         />
 
         <div>
