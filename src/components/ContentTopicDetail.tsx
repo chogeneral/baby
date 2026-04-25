@@ -10,7 +10,7 @@ import styles from "@/app/contentPage.module.css";
 import nestForm from "@/app/nestForm.module.css";
 import { readLoginSession } from "@/lib/loginSession";
 import { formatDate } from "@/lib/formatDate";
-import { looksLikeHtmlPostBody } from "@/lib/postHtmlUtils";
+import { looksLikeHtmlPostBody, moveImagesToTopInPostHtml } from "@/lib/postHtmlUtils";
 import { sanitizePostHtml } from "@/lib/postHtmlSanitize";
 
 type Post = {
@@ -241,7 +241,22 @@ export function ContentTopicDetail({ id, topic }: Props) {
 
   return (
     <main className={styles.contentPage}>
+      {/*
+       * 부모이야기·정보: 커뮤니티 상세와 같이 h1 위 nestTagLg(짧은 게시판명),
+       * h1 아래 nestLead + contentTopicPageInfo.subtext(주제별 고정 문구)
+       */}
+      {info.detailTagLabel ? (
+        <p className={nestForm.nestTagLg}>{info.detailTagLabel}</p>
+      ) : null}
       <h1 className={styles.contentTitle}>{post.title}</h1>
+      {topic === "parentStories" || topic === "info" ? (
+        <p
+          className={nestForm.nestLead}
+          style={{ marginBottom: "0.75rem" }}
+        >
+          {info.subtext}
+        </p>
+      ) : null}
 
       <div className={styles.detailMeta}>
         {showAuthorInMeta ? (
@@ -259,7 +274,10 @@ export function ContentTopicDetail({ id, topic }: Props) {
         {looksLikeHtmlPostBody(post.content) ? (
           <div
             className={nestForm.nestRichBody}
-            dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.content) }}
+            dangerouslySetInnerHTML={{
+              // 커뮤니티 상세와 같이: 본문 HTML 에서 img 를 먼저 붙이고 sanitize (사진·글 순서)
+              __html: sanitizePostHtml(moveImagesToTopInPostHtml(post.content)),
+            }}
           />
         ) : (
           post.content.split("\n").map((line, i) => (
@@ -268,20 +286,32 @@ export function ContentTopicDetail({ id, topic }: Props) {
         )}
       </div>
 
-      <div className={styles.detailActions}>
-        <Link href={info.backPath} className={styles.detailBtnSecondary}>
+      {/*
+       * 커뮤니티 상세(community/[id])와 동일: 왼쪽 목록, 오른쪽은
+       * 갈색 수정하기 → 붉은 삭제하기(순서·비주얼·nestDetailActionRow 정렬 통일)
+       */}
+      <div className={nestForm.nestDetailActionRow}>
+        <Link href={info.backPath} className={nestForm.nestBtnSecondary}>
           목록
         </Link>
-        {showEditButton && (
+        {showEditButton ? (
           <>
-            <button type="button" onClick={handleEditClick} className={styles.detailBtnSecondary}>
+            <button
+              type="button"
+              onClick={handleEditClick}
+              className={nestForm.nestBtnEditBrown}
+            >
               수정하기
             </button>
-            <button type="button" onClick={handleDeleteClick} className={styles.detailBtnDanger}>
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              className={nestForm.nestBtnDeleteRed}
+            >
               삭제하기
             </button>
           </>
-        )}
+        ) : null}
       </div>
 
       {/* 댓글 섹션 */}

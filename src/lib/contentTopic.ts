@@ -21,23 +21,37 @@ export function isContentTopicWriteAllowedEmail(
   );
 }
 
-/** 각 주제의 화면 제목과 글쓰기 후 돌아갈 목록 경로 */
+/**
+ * 각 주제의 화면 제목·리드 문구·목록/글쓰기 경로
+ * - detailTagLabel: 상세 h1 **위**에 붙이는 짧은 게시판명(커뮤니티 `nestTagLg`·네비 "부모이야기"와 맞춤)
+ */
 export const contentTopicPageInfo: Record<
   ContentTopicKind,
-  { title: string; subtext: string; backPath: string; writePath: string }
+  {
+    title: string;
+    subtext: string;
+    backPath: string;
+    writePath: string;
+    /** 상세에서만 h1 직상 표시; 없으면 아기이야기 상세의 게시판 띠와 동일한 블록을 쓰지 않는다 */
+    detailTagLabel?: string;
+  }
 > = {
   parentStories: {
     title: "부모 이야기",
     subtext: "완벽하지 않아도 괜찮아요. 우리 모두 처음이니까요. 당신의 솔직한 이야기를 들려주세요.",
     backPath: "/parent-stories",
     writePath: "/parent-stories/write",
+    detailTagLabel: "부모이야기",
   },
 
   info: {
     title: "정보",
-    subtext: "육아와 가족 생활에 도움이 되는 안내·자료·팁을 차분히 모아 두는 공간이에요. ",
+    subtext:
+      "육아와 가족 생활에 도움이 되는 안내·자료·팁을 차분히 모아 두는 공간이에요.",
     backPath: "/info",
     writePath: "/info/write",
+    /** 상세 h1 위 — 네비·게시판명과 동일한 짧은 라벨 */
+    detailTagLabel: "정보",
   },
 };
 

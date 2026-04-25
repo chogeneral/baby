@@ -68,6 +68,26 @@ export function excerptFromHtml(html: string, maxLen: number): string {
  * 하단 1장 첨부(`<p><img src="data:...">`)든 본문 중간 삽입이든 DOM 순서상 첫 img 를 쓴다.
  * 브라우저가 없을 때는 정규식으로만 찾는다(SSR·테스트 호환).
  */
+/**
+ * Rich text 로 저장된 본문 HTML 안의 `<img>` 를 **문서에 나온 순서**로 잘라
+ * **나머지 태그·텍스트보다 먼저** 오게 붙인다.
+ * - 상세 화면에서 "첨부·삽입 사진 → 그 아래 글" 레이아웃을 강제할 때 쓴다.
+ * - 에디터·디비에 들어가는 HTML 형태(단순 img 태그)를 전제로 정규식으로 잘랐다.
+ *   (SSR/클라이언트 공통이어야 해서 `document` 를 쓰지 않는다)
+ */
+export function moveImagesToTopInPostHtml(html: string): string {
+  const t = (html ?? "").trim();
+  if (!t) return t;
+
+  const imgTags: string[] = [];
+  const rest = t.replace(/<img\b[^>]*>/gi, (tag) => {
+    imgTags.push(tag);
+    return "";
+  });
+  if (imgTags.length === 0) return t;
+  return imgTags.join("") + rest;
+}
+
 export function firstDataImageSrcFromPostHtml(html: string): string | null {
   const trimmed = (html ?? "").trim();
   if (!trimmed) return null;

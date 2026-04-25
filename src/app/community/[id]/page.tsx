@@ -16,7 +16,7 @@ import {
 } from "@/lib/communityRoom";
 import { readLoginSession } from "@/lib/loginSession";
 import { formatDate } from "@/lib/formatDate";
-import { looksLikeHtmlPostBody } from "@/lib/postHtmlUtils";
+import { looksLikeHtmlPostBody, moveImagesToTopInPostHtml } from "@/lib/postHtmlUtils";
 import { sanitizePostHtml } from "@/lib/postHtmlSanitize";
 
 type Post = {
@@ -260,13 +260,30 @@ export default function PostDetailPage({
 
   return (
     <main className={nestForm.nestPage}>
-      {/* 아기이야기는 제목이 곧 문맥이라 상단 방 라벨을 두지 않고, 꼬꼬마만 게시판명을 짧게 표시한다 */}
-      {anonymousMode ? (
-        <p className={nestForm.nestTag}>{communityRoomLabels[postRoom].roomName}</p>
-      ) : null}
-
       <article className={nestForm.nestArticle}>
+        {/*
+         * effectiveBoardKind 로 얻는 방(아기이야기·꼬꼬마)의 표시명을
+         * 제목 h1 바로 위에 둬서, 어떤 목록/게시판에서 온 글인지 맥락을 잡기 쉽게 한다
+         * (기존 꼬꼬마 전용 상단 nestTag 는 이 위치로 통합해 이중 표기를 막는다)
+         * 눈에 잘 띄게 nestTag(0.6875rem) 대비 2배인 nestTagLg 를 쓴다
+         */}
+        <p className={nestForm.nestTagLg}>
+          {communityRoomLabels[postRoom].roomName}
+        </p>
         <h1 className={nestForm.nestArticleTitle}>{post.title}</h1>
+        {/*
+         * 아기이야기: 내부 고정 리드 / 꼬꼬마: communityRoomLabels 의 subtext(비밀 우체통 안내)를
+         * h1 바로 아래에 둬서 게시판 성격을 한눈에 전한다
+         */}
+        {!anonymousMode ? (
+          <p className={nestForm.nestLead} style={{ marginBottom: "0.75rem" }}>
+            우리 아이들의 이야기를 함께 나누고 공유해요
+          </p>
+        ) : (
+          <p className={nestForm.nestLead} style={{ marginBottom: "0.75rem" }}>
+            {communityRoomLabels.kokkoma.subtext}
+          </p>
+        )}
         <div className={nestForm.nestMeta}>
           {!anonymousMode && (
             <>
@@ -279,7 +296,10 @@ export default function PostDetailPage({
         {looksLikeHtmlPostBody(post.content) ? (
           <div
             className={nestForm.nestRichBody}
-            dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.content) }}
+            dangerouslySetInnerHTML={{
+              // reorder 후 XSS 제거(순서: 이동 → sanitize) — img src 등은 DOMPurify에서 그대로 다룬다
+              __html: sanitizePostHtml(moveImagesToTopInPostHtml(post.content)),
+            }}
           />
         ) : (
           <p className={nestForm.nestBody}>{post.content}</p>

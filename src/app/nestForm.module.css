@@ -45,6 +45,17 @@
   color: var(--colorTerracottaDark);
 }
 
+/* 게시글 상세: h1 직상 게시판명 — .nestTag 와 톤은 같고 font-size 만 2배로(맥락 라벨이 잘 읽히게) */
+.nestTagLg {
+  display: block;
+  margin: 0 0 0.5rem;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--colorTerracottaDark);
+}
+
 .nestTagMuted {
   color: var(--colorMuted);
   font-weight: 600;
