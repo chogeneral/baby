@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getNavPrimaryChildAgeLabel } from "@/lib/primaryChildAgeLabel";
 import { clearLoginSession, readLoginSession } from "@/lib/loginSession";
 
@@ -48,8 +48,21 @@ export function Navbar() {
    * 1024px 미만(lg 미만)에서만 쓰는 풀스크린형 사이드 메뉴 — 햄버거로 열고,
    * 배경 딤·Escape·경로 이동 시 닫혀 뒤 콘텐츠와 충돌을 줄인다.
    */
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  /**
+   * 오버레이 DOM 유지 — 닫힐 때는 `isSideMenuPanelEnter` 만 먼저 끄고
+   * 전이 종료(또는 백업 타이머) 후 `false` 로 내려 exit 애니메이션이 끊기지 않게 한다.
+   */
+  const [isSideMenuMounted, setIsSideMenuMounted] = useState(false);
+  /**
+   * 패널이 화면 안으로 들어온 상태(열림) — 닫는 중에는 `false` 이고 DOM 은 `isSideMenuMounted` 가 잠시 `true` 유지.
+   */
+  const [isSideMenuPanelEnter, setIsSideMenuPanelEnter] = useState(false);
+  /** `transitionend` 핸들러가 최신 `isSideMenuPanelEnter` 를 보도록(닫힘 직전 렌더와 어긋남 방지) */
+  const isSideMenuPanelEnterRef = useRef(false);
+  /** `transitionend` 가 안 오는 환경(레이스 등)을 대비한 언마운트 백업 — `duration-300` + 여유 */
+  const sideMenuCloseFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  isSideMenuPanelEnterRef.current = isSideMenuPanelEnter;
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 4);
@@ -121,30 +134,91 @@ export function Navbar() {
     };
   }, [nickname, pathname]);
 
-  /* URL 이 바뀌면(사이드 메뉴 링크·외부 이동 모두) 패널을 닫고 body 스크롤 잠김·포커스 누락을 막는다 */
+  function clearSideMenuCloseFallback() {
+    if (sideMenuCloseFallbackRef.current) {
+      clearTimeout(sideMenuCloseFallbackRef.current);
+      sideMenuCloseFallbackRef.current = null;
+    }
+  }
+
+  const requestCloseSideMenu = useCallback(() => {
+    if (!isSideMenuMounted) {
+      return;
+    }
+    setIsSideMenuPanelEnter(false);
+    clearSideMenuCloseFallback();
+    sideMenuCloseFallbackRef.current = setTimeout(() => {
+      setIsSideMenuMounted(false);
+      sideMenuCloseFallbackRef.current = null;
+    }, 360);
+  }, [isSideMenuMounted]);
+
+  const onSideMenuPanelTransitionEnd = useCallback(
+    (e: React.TransitionEvent<HTMLDivElement>) => {
+      if (e.target !== e.currentTarget) {
+        return;
+      }
+      if (e.propertyName !== "transform") {
+        return;
+      }
+      /* `true` 이면 ‘열림’ 전이 끝 — 언마운트 금지. `false` 이면 ‘닫힘’ 전이 끝 — DOM 제거. */
+      if (isSideMenuPanelEnterRef.current) {
+        return;
+      }
+      clearSideMenuCloseFallback();
+      setIsSideMenuMounted(false);
+    },
+    [],
+  );
+
+  /* URL 이 바뀌면(사이드 메뉴 링크·외부 이동) 애니메이션 없이 바로 DOM 에서 뺀다(라우트와 동기) */
   useEffect(() => {
-    setIsSideMenuOpen(false);
+    setIsSideMenuMounted(false);
+    setIsSideMenuPanelEnter(false);
+    clearSideMenuCloseFallback();
   }, [pathname]);
 
   useEffect(() => {
-    if (!isSideMenuOpen) {
+    if (!isSideMenuMounted) {
+      setIsSideMenuPanelEnter(false);
+      return;
+    }
+    setIsSideMenuPanelEnter(false);
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsSideMenuPanelEnter(true);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(id);
+    };
+  }, [isSideMenuMounted]);
+
+  useEffect(() => {
+    if (!isSideMenuMounted) {
       return;
     }
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setIsSideMenuOpen(false);
+        requestCloseSideMenu();
       }
     };
     document.addEventListener("keydown", onKeyDown);
-    /* 열릴 때 닫기 버튼에 포커스를 보내 키보드 사용자가 바로 닫거나 탭으로 이동할 수 있게 한다 */
-    sideMenuPanelCloseRef.current?.focus();
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [isSideMenuOpen]);
+  }, [isSideMenuMounted, requestCloseSideMenu]);
+
+  useEffect(() => {
+    if (!isSideMenuMounted || !isSideMenuPanelEnter) {
+      return;
+    }
+    /* 열림 전이가 끝난 뒤에만 포커스 — 닫는 중/나가는 애니에는 옮기지 않는다 */
+    sideMenuPanelCloseRef.current?.focus();
+  }, [isSideMenuMounted, isSideMenuPanelEnter]);
 
   function handleLogout() {
     clearLoginSession();
@@ -221,28 +295,28 @@ export function Navbar() {
       <Link
         href="/community/baby-story"
         className={sideMenuNavLinkClass("/community/baby-story")}
-        onClick={() => setIsSideMenuOpen(false)}
+        onClick={() => requestCloseSideMenu()}
       >
         아기이야기
       </Link>
       <Link
         href="/parent-stories"
         className={sideMenuNavLinkClass("/parent-stories")}
-        onClick={() => setIsSideMenuOpen(false)}
+        onClick={() => requestCloseSideMenu()}
       >
         부모이야기
       </Link>
       <Link
         href="/community/kokkoma"
         className={sideMenuNavLinkClass("/community/kokkoma")}
-        onClick={() => setIsSideMenuOpen(false)}
+        onClick={() => requestCloseSideMenu()}
       >
         꼬꼬마
       </Link>
-      <Link href="/info" className={sideMenuNavLinkClass("/info")} onClick={() => setIsSideMenuOpen(false)}>
+      <Link href="/info" className={sideMenuNavLinkClass("/info")} onClick={() => requestCloseSideMenu()}>
         정보
       </Link>
-      <Link href="/region" className={sideMenuNavLinkClass("/region")} onClick={() => setIsSideMenuOpen(false)}>
+      <Link href="/region" className={sideMenuNavLinkClass("/region")} onClick={() => requestCloseSideMenu()}>
         지역
       </Link>
     </>
@@ -362,13 +436,19 @@ export function Navbar() {
             */}
             <button
               type="button"
-              onClick={() => setIsSideMenuOpen((o) => !o)}
+              onClick={() => {
+                if (isSideMenuMounted) {
+                  requestCloseSideMenu();
+                } else {
+                  setIsSideMenuMounted(true);
+                }
+              }}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#2d2926] transition hover:bg-[#2d2926]/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c57b67]/50 lg:hidden"
-              aria-label={isSideMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
-              aria-expanded={isSideMenuOpen}
+              aria-label={isSideMenuMounted ? "메뉴 닫기" : "메뉴 열기"}
+              aria-expanded={isSideMenuMounted}
               aria-controls="siteSideMenuPanel"
             >
-              {isSideMenuOpen ? (
+              {isSideMenuMounted ? (
                 <svg
                   width="24"
                   height="24"
@@ -406,14 +486,30 @@ export function Navbar() {
         RightQuickMenu 가 z-40 이므로 50에 두고, `lg:hidden`으로 데스크톱에서는 포털·포커스 루프를 타지 않게 한다.
         패널을 뷰포트 100% 갈색으로 쓸 때는 별도 딤을 두지 않고(전면이 곧 메뉴) 닫기는 상단 X·Escape·경로 이동에 맡긴다.
       */}
-      {isSideMenuOpen ? (
-        <aside
-          id="siteSideMenuPanel"
-          className="fixed inset-0 z-50 flex h-[100dvh] w-full min-w-0 flex-col bg-[#4a3228] text-white lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="육아박사 사이트 메뉴"
+      {isSideMenuMounted ? (
+        <div
+          className="fixed inset-0 z-50 flex items-stretch justify-stretch pointer-events-auto lg:hidden"
+          role="presentation"
         >
+          {/*
+            투명 풀스크린 래퍼: 슬라이드 중에도 좌측이 비어 보일 때 뒤 콘텐츠로 포인터가 새지 않게 막는다.
+          */}
+          <aside
+            id="siteSideMenuPanel"
+            onTransitionEnd={onSideMenuPanelTransitionEnd}
+            className={[
+              "flex h-[100dvh] w-full min-w-0 flex-col bg-[#4a3228] text-white",
+              "transform-gpu will-change-transform",
+              "transition-[transform,opacity] duration-300 ease-out",
+              isSideMenuPanelEnter
+                ? "translate-x-0 opacity-100"
+                : "translate-x-full opacity-0",
+              "motion-reduce:translate-x-0 motion-reduce:opacity-100 motion-reduce:duration-0",
+            ].join(" ")}
+            role="dialog"
+            aria-modal="true"
+            aria-label="육아박사 사이트 메뉴"
+          >
             {/*
               상단: 이전 로고 자리(좌)에만 유틸(로그인/마이/문의 등)을 가로로 모으고, 우측에 닫기.
               GNB(아래 본문)과 역할이 겹치지 않게 `border-b`로 구역만 구분한다.
@@ -433,7 +529,7 @@ export function Navbar() {
                     <Link
                       href="/baby-records"
                       className="shrink-0 text-sm font-medium text-white/95 transition hover:text-white"
-                      onClick={() => setIsSideMenuOpen(false)}
+                      onClick={() => requestCloseSideMenu()}
                     >
                       아이기록
                     </Link>
@@ -441,21 +537,21 @@ export function Navbar() {
                       href="/mypage"
                       title="마이페이지"
                       className="max-w-[8rem] shrink truncate text-sm font-medium text-white/95 transition hover:text-white sm:max-w-[10rem]"
-                      onClick={() => setIsSideMenuOpen(false)}
+                      onClick={() => requestCloseSideMenu()}
                     >
                       {nickname}
                     </Link>
                     <Link
                       href="/contact"
                       className="shrink-0 text-sm font-medium text-white/95 transition hover:text-white"
-                      onClick={() => setIsSideMenuOpen(false)}
+                      onClick={() => requestCloseSideMenu()}
                     >
                       문의하기
                     </Link>
                     <button
                       type="button"
                       onClick={() => {
-                        setIsSideMenuOpen(false);
+                        requestCloseSideMenu();
                         handleLogout();
                       }}
                       className="shrink-0 text-sm font-medium text-white/80 transition hover:text-white"
@@ -468,14 +564,14 @@ export function Navbar() {
                     <Link
                       href="/login"
                       className="shrink-0 text-sm font-medium text-white/95 transition hover:text-white"
-                      onClick={() => setIsSideMenuOpen(false)}
+                      onClick={() => requestCloseSideMenu()}
                     >
                       로그인
                     </Link>
                     <Link
                       href="/signup"
                       className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#c57b67] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_2px_10px_rgba(0,0,0,0.2)] sm:px-3.5 sm:py-2 sm:text-sm"
-                      onClick={() => setIsSideMenuOpen(false)}
+                      onClick={() => requestCloseSideMenu()}
                     >
                       {/*
                         갈색 전면 패널용으로 예전에 쓰던 테라코타 pill + 작은 `shadow` — 좁은 상단에 맞게 `px`·`text` 만 데스크톱보다 약간 작게.
@@ -488,7 +584,7 @@ export function Navbar() {
               <button
                 type="button"
                 ref={sideMenuPanelCloseRef}
-                onClick={() => setIsSideMenuOpen(false)}
+                onClick={() => requestCloseSideMenu()}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white/95 transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
                 aria-label="메뉴 닫기"
               >
@@ -516,7 +612,8 @@ export function Navbar() {
                 {sideMenuMainNavItems}
               </nav>
             </div>
-        </aside>
+          </aside>
+        </div>
       ) : null}
     </nav>
   );
