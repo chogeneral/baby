@@ -17,7 +17,7 @@ export default function KokkomaWritePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
+  const [attachedPhotos, setAttachedPhotos] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [authorEmail, setAuthorEmail] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export default function KokkomaWritePage() {
       setError("제목을 입력해 주세요.");
       return;
     }
-    if (isMergedPostBodyEmpty(content, attachedPhoto)) {
+    if (isMergedPostBodyEmpty(content, attachedPhotos)) {
       setError("내용을 입력해 주세요.");
       return;
     }
@@ -55,7 +55,7 @@ export default function KokkomaWritePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
-          content: mergeTrailingSinglePhotoHtml(content, attachedPhoto),
+          content: mergeTrailingSinglePhotoHtml(content, attachedPhotos),
           authorEmail,
           boardKind: "kokkoma",
           ...(editPassword.trim() ? { editPassword: editPassword.trim() } : {}),
@@ -81,17 +81,8 @@ export default function KokkomaWritePage() {
       <h1 className={nestForm.nestTitle}>꼬꼬마(익명게시판)</h1>
 
       <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
-        글 등록 안내
+        누구에게도 털어놓지 못한 고민이 있나요? 당신만의 비밀 우체통이 되어 드릴게요. 마음속 무거운 짐을 이곳에 잠시 덜어보세요.
       </p>
-
-      <div className={nestForm.nestNotice}>
-        <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
-          이 방에 올린 글과 댓글은 다른 사용자에게 <strong>익명</strong>으로만
-          보여요. 자녀 출생 연도를 입력하지 않아도 글을 쓸 수 있어요. 아래 수정
-          비밀번호를 넣으면 나중에 글 수정 시 아기이야기와 같이 비밀번호 확인
-          단계를 거치게 돼요.
-        </p>
-      </div>
 
       <form onSubmit={handleSubmit} className={nestForm.nestForm}>
         <div>
@@ -123,8 +114,8 @@ export default function KokkomaWritePage() {
 
         <BoardSinglePhotoSection
           sectionId="kokkomaWritePhoto"
-          value={attachedPhoto}
-          onChange={setAttachedPhoto}
+          value={attachedPhotos}
+          onChange={setAttachedPhotos}
         />
 
         <div>
