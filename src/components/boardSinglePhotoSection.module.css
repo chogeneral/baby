@@ -1,4 +1,4 @@
-/* 본문 에디터 아래 1장 전용 사진 영역 — nestForm 톤에 맞춤 */
+/* 본문 에디터 아래 ‘하단 사진’ 영역(다중 첨부) — nestForm 톤에 맞춤 */
 .section {
   margin-top: 0.35rem;
   padding: 0.85rem 1rem;
@@ -80,9 +80,26 @@
   background: rgba(254, 243, 199, 0.5);
 }
 
-.previewWrap {
-  flex: 1 1 100%;
+/* 버튼 행과 첫 미리보기 사이 10px + 장마다 세로 나열 */
+.previewList {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.previewItem {
+  display: block;
+}
+
+/* 이미지 위에 X 를 겹치기 위해 기준 박스 — maxWidth 는 기존 미리보기와 동일 */
+.previewFrame {
+  position: relative;
+  flex: 0 0 auto;
   max-width: 20rem;
+  width: 100%;
 }
 
 .preview {
@@ -92,4 +109,41 @@
   border-radius: 12px;
   border: 1px solid rgba(45, 41, 38, 0.1);
   background: #fff;
+}
+
+/* 미리보기 우상단: 반투명 원 + 흰 X — 사진 위에서만 눌리게 `z-index` */
+.removeXBtn {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  z-index: 1;
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  color: #fff;
+  background: rgba(45, 41, 38, 0.55);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition:
+    background 0.15s ease,
+    transform 0.12s ease;
+}
+
+.removeXBtn:hover {
+  background: rgba(45, 41, 38, 0.78);
+}
+
+.removeXBtn:active {
+  transform: scale(0.95);
+}
+
+.removeXBtn:focus-visible {
+  outline: 2px solid #c57b67;
+  outline-offset: 2px;
 }

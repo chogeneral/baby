@@ -16,7 +16,7 @@ import { readLoginSession } from "@/lib/loginSession";
 import { findBannedWord } from "@/lib/contentFilter";
 import {
   mergeTrailingSinglePhotoHtml,
-  splitTrailingSinglePhotoHtml,
+  splitTrailingPhotosHtml,
   isMergedPostBodyEmpty,
 } from "@/lib/boardSinglePhotoHtml";
 import { htmlToPlainText } from "@/lib/postHtmlUtils";
@@ -46,8 +46,8 @@ function CommunityPostEditInner({
   const [post, setPost] = useState<PostRecord | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  /** 연령방·꼬꼬마 공통 — 본문 아래 1장, 저장 시 본문 HTML 뒤에 붙임 */
-  const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
+  /** 연령방·꼬꼬마 공통 — 본문 아래 사진(여러 장), 저장 시 본문 HTML 뒤에 붙임 */
+  const [attachedPhotos, setAttachedPhotos] = useState<string[]>([]);
   const [prefix, setPrefix] = useState("");
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,9 +90,9 @@ function CommunityPostEditInner({
 
         setPost(p);
         setTitle(p.title);
-        const split = splitTrailingSinglePhotoHtml(p.content);
+        const split = splitTrailingPhotosHtml(p.content);
         setContent(split.bodyHtml);
-        setAttachedPhoto(split.photoDataUrl);
+        setAttachedPhotos(split.photoDataUrls);
         setEditPasswordForSubmit(
           storedPw != null && storedPw.length > 0 ? pwParam : "",
         );
@@ -115,12 +115,12 @@ function CommunityPostEditInner({
       setError("제목을 입력해 주세요.");
       return;
     }
-    if (isMergedPostBodyEmpty(content, attachedPhoto)) {
+    if (isMergedPostBodyEmpty(content, attachedPhotos)) {
       setError("내용을 입력해 주세요.");
       return;
     }
     const plainBody = htmlToPlainText(
-      mergeTrailingSinglePhotoHtml(content, attachedPhoto),
+      mergeTrailingSinglePhotoHtml(content, attachedPhotos),
     );
     const bannedInTitle = findBannedWord(title);
     if (bannedInTitle) {
@@ -145,7 +145,7 @@ function CommunityPostEditInner({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
-          content: mergeTrailingSinglePhotoHtml(content, attachedPhoto),
+          content: mergeTrailingSinglePhotoHtml(content, attachedPhotos),
           authorEmail: sessionEmail,
           ...(kokkomaMode ? {} : { prefix }),
           ...(needsEditPw ? { editPassword: editPasswordForSubmit } : {}),
@@ -250,8 +250,8 @@ function CommunityPostEditInner({
 
         <BoardSinglePhotoSection
           sectionId="communityEditPhoto"
-          value={attachedPhoto}
-          onChange={setAttachedPhoto}
+          value={attachedPhotos}
+          onChange={setAttachedPhotos}
         />
 
         {error ? <p className={nestForm.nestError}>{error}</p> : null}

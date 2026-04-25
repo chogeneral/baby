@@ -14,7 +14,7 @@ import {
 import { readLoginSession } from "@/lib/loginSession";
 import {
   mergeTrailingSinglePhotoHtml,
-  splitTrailingSinglePhotoHtml,
+  splitTrailingPhotosHtml,
   isMergedPostBodyEmpty,
 } from "@/lib/boardSinglePhotoHtml";
 
@@ -38,8 +38,8 @@ export function ContentTopicEditForm({ id, topic }: Props) {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  /** 글쓰기와 동일 — 본문 아래 1장만, 저장 시 HTML 맨 뒤에 붙인다 */
-  const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
+  /** 글쓰기와 동일 — 본문 아래 사진(여러 장), 저장 시 HTML 맨 뒤에 붙인다 */
+  const [attachedPhotos, setAttachedPhotos] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -79,9 +79,9 @@ export function ContentTopicEditForm({ id, topic }: Props) {
         setEditAsAuthor(isAuthor);
         setPasswordForSubmit(isAuthor ? "" : passwordFromQuery);
         setTitle(post.title);
-        const split = splitTrailingSinglePhotoHtml(post.content);
+        const split = splitTrailingPhotosHtml(post.content);
         setContent(split.bodyHtml);
-        setAttachedPhoto(split.photoDataUrl);
+        setAttachedPhotos(split.photoDataUrls);
         setIsLoading(false);
       });
   }, [id, passwordFromQuery, router, info.backPath]);
@@ -92,7 +92,7 @@ export function ContentTopicEditForm({ id, topic }: Props) {
       setError("제목을 입력해 주세요.");
       return;
     }
-    if (isMergedPostBodyEmpty(content, attachedPhoto)) {
+    if (isMergedPostBodyEmpty(content, attachedPhotos)) {
       setError("내용을 입력해 주세요.");
       return;
     }
@@ -101,7 +101,7 @@ export function ContentTopicEditForm({ id, topic }: Props) {
     setError("");
 
     try {
-      const mergedContent = mergeTrailingSinglePhotoHtml(content, attachedPhoto);
+      const mergedContent = mergeTrailingSinglePhotoHtml(content, attachedPhotos);
       const body: { title: string; content: string; authorEmail?: string; password?: string } = {
         title,
         content: mergedContent,
@@ -188,8 +188,8 @@ export function ContentTopicEditForm({ id, topic }: Props) {
 
         <BoardSinglePhotoSection
           sectionId="contentTopicEditPhoto"
-          value={attachedPhoto}
-          onChange={setAttachedPhoto}
+          value={attachedPhotos}
+          onChange={setAttachedPhotos}
         />
 
         {error ? <p className={nestForm.nestError}>{error}</p> : null}

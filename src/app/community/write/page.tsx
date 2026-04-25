@@ -32,8 +32,8 @@ export default function WritePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  /** 본문 아래 1장 — 저장 시 본문 HTML 뒤에 붙인다 */
-  const [attachedPhoto, setAttachedPhoto] = useState<string | null>(null);
+  /** 본문 아래 사진(여러 장) — 저장 시 본문 HTML 뒤에 순서대로 붙인다 */
+  const [attachedPhotos, setAttachedPhotos] = useState<string[]>([]);
   const [prefix, setPrefix] = useState<string>("발달");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -66,12 +66,12 @@ export default function WritePage() {
       setError("제목을 입력해 주세요.");
       return;
     }
-    if (isMergedPostBodyEmpty(content, attachedPhoto)) {
+    if (isMergedPostBodyEmpty(content, attachedPhotos)) {
       setError("내용을 입력해 주세요.");
       return;
     }
     const plainBody = htmlToPlainText(
-      mergeTrailingSinglePhotoHtml(content, attachedPhoto),
+      mergeTrailingSinglePhotoHtml(content, attachedPhotos),
     );
 
     const bannedInTitle = findBannedWord(title);
@@ -94,7 +94,7 @@ export default function WritePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
-          content: mergeTrailingSinglePhotoHtml(content, attachedPhoto),
+          content: mergeTrailingSinglePhotoHtml(content, attachedPhotos),
           authorEmail,
           prefix,
           ...(editPassword.trim() ? { editPassword: editPassword.trim() } : {}),
@@ -192,8 +192,8 @@ export default function WritePage() {
 
         <BoardSinglePhotoSection
           sectionId="communityWritePhoto"
-          value={attachedPhoto}
-          onChange={setAttachedPhoto}
+          value={attachedPhotos}
+          onChange={setAttachedPhotos}
         />
 
         <div>
