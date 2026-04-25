@@ -96,6 +96,28 @@ export function updateContentTopicPost(
   return "ok";
 }
 
+export function deleteContentTopicPost(
+  id: string,
+  auth: { authorEmail?: string; password?: string },
+): "ok" | "not_found" | "forbidden" | "wrong_password" {
+  const rows = readAll();
+  const idx = rows.findIndex((r) => r.id === id);
+  if (idx === -1) return "not_found";
+
+  const post = rows[idx];
+  const isAuthor = !!auth.authorEmail && post.authorEmail === auth.authorEmail;
+  const passwordMatches = !!post.password && !!auth.password && post.password === auth.password;
+
+  if (!isAuthor && !passwordMatches) {
+    if (post.password) return "wrong_password";
+    return "forbidden";
+  }
+
+  rows.splice(idx, 1);
+  writeAll(rows);
+  return "ok";
+}
+
 export function generateContentTopicPostId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }

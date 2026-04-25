@@ -363,6 +363,38 @@
   filter: brightness(0.96);
 }
 
+.nestBtnDeleteRed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0 1.35rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  background: linear-gradient(145deg, #c0392b 0%, #a93226 100%);
+  border: 1px solid rgba(120, 30, 20, 0.4);
+  box-shadow: var(--shadowSoft);
+  transition:
+    transform var(--btnHoverMs) var(--btnHoverEase),
+    box-shadow var(--btnHoverMs) ease,
+    filter 0.2s ease;
+}
+
+.nestBtnDeleteRed:hover {
+  transform: translateY(var(--btnLiftY));
+  box-shadow: var(--btnShadowHover);
+  filter: brightness(1.08);
+}
+
+.nestBtnDeleteRed:active {
+  transform: translateY(0) scale(0.98);
+  filter: brightness(0.94);
+}
+
 /*
  * 글쓰기·수정 폼 하단(.nestActions) 전용:
  * - 취소 링크는 왼쪽, 등록 버튼은 오른쪽(justify-content: space-between, DOM 순서 유지)

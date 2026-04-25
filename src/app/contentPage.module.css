@@ -233,6 +233,26 @@
   border-color: rgba(45, 41, 38, 0.2);
 }
 
+.detailBtnDanger {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radiusPill);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  background: #c0392b;
+  border: 1px solid rgba(120, 30, 20, 0.3);
+  box-shadow: var(--shadowSoft);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.detailBtnDanger:hover {
+  filter: brightness(1.08);
+}
+
 /* ── 게시글 목록 테이블 ── */
 .postTableWrap {
   overflow-x: auto;

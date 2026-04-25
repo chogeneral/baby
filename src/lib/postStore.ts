@@ -164,6 +164,19 @@ export async function updateCommunityPost(
   return "ok";
 }
 
+export async function deleteCommunityPost(
+  id: string,
+  authorEmail: string,
+): Promise<"ok" | "not_found" | "forbidden"> {
+  const post = await getPostById(id);
+  if (!post) return "not_found";
+  if (post.authorEmail !== authorEmail) return "forbidden";
+
+  const { error } = await supabase.from("posts").delete().eq("id", Number(id));
+  if (error) return "not_found";
+  return "ok";
+}
+
 /**
  * (구 `posts.json` 시절 API 호환) 당시 클라이언트/라우트가 글 id를 `generatePostId` 로 만들었다.
  * Supabase 이후로는 `appendPost` 가 DB `id` 를 돌려주므로 **새 코드에서는 사용하지 말고**,

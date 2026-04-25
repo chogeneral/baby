@@ -44,6 +44,10 @@ export function ContentTopicDetail({ id, topic }: Props) {
   useEffect(() => setMounted(true), []);
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePasswordInput, setDeletePasswordInput] = useState("");
+  const [deletePasswordError, setDeletePasswordError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const passwordInputRef = useRef<HTMLInputElement>(null);
@@ -103,6 +107,37 @@ export function ContentTopicDetail({ id, topic }: Props) {
     setPasswordInput("");
     setPasswordError("");
     setShowPasswordModal(true);
+  }
+
+  function handleDeleteClick() {
+    setDeletePasswordInput("");
+    setDeletePasswordError("");
+    setShowDeleteModal(true);
+  }
+
+  async function handleDeleteConfirm(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!post) return;
+
+    setIsDeleting(true);
+    const res = await fetch(`/api/content-topic-posts/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        authorEmail: authorEmail ?? undefined,
+        password: deletePasswordInput.trim() || undefined,
+      }),
+    });
+    setIsDeleting(false);
+
+    if (!res.ok) {
+      const data = (await res.json()) as { message?: string };
+      setDeletePasswordError(data.message ?? "삭제에 실패했습니다.");
+      return;
+    }
+
+    setShowDeleteModal(false);
+    router.push(info.backPath);
   }
 
   async function handlePasswordConfirm(e: React.FormEvent<HTMLFormElement>) {
@@ -238,9 +273,14 @@ export function ContentTopicDetail({ id, topic }: Props) {
           목록
         </Link>
         {showEditButton && (
-          <button type="button" onClick={handleEditClick} className={styles.detailBtnSecondary}>
-            수정하기
-          </button>
+          <>
+            <button type="button" onClick={handleEditClick} className={styles.detailBtnSecondary}>
+              수정하기
+            </button>
+            <button type="button" onClick={handleDeleteClick} className={styles.detailBtnDanger}>
+              삭제하기
+            </button>
+          </>
         )}
       </div>
 
@@ -370,6 +410,65 @@ export function ContentTopicDetail({ id, topic }: Props) {
                 </button>
                 <button type="submit" className={nestForm.nestBtnPrimary}>
                   확인
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteModal && mounted && createPortal(
+        <div
+          className={nestForm.nestModalBackdrop}
+          onClick={() => setShowDeleteModal(false)}
+        >
+          <div
+            className={nestForm.nestModal}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="게시글 삭제"
+          >
+            <div className={nestForm.nestModalHeader}>
+              <p className={nestForm.nestModalTitle}>게시글 삭제</p>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className={nestForm.nestModalClose}
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleDeleteConfirm} className={nestForm.nestModalForm}>
+              <input
+                type="password"
+                value={deletePasswordInput}
+                onChange={(e) => setDeletePasswordInput(e.target.value)}
+                placeholder="작성 시 입력한 비밀번호"
+                className={nestForm.nestInput}
+                autoFocus
+              />
+              {deletePasswordError && (
+                <p className={nestForm.nestError}>{deletePasswordError}</p>
+              )}
+              <div className={nestForm.nestModalActions}>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  className={nestForm.nestBtnSecondary}
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={isDeleting}
+                  className={nestForm.nestBtnDeleteRed}
+                  style={{ marginLeft: "auto" }}
+                >
+                  {isDeleting ? "삭제 중…" : "삭제"}
                 </button>
               </div>
             </form>

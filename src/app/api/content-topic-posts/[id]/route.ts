@@ -3,6 +3,7 @@ import {
   getPostById,
   incrementViewCount,
   updateContentTopicPost,
+  deleteContentTopicPost,
 } from "@/lib/contentTopicPostStore";
 
 export async function GET(
@@ -50,6 +51,27 @@ export async function PUT(
   }
   if (result === "forbidden") {
     return NextResponse.json({ message: "수정 권한이 없습니다." }, { status: 403 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const body = await req.json() as { authorEmail?: string; password?: string };
+
+  const result = deleteContentTopicPost(id, body);
+  if (result === "not_found") {
+    return NextResponse.json({ message: "글을 찾을 수 없습니다." }, { status: 404 });
+  }
+  if (result === "wrong_password") {
+    return NextResponse.json({ message: "비밀번호가 일치하지 않습니다." }, { status: 403 });
+  }
+  if (result === "forbidden") {
+    return NextResponse.json({ message: "삭제 권한이 없습니다." }, { status: 403 });
   }
 
   return NextResponse.json({ ok: true });

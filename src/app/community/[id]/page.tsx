@@ -69,6 +69,12 @@ export default function PostDetailPage({
   const [editPasswordError, setEditPasswordError] = useState("");
   const editPasswordInputRef = useRef<HTMLInputElement>(null);
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePasswordInput, setDeletePasswordInput] = useState("");
+  const [deletePasswordError, setDeletePasswordError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const deletePasswordInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const session = readLoginSession();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 글·댓글 작성 가능 여부(로그인)를 불러온 직후 반영
@@ -181,6 +187,45 @@ export default function PostDetailPage({
     setShowEditPasswordModal(true);
   }
 
+  function handleDeleteClick() {
+    setDeletePasswordInput("");
+    setDeletePasswordError("");
+    setShowDeleteModal(true);
+  }
+
+  async function handleDeleteConfirm(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!post || !authorEmail) return;
+
+    const needsPw = !!post.editPassword && post.editPassword.length > 0;
+    if (needsPw) {
+      if (!deletePasswordInput.trim()) {
+        setDeletePasswordError("비밀번호를 입력해 주세요.");
+        return;
+      }
+      if (deletePasswordInput !== post.editPassword) {
+        setDeletePasswordError("비밀번호가 일치하지 않습니다.");
+        return;
+      }
+    }
+
+    setIsDeleting(true);
+    const res = await fetch(`/api/posts/${post.id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ authorEmail }),
+    });
+    setIsDeleting(false);
+
+    if (!res.ok) {
+      setDeletePasswordError("삭제에 실패했습니다. 다시 시도해 주세요.");
+      return;
+    }
+
+    setShowDeleteModal(false);
+    router.push(listHref);
+  }
+
   function handleEditPasswordConfirm(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!post) return;
@@ -250,13 +295,22 @@ export default function PostDetailPage({
           목록
         </button>
         {canEditPost ? (
-          <button
-            type="button"
-            onClick={handleEditClickWithPasswordGate}
-            className={nestForm.nestBtnEditBrown}
-          >
-            수정하기
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={handleEditClickWithPasswordGate}
+              className={nestForm.nestBtnEditBrown}
+            >
+              수정하기
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              className={nestForm.nestBtnDeleteRed}
+            >
+              삭제하기
+            </button>
+          </>
         ) : null}
       </div>
 
@@ -418,6 +472,71 @@ export default function PostDetailPage({
                 </button>
                 <button type="submit" className={nestForm.nestBtnPrimary}>
                   확인
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {showDeleteModal && mounted && createPortal(
+        <div
+          className={nestForm.nestModalBackdrop}
+          onClick={() => setShowDeleteModal(false)}
+        >
+          <div
+            className={nestForm.nestModal}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="게시글 삭제"
+          >
+            <div className={nestForm.nestModalHeader}>
+              <p className={nestForm.nestModalTitle}>게시글 삭제</p>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className={nestForm.nestModalClose}
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleDeleteConfirm} className={nestForm.nestModalForm}>
+              {post.editPassword && post.editPassword.length > 0 ? (
+                <input
+                  ref={deletePasswordInputRef}
+                  type="password"
+                  value={deletePasswordInput}
+                  onChange={(e) => setDeletePasswordInput(e.target.value)}
+                  placeholder="등록 시 입력한 비밀번호"
+                  className={nestForm.nestInput}
+                  autoFocus
+                />
+              ) : (
+                <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
+                  게시글을 삭제하면 복구할 수 없어요. 삭제하시겠어요?
+                </p>
+              )}
+              {deletePasswordError ? (
+                <p className={nestForm.nestError}>{deletePasswordError}</p>
+              ) : null}
+              <div className={nestForm.nestModalActions}>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  className={nestForm.nestBtnSecondary}
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={isDeleting}
+                  className={nestForm.nestBtnDeleteRed}
+                  style={{ marginLeft: "auto" }}
+                >
+                  {isDeleting ? "삭제 중…" : "삭제"}
                 </button>
               </div>
             </form>
