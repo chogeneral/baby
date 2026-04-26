@@ -14,14 +14,10 @@ export const metadata: Metadata = {
 };
 
 /**
- * [수정된 부분]
- * 1. export default 'async' function Home() : 비동기 함수로 변경
- * 2. await getHomeLatestPostPreviews() : 데이터가 올 때까지 대기
+ * 루트 홈: `getHomeLatestPostPreviews()`로 Supabase `posts`·`content_topic_posts` 최신 5개씩 읽어
+ * 히어로 아래 2×2 최신 글에 넘긴다. env 미설정 시 빈 배열로 렌더(프리렌더 실패 방지).
  */
 export default async function Home() {
-  // 데이터를 슈파베이스에서 가져올 때까지 기다립니다.
   const latest = await getHomeLatestPostPreviews();
-
-  // 데이터가 들어온 후에 HomeMain을 렌더링합니다.
   return <HomeMain latest={latest} />;
 }
