@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { supabase } from "./supabase";
 import { normalizeContentTopicInput, type ContentTopicKind } from "@/lib/contentTopic";
 
 const TABLE = "content_topic_posts";

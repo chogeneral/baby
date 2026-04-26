@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { supabase } from "./supabase";
 import type { ContentTopicKind } from "@/lib/contentTopic";
 
 export type HomeLatestPostPreview = {

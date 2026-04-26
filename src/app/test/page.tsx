@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 
 // 1. 데이터 타입을 명확하게 정의합니다 (Any 에러 해결)
 interface GuestbookPost {
