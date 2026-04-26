@@ -6,7 +6,7 @@ import {
   type ContentTopicPostRecord,
 } from "@/lib/contentTopicPostStore";
 import { getCommentsByPostId } from "@/lib/commentStore";
-import { isContentTopicWriteAllowedEmail, normalizeContentTopicInput } from "@/lib/contentTopic";
+import { canWriteContentTopicPost, normalizeContentTopicInput } from "@/lib/contentTopic";
 import { findByEmail } from "@/lib/userStore";
 
 export async function GET(req: NextRequest) {
@@ -25,6 +25,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(withCounts);
 }
 
+/**
+ * POST 권한: canWriteContentTopicPost — 부모이야기는 로그인한 계정 누구나, 정보 게시판은 관리자 이메일만.
+ */
 export async function POST(req: NextRequest) {
   const body = await req.json() as {
     title?: string;
@@ -50,7 +53,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
   }
 
-  if (!isContentTopicWriteAllowedEmail(user.email)) {
+  if (!canWriteContentTopicPost(topic, user.email)) {
     return NextResponse.json(
       { message: "글 등록 권한이 없습니다." },
       { status: 403 },

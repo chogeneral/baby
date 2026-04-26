@@ -5,19 +5,26 @@
 export type ContentTopicKind = "부모이야기" | "정보";
 
 /**
- * 부모이야기·정보 게시판에 ‘새 글’을 등록할 수 있는 계정(단일).
- * 목록의 글쓰기 버튼 노출, 글쓰기 페이지 진입, API POST 가 모두 이 이메일과 일치하는지 검사해
- * URL 직접 입력으로 우회하는 것을 막는다.
+ * [정보] 게시판만 — 새 글 등록을 이 이메일(관리자)로 제한한다.
+ * 부모이야기는 로그인만 되어 있으면 누구나 `canWriteContentTopicPost` 로 허용한다.
  */
-export const contentTopicWriteAllowedEmail = "s2ckh1005@gmail.com";
+export const contentTopicInfoWriteAllowedEmail = "s2ckh1005@gmail.com";
 
-/** 세션/API 에서 넘어온 이메일이 위 허용 목록과 같은지(대소문자 무시) */
-export function isContentTopicWriteAllowedEmail(
+/**
+ * 주제별 글쓰기 권한.
+ * - 부모이야기: 로그인(이메일이 있는 세션)이면 누구나
+ * - 정보: `contentTopicInfoWriteAllowedEmail` 과 일치하는 계정만
+ * 목록 글쓰기 링크·글쓰기 페이지·POST API 가 동일 규칙을 쓴다.
+ */
+export function canWriteContentTopicPost(
+  topic: ContentTopicKind,
   email: string | null | undefined,
 ): boolean {
   if (!email?.trim()) return false;
+  if (topic === "부모이야기") return true;
   return (
-    email.trim().toLowerCase() === contentTopicWriteAllowedEmail.toLowerCase()
+    email.trim().toLowerCase() ===
+    contentTopicInfoWriteAllowedEmail.toLowerCase()
   );
 }
 

@@ -7,8 +7,8 @@ import nestForm from "@/app/nestForm.module.css";
 import { BoardRichTextEditor } from "@/components/BoardRichTextEditor";
 import { BoardSinglePhotoSection } from "@/components/BoardSinglePhotoSection";
 import {
+  canWriteContentTopicPost,
   contentTopicPageInfo,
-  isContentTopicWriteAllowedEmail,
   type ContentTopicKind,
 } from "@/lib/contentTopic";
 import { readLoginSession } from "@/lib/loginSession";
@@ -40,15 +40,15 @@ export function ContentTopicWriteForm({ topic }: Props) {
       router.replace("/login");
       return;
     }
-    /* 허용된 관리자 이메일만 글쓰기 페이지에 머무를 수 있게 — 그 외는 목록으로 돌려보냄 */
-    if (!isContentTopicWriteAllowedEmail(session.email)) {
+    /* 주제별 권한: 부모이야기=로그인 누구나, 정보=관리자만 — 권한 없으면 목록으로 */
+    if (!canWriteContentTopicPost(topic, session.email)) {
       router.replace(info.backPath);
       return;
     }
     /* eslint-disable react-hooks/set-state-in-effect -- 로그인 세션 이메일로 작성자 식별 */
     setAuthorEmail(session.email);
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [router, info.backPath]);
+  }, [router, info.backPath, topic]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -92,28 +92,27 @@ export function ContentTopicWriteForm({ topic }: Props) {
   if (!authorEmail) return null;
 
   /**
-   * 꼬꼬마 글쓰기의 nestNotice 와 같은 위치·역할이다.
-   * 메뉴마다 기대하는 톤이 달라 주제별로 한 줄씩만 나눠 두었다(공통 문장을 합치면 안내가 길어진다).
+   * 꼬꼬마 글쓰기의 nestNotice 와 같은 위치.
+   * 정보: 안내·수정 비밀번호 등 운영 안내를 짧게 유지한다.
+   * 키는 `ContentTopicKind`(DB `topic`)와 동일해야 `noticeByTopic[topic]` 조회가 안전하다.
    */
-  /** 키는 `ContentTopicKind`(DB `topic` 컬럼)와 동일해야 `noticeByTopic[topic]` 조회가 안전하다. */
   const noticeByTopic: Record<ContentTopicKind, string> = {
-    부모이야기:
-      "부모로서의 솔직한 이야기를 나누는 공간이에요. 등록한 글은 닉네임과 함께 목록에 표시돼요. 수정 비밀번호를 설정해 두면 나중에 글을 고칠 수 있어요.",
+    부모이야기: "완벽하지 않아도 괜찮아요. 우리 모두 처음이니까요. 당신의 솔직한 이야기를 들려주세요.",
     정보:
-      "육아·가족에 도움이 되는 안내와 자료를 정리해 두는 공간이에요. 등록한 글은 닉네임과 함께 목록에 표시돼요. 수정 비밀번호를 설정해 두면 나중에 글을 고칠 수 있어요.",
+      "육아와 가족 생활에 도움이 되는 안내·자료·팁을 차분히 모아 두는 공간이에요.",
   };
+
+  const notice = noticeByTopic[topic];
 
   return (
     <main className={nestForm.nestPage}>
       <h1 className={nestForm.nestTitle}>{info.title}</h1>
 
-      
-
-      <div className={nestForm.nestNotice}>
-        <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
-          {noticeByTopic[topic]}
+      {notice && (
+        <p className={nestForm.nestNoticeSub} style={{ margin: "0 0 1.25rem", fontSize: "0.9rem", color: "#6b6560" }}>
+          {notice}
         </p>
-      </div>
+      )}
 
       <form onSubmit={handleSubmit} className={nestForm.nestForm}>
         <div>

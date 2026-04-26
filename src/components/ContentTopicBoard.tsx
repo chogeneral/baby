@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
-import type { ContentTopicKind } from "@/lib/contentTopic";
 import {
+  canWriteContentTopicPost,
   contentTopicPageInfo,
-  isContentTopicWriteAllowedEmail,
+  type ContentTopicKind,
 } from "@/lib/contentTopic";
 import { readLoginSession } from "@/lib/loginSession";
 import styles from "@/app/contentPage.module.css";
@@ -36,15 +36,15 @@ export function ContentTopicBoard({ topic, children }: Props) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
-  /** 정보 게시판: 관리자 전용 / 발달·부모이야기: 로그인 여부와 무관하게 항상 표시 */
-  const [showAdminWriteLink, setShowAdminWriteLink] = useState(false);
+  /** 정보 게시판: 관리자만 글쓰기 링크 표시. 부모이야기는 isLoggedIn 이면 글쓰기 표시 */
+  const [showInfoBoardWriteLink, setShowInfoBoardWriteLink] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const info = contentTopicPageInfo[topic];
 
   useEffect(() => {
     const session = readLoginSession();
     setIsLoggedIn(!!session);
-    setShowAdminWriteLink(isContentTopicWriteAllowedEmail(session?.email));
+    setShowInfoBoardWriteLink(canWriteContentTopicPost("정보", session?.email));
   }, [topic]);
 
   useEffect(() => {
@@ -198,7 +198,7 @@ export function ContentTopicBoard({ topic, children }: Props) {
           >
             글쓰기
           </Link>
-        ) : showAdminWriteLink ? (
+        ) : showInfoBoardWriteLink ? (
           <Link href={info.writePath} className={styles.contentWriteLink}>
             글쓰기
           </Link>
