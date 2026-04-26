@@ -29,8 +29,16 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Vercel 배포 (baby01)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. [Vercel](https://vercel.com) 로그인 → **Add New** → **Project** → GitHub의 이 저장소 **Import** (CLI: `npx vercel@latest login` 후 저장소 루트에서 `npm run deploy:vercel`)
+2. **Framework Preset**: Next.js, Root Directory: 저장소 루트(기본) → **Deploy**  
+   (첫 배포 직전에 환경 변수를 넣으면 런타임 오류를 줄일 수 있습니다.)
+3. **Settings → Environment Variables**에 [`.env.example`](./.env.example)의 키를 그대로 복사해, Production(필요 시 Preview)용 값을 채웁니다.
+4. **Supabase** 대시보드: Authentication·URL 허용 목록에 Vercel 프로덕션 URL(및 프리뷰가 필요하면 `*.vercel.app` 패턴)을 **Site URL / Redirect URLs**에 등록합니다.
+5. **카카오 개발자** 콘솔: 사용 중인 앱의 **웹 도메인·플랫폼**에 배포 URL을 넣고, REST/JS 키가 해당 앱의 것인지 확인합니다.
+6. **커스텀 도메인**을 Vercel **Domains**에 연결한 뒤, `NEXT_PUBLIC_BASE_URL`과 `NEXT_PUBLIC_SITE_URL`을 새 도메인(`https://...`)으로 맞추고 **Redeploy** 합니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+로컬에서 프로덕션 빌드 확인: `npm run build`
+
+자세한 Next.js 배포: [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying)
