@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { saveLoginSession } from "@/lib/loginSession";
 import styles from "./login.module.css";
 
@@ -13,8 +13,14 @@ type FieldErrors = {
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    const prefill = searchParams.get("email");
+    if (prefill) setEmail(prefill);
+  }, [searchParams]);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -142,7 +148,9 @@ export function LoginForm() {
         </form>
 
         <p className={styles.inlineTextLink}>
-          아직 계정이 없으신가요? <Link href="/signup">회원가입</Link>
+          <Link href="/signup">회원가입</Link>
+          <Link href="/find-id">아이디 찾기</Link>
+          <Link href="/find-password">비밀번호 찾기</Link>
         </p>
 
       </div>

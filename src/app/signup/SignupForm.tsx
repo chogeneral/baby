@@ -401,7 +401,7 @@ export function SignupForm() {
         </form>
 
         <p className={styles.inlineTextLink}>
-          이미 계정이 있으신가요? <Link href="/login">로그인</Link>
+          <Link href="/login">로그인</Link>
         </p>
 
       </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { privatePageRobots } from "@/lib/seo/robotsPrivate";
 import { LoginForm } from "./LoginForm";
 
@@ -10,5 +11,9 @@ export const metadata: Metadata = {
 
 /** 로그인 라우트: 폼은 클라이언트 컴포넌트로 분리해 입력·검증 상태를 다룬다 */
 export default function LoginPage() {
-  return <LoginForm />;
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
 }

@@ -58,6 +58,17 @@ export async function findByEmail(
   return rowToUser(data as Record<string, unknown>);
 }
 
+export async function findByPhone(phone: string): Promise<UserRecord | undefined> {
+  const digits = phone.replace(/\D/g, "");
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select("*")
+    .eq("phone", digits)
+    .maybeSingle();
+  if (error || !data) return undefined;
+  return rowToUser(data as Record<string, unknown>);
+}
+
 export async function emailExists(email: string): Promise<boolean> {
   const { data, error } = await supabase
     .from(TABLE)
