@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { isSupabaseConfigured, supabase } from "./supabase";
 import type { ContentTopicKind } from "@/lib/contentTopic";
 
 export type HomeLatestPostPreview = {
@@ -77,6 +77,15 @@ async function fetchLatestContentTopic(topic: ContentTopicKind): Promise<HomeLat
 
 /** 메인 페이지에서 호출하는 함수 */
 export async function getHomeLatestPostPreviews() {
+  /* Vercel 에서 env 누락 시에도 prerender 가 실패하지 않게, DB 호출 전에 막는다. */
+  if (!isSupabaseConfigured()) {
+    console.warn(
+      "[homeLatestPosts] Supabase env 없음 — 최신 글 없이 홈을 렌더합니다. " +
+        "NEXT_PUBLIC_SUPABASE_URL / ANON_KEY 를 Vercel 에 설정하세요.",
+    );
+    return { babyStory: [], parentStories: [], kokkoma: [], info: [] };
+  }
+
   const [babyStory, parentStories, kokkoma, info] = await Promise.all([
     fetchLatestByCategory("아기이야기"),
     fetchLatestContentTopic("부모이야기"),

@@ -8,6 +8,16 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  */
 let client: SupabaseClient | null = null;
 
+/**
+ * prerender(예: 홈)나 선택적 기능에서 env 없이도 빌드가 통과하도록
+ * "설정됨" 여부만 먼저 판단할 때 사용한다.
+ */
+export function isSupabaseConfigured(): boolean {
+  const u = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
+  const k = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
+  return Boolean(u && k);
+}
+
 function getOrCreateClient(): SupabaseClient {
   if (client) return client;
 
