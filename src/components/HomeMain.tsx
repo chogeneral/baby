@@ -17,6 +17,7 @@ type HomeMainProps = {
     babyStory: HomeLatestPostPreview[];
     kokkoma: HomeLatestPostPreview[];
     info: HomeLatestPostPreview[];
+    parentStories: HomeLatestPostPreview[];
   };
 };
 
@@ -124,6 +125,12 @@ export function HomeMain({ latest }: HomeMainProps) {
               title="정보"
               items={latest.info}
               hrefForId={(id) => contentTopicDetailPath("정보", id)}
+            />
+            <HomeLatestSectionBlock
+              title="부모이야기"
+              items={latest.parentStories}
+              hrefForId={(id) => contentTopicDetailPath("부모이야기", id)}
+              showAuthor
             />
           </div>
         </div>
