@@ -28,6 +28,33 @@
   min-width: 0;
 }
 
+/**
+ * 뷰포트 가로 493px 이하 — 좁은 기기에서 소아과·키즈카페·어린이집·유치원 탭을
+ * 한 줄에 2개(각 행 50%·50%)로 두 줄 배치해 터치·가독성을 맞춘다.
+ */
+@media (max-width: 493px) {
+  .regionPageTitleRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .regionNearbyHeaderTabList {
+    display: grid;
+    /* 2열 — 각 셀이 행의 절반 너비(갭 0.5rem 은 grid gap 으로만 사용) */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    width: 100%;
+    flex: none;
+    justify-content: stretch;
+  }
+
+  .regionNearbyTab {
+    /* 그리드 셀을 가득 채워 50% 분할이 시각적으로 분명하도록 함 */
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
 .regionNearbyRoot {
   margin-top: 2rem;
   padding-top: 1.5rem;
