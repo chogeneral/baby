@@ -9,7 +9,8 @@
   border-radius: 14px;
   border: 1px solid rgba(45, 41, 38, 0.12);
   background: #fff;
-  overflow: hidden;
+  /* sticky 툴바가 뷰포트 기준으로 동작하려면 overflow: hidden 으로 스크롤 루트를 잠그면 안 된다(하단·모서리는 .editor 쪽서 처리) */
+  overflow: visible;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -21,13 +22,21 @@
 }
 
 .toolbar {
+  position: sticky;
+  /* globals.css --siteHeaderToolbarOffset: GNB(sticky, z-30) 바로 아래(가리지 않게 세로 offset) */
+  top: var(--siteHeaderToolbarOffset, 6rem);
+  /* 네비·우측 퀵보다 낮고, 본문 스크롤 콘텐츠보다 위 — 고정 띠로 보이게 */
+  z-index: 25;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem 0.5rem;
   padding: 0.5rem 0.55rem;
+  border-radius: 14px 14px 0 0;
   border-bottom: 1px solid rgba(45, 41, 38, 0.08);
-  background: rgba(255, 250, 245, 0.92);
+  background: rgba(255, 250, 245, 0.98);
+  box-shadow: 0 1px 0 rgba(45, 41, 38, 0.05);
+  flex-shrink: 0;
 }
 
 .toolbarSelect {
@@ -112,6 +121,8 @@
   min-height: 24rem;
   max-height: 56rem;
   overflow-y: auto;
+  /* 카드 하단만 라운드 — .wrap overflow 제거에 맞춰 잘라 동그란 박스 유지 */
+  border-radius: 0 0 14px 14px;
   padding: 0.65rem 0.85rem;
   font-size: 0.9375rem;
   line-height: 1.65;
@@ -218,4 +229,113 @@
 
 .specialClose:hover {
   background: rgba(45, 41, 38, 0.12);
+}
+
+/* — 구분선 8종 선택지: 스샷과 같이 한 줄씩 옵션(대체로 밝은 띠) */
+
+/**
+ * `createPortal(..., document.body)` 로 씌울 딤 + 중앙 정렬 레이어.
+ * 전체 뷰포트를 덮고 flex 로 패널을 수평·수직 정중앙(해상도 센터)에 둔다.
+ */
+.dividerModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  background: rgba(15, 12, 10, 0.35);
+}
+
+.dividerPanel {
+  width: 100%;
+  max-width: 24rem;
+  max-height: 78vh;
+  overflow: auto;
+  padding: 1rem 0.75rem;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgba(45, 30, 22, 0.18);
+}
+
+.dividerTitle {
+  margin: 0 0 0.5rem 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--colorCharcoal, #2d2926);
+}
+
+.dividerList {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(45, 41, 38, 0.1);
+}
+
+.dividerRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.4rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.4rem;
+  border: none;
+  border-bottom: 1px solid rgba(45, 41, 38, 0.06);
+  background: #fff;
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--colorCharcoal, #2d2926);
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.dividerRow:nth-child(odd) {
+  background: #faf8f5;
+}
+
+.dividerRow:last-child {
+  border-bottom: none;
+}
+
+.dividerRow:hover,
+.dividerRow:focus-visible {
+  background: rgba(197, 123, 103, 0.14);
+  outline: none;
+}
+
+.dividerRowPreview {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.4rem;
+  padding: 0 0.2rem;
+}
+
+/* 미리보기 박스 안에만 postDivider 를 스케일 — 본문과 동일 class 사용 */
+.dividerRowPreviewInner {
+  width: 100%;
+  max-width: 9rem;
+  margin: 0;
+}
+
+.dividerRowPreviewInner :where(.postDivider) {
+  margin: 0.15rem 0;
+}
+
+.dividerRowLabel {
+  flex: 0 0 auto;
+  max-width: 6.2rem;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: #5c5650;
+  white-space: nowrap;
 }

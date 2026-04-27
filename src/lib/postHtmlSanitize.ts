@@ -54,8 +54,11 @@ const SANITIZE_CONFIG: DomPurifyConfig = {
     "sup",
     "font",
     "img",
+    /* insertHorizontalRule·과거 execCommand 본문 호환 + 구분선 전용 */
+    "hr",
   ],
   ALLOWED_ATTR: [
+    "class",
     "style",
     "href",
     "target",
@@ -69,6 +72,10 @@ const SANITIZE_CONFIG: DomPurifyConfig = {
     "height",
     "loading",
     "decoding",
+    "role",
+    "aria-label",
+    "aria-hidden",
+    "aria-orientation",
   ],
   ALLOW_DATA_ATTR: false,
 };

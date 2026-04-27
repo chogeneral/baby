@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* 글쓰기/상세 HTML 본문에 삽입하는 구분선(8종) — 전역 class 로 한 번만 정의 */
+@import "./postDivider.css";
 
 /**
  * `public/font` — Next 에서는 `/font/파일명` 으로 제공된다.
@@ -48,6 +50,11 @@
   --btnLiftY: -3px;
   --btnShadowHover: 0 10px 28px rgba(45, 41, 38, 0.14);
   --fontH1: "PretendardB", sans-serif;
+  /**
+   * 상단 GNB( Navbar: py-4 + 로고 h-16 )에 맞춘 값 — BoardRichTextEditor 툴바 `sticky` 의 `top` 과 동기.
+   * 레이아웃이 바뀌면 이 값·Navbar 를 함께 맞출 것.
+   */
+  --siteHeaderToolbarOffset: 6rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

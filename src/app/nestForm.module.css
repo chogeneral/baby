@@ -586,6 +586,13 @@
   border-radius: 10px;
 }
 
+/* 과거 insertHorizontalRule 로 저장된 <hr> — 새 구분선 div 과 같은 여백 느낌 */
+.nestRichBody :where(hr) {
+  margin: 0.85rem 0;
+  border: none;
+  border-top: 1px solid rgba(45, 41, 38, 0.35);
+}
+
 /* 댓글 목록 — 카드형 행으로 리스트를 나눈다 */
 .nestCommentList {
   list-style: none;

@@ -1,0 +1,148 @@
+/**
+ * BoardRichTextEditor·게시 상세(nestRichBody) 공통으로 쓰는 본문 구분선 스타일이다.
+ * DOMPurify 가 class·role·aria-* 를 통과시키는 한 삽입된 div/span 이 그대로 보인다.
+ * 시각(선 길이·굵기·기호)은 캡처한 메뉴 8종과 맞췄다: 짧은/긴/굵은 선, V, 다이아, 점, /, | .
+ */
+
+/* 공통: 블록으로 한 덩어리(본문 p 와 겹침·줄 정렬) */
+.postDivider {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  clear: both;
+  margin: 0.9rem 0;
+}
+
+/* 1. 짧고 얇은 가로선(중앙, 폭 제한) */
+.postDivider.postDividerShortThin {
+  height: 0;
+  max-width: 5.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  border: none;
+  border-top: 1px solid rgba(45, 41, 38, 0.45);
+}
+
+/* 2. 긴 얇은 가로선(전체 폭) */
+.postDivider.postDividerLongThin {
+  height: 0;
+  border: none;
+  border-top: 1px solid rgba(45, 41, 38, 0.45);
+}
+
+/* 3. 짧고 굵은 가로선 */
+.postDivider.postDividerShortThick {
+  height: 0;
+  max-width: 5.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  border: none;
+  border-top: 3px solid rgba(45, 41, 38, 0.52);
+}
+
+/* 4. 가느다란 선 + 가운데 ▼(V 노치) */
+.postDivider.postDividerVnotch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  gap: 0.12rem;
+  min-height: 0.5rem;
+}
+
+.postDividerVnotchArm {
+  flex: 1 1 0;
+  min-width: 0.25rem;
+  height: 0;
+  border: none;
+  border-top: 1px solid rgba(45, 41, 38, 0.45);
+}
+
+.postDividerVnotchCaret {
+  flex-shrink: 0;
+  display: block;
+  font-size: 0.45rem;
+  line-height: 1;
+  color: rgba(45, 41, 38, 0.55);
+  padding: 0 0.1rem 0.05rem;
+}
+
+/* 5. 가느다란 선 + 가운데 ◇(빈 다이아) */
+.postDivider.postDividerDiamond {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  gap: 0.12rem;
+  min-height: 0.5rem;
+}
+
+.postDividerDiamondArm {
+  flex: 1 1 0;
+  min-width: 0.25rem;
+  height: 0;
+  border: none;
+  border-top: 1px solid rgba(45, 41, 38, 0.45);
+}
+
+.postDividerDiamondShape {
+  flex-shrink: 0;
+  display: block;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: rgba(45, 41, 38, 0.52);
+  padding: 0 0.05rem;
+}
+
+/* 6. 가로로 6개의 점(동그라미) */
+.postDivider.postDividerDotted {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  gap: 0.4rem;
+  min-height: 0.5rem;
+}
+
+.postDividerDotted .postDividerDot {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(45, 41, 38, 0.45);
+  flex-shrink: 0;
+}
+
+/* 7. 사선(슬래시 한 글자) */
+.postDivider.postDividerDiagonal {
+  text-align: center;
+  min-height: 0.5rem;
+}
+
+.postDividerDiagonalSlash {
+  display: inline-block;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: rgba(45, 41, 38, 0.5);
+  font-weight: 300;
+}
+
+/* 8. 세로 막대(파이프 한 글자) */
+.postDivider.postDividerVertical {
+  text-align: center;
+  min-height: 0.5rem;
+}
+
+.postDividerVerticalBar {
+  display: inline-block;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: rgba(45, 41, 38, 0.5);
+  font-weight: 300;
+}
