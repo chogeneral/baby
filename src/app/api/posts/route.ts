@@ -3,6 +3,7 @@
  * 글 ID는 insert 시 DB가 부여한다. 목록은 이메일/게시판 필터용 함수로만 조회한다.
  */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import {
   appendPost,
   describeAppendPostFailure,
@@ -98,6 +99,7 @@ export async function POST(req: NextRequest) {
         { status: 500 },
       );
     }
+    revalidatePath("/");
     return NextResponse.json(outcome.post, { status: 201 });
   }
 
@@ -125,5 +127,6 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
+  revalidatePath("/");
   return NextResponse.json(outcome.post, { status: 201 });
 }

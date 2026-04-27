@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import {
   appendPost,
   generateContentTopicPostId,
@@ -72,5 +73,6 @@ export async function POST(req: NextRequest) {
   };
 
   await appendPost(post);
+  revalidatePath("/");
   return NextResponse.json(post, { status: 201 });
 }

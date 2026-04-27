@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   },
 };
 
+/** 홈은 항상 최신 글을 서버에서 새로 읽어야 하므로 정적 프리렌더·캐시를 사용하지 않는다. */
+export const dynamic = "force-dynamic";
+
 /**
  * 루트 홈: `getHomeLatestPostPreviews()`로 Supabase `posts`·`content_topic_posts` 최신 5개씩 읽어
  * 히어로 아래 2×2 최신 글에 넘긴다. env 미설정 시 빈 배열로 렌더(프리렌더 실패 방지).
