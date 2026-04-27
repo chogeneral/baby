@@ -122,15 +122,15 @@ export function HomeMain({ latest }: HomeMainProps) {
               hrefForId={(id) => `/community/${id}`}
             />
             <HomeLatestSectionBlock
-              title="정보"
-              items={latest.info}
-              hrefForId={(id) => contentTopicDetailPath("정보", id)}
-            />
-            <HomeLatestSectionBlock
               title="부모이야기"
               items={latest.parentStories}
               hrefForId={(id) => contentTopicDetailPath("부모이야기", id)}
               showAuthor
+            />
+            <HomeLatestSectionBlock
+              title="정보"
+              items={latest.info}
+              hrefForId={(id) => contentTopicDetailPath("정보", id)}
             />
           </div>
         </div>
