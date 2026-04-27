@@ -9,7 +9,6 @@ import { BoardSinglePhotoSection } from "@/components/BoardSinglePhotoSection";
 import {
   communityRoomLabels,
   effectiveBoardKind,
-  isKokkomaBoard,
   type CommunityRoomKind,
 } from "@/lib/communityRoom";
 import { readLoginSession } from "@/lib/loginSession";
@@ -21,6 +20,10 @@ import {
 } from "@/lib/boardSinglePhotoHtml";
 import { htmlToPlainText } from "@/lib/postHtmlUtils";
 import type { PostRecord } from "@/lib/postStore";
+import {
+  REGION_POST_TYPE_OPTIONS,
+  isValidRegionPostType,
+} from "@/lib/regionPostTypes";
 
 /** 아기이야기 말머리 — 작성 화면과 동일한 후보를 둔다 */
 const babyStoryPrefixes = [
@@ -96,16 +99,21 @@ function CommunityPostEditInner({
         setEditPasswordForSubmit(
           storedPw != null && storedPw.length > 0 ? pwParam : "",
         );
-        if (!isKokkomaBoard(kind)) {
+        if (kind === "babyStory") {
           const list = babyStoryPrefixes as readonly string[];
           setPrefix(p.prefix && list.includes(p.prefix) ? p.prefix : babyStoryPrefixes[0]);
+        } else if (kind === "regionNearby") {
+          setPrefix(
+            p.prefix && isValidRegionPostType(p.prefix)
+              ? p.prefix
+              : REGION_POST_TYPE_OPTIONS[0],
+          );
         }
         setIsLoading(false);
       });
   }, [id, pwParam, router]);
 
   const roomKind: CommunityRoomKind | null = post ? effectiveBoardKind(post) : null;
-  const kokkomaMode = roomKind ? isKokkomaBoard(roomKind) : false;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -147,7 +155,7 @@ function CommunityPostEditInner({
           title,
           content: mergeTrailingSinglePhotoHtml(content, attachedPhotos),
           authorEmail: sessionEmail,
-          ...(kokkomaMode ? {} : { prefix }),
+          ...(roomKind === "babyStory" || roomKind === "regionNearby" ? { prefix } : {}),
           ...(needsEditPw ? { editPassword: editPasswordForSubmit } : {}),
         }),
       });
@@ -187,11 +195,12 @@ function CommunityPostEditInner({
 
   return (
     <main className={nestForm.nestPage}>
-      <p className={nestForm.nestTag}>글 수정</p>
       <h1 className={nestForm.nestTitle}>{roomLabel}</h1>
 
       <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
-        글 수정 안내
+        {roomKind === "regionNearby"
+          ? communityRoomLabels.regionNearby.ageHint
+          : "글 수정 안내"}
       </p>
 
       <div className={nestForm.nestNotice}>
@@ -201,7 +210,7 @@ function CommunityPostEditInner({
       </div>
 
       <form onSubmit={handleSubmit} className={nestForm.nestForm}>
-        {!kokkomaMode && roomKind ? (
+        {roomKind === "babyStory" ? (
           <div>
             <label htmlFor="editPostPrefix" className={nestForm.nestLabel}>
               말머리
@@ -213,6 +222,25 @@ function CommunityPostEditInner({
               className={nestForm.nestSelect}
             >
               {babyStoryPrefixes.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
+        {roomKind === "regionNearby" ? (
+          <div>
+            <label htmlFor="editRegionPostType" className={nestForm.nestLabel}>
+              타입
+            </label>
+            <select
+              id="editRegionPostType"
+              value={prefix}
+              onChange={(e) => setPrefix(e.target.value)}
+              className={nestForm.nestSelect}
+            >
+              {REGION_POST_TYPE_OPTIONS.map((p) => (
                 <option key={p} value={p}>
                   {p}
                 </option>

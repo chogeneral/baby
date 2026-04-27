@@ -61,7 +61,10 @@ export async function PUT(
     {
       title,
       content,
-      ...(isKokkomaBoard(effectiveBoardKind(existing)) ? {} : { prefix }),
+      ...(effectiveBoardKind(existing) === "babyStory" ||
+      effectiveBoardKind(existing) === "regionNearby"
+        ? { prefix }
+        : {}),
     },
     { editPassword },
   );

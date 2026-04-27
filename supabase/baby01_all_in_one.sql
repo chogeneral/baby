@@ -1,15 +1,17 @@
 -- ============================================================================
 -- baby01 — Supabase 전체 스키마 + 커뮤니티 정렬 + RLS(anon) 한 번에 적용
 -- ============================================================================
--- 이 파일 = 다음 네 마이그레이션을 **순서대로** 합친 것이다.
+-- 이 파일 = 다음 **다섯** 마이그레이션을 **순서대로** 합친 것이다.
 --   20260225120000_app_domain_tables.sql
 --   20260225140000_align_community_posts_comments.sql
 --   20260225150000_rls_app_domain_anon.sql
 --   20260225160000_content_topic_korean.sql  (topic 한글·기존 영문 데이터 치환 — 아래 [1a]에 편입)
+--   20260427120000_posts_latitude_longitude.sql  (지역 게시판: posts.latitude/longitude + 인덱스)
 -- SQL Editor에 **위→아래 한 번** 붙여넣어 실행하면 된다(이미 적용한 대상은 IF NOT EXISTS
 -- / DROP IF EXISTS 덕에 대부분 멱등).
 --
 -- 절차 요약: app_users·content_topic_*·baby_records → posts·comments → RLS 전 테이블
+-- → posts 에 지역용 좌표 컬럼(지역1km 목록·필터는 앱 API에서 Haversine 처리)
 -- 운영 전 RLS `USING (true)` 는 반드시 좁힌다.
 -- ============================================================================
 
@@ -138,6 +140,10 @@ ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS prefix text;
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS view_count integer;
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS edit_password text;
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS created_at timestamptz;
+
+-- 지역 1km 게시판: 작성 시점 좌표(목록은 독자 위치 기준 반경 필터 — postStore)
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS latitude double precision;
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS longitude double precision;
 
 ALTER TABLE public.posts
   ALTER COLUMN child_birth_year SET DEFAULT 0;
@@ -270,3 +276,22 @@ CREATE POLICY "content_topic_comments_all_anon" ON public.content_topic_comments
 
 DROP POLICY IF EXISTS "baby_records_all_anon" ON public.baby_records;
 CREATE POLICY "baby_records_all_anon" ON public.baby_records FOR ALL USING (true) WITH CHECK (true);
+
+-- ---- +지역 게시판(지역1km) — `posts` 한 테이블로 목록(별도 테이블 없음, 마이그레이션 20260427120000) ----
+-- * 앱: `src/lib/postStore.ts` — 지역 글은 `category = '지역1km'`, `prefix` 에 유형(고민·정보공유…).
+-- * 지역 **목록** API/화면: 위에서 가져온 뒤 **클라이언트 위치** 기준 1km 이내만 남기므로( Haversine ),
+--   DB 쪽에는 아래 `latitude`·`longitude` + 부분 인덱스로 조회·정렬에만 도움을 준다.
+-- * SQL Editor 에서 수동으로 지역 글만 보려면 예:
+--   SELECT id, title, category, prefix, latitude, longitude, created_at
+--   FROM public.posts WHERE category = '지역1km' ORDER BY created_at DESC;
+
+-- 지역 페이지 1km 반경 게시판: 글 작성 시점의 위·경도 저장(목록은 독자 위치 기준 1km 필터)
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS latitude double precision;
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS longitude double precision;
+
+COMMENT ON COLUMN public.posts.latitude IS '지역1km 게시글일 때 작성 위치 위도';
+COMMENT ON COLUMN public.posts.longitude IS '지역1km 게시글일 때 작성 위치 경도';
+
+CREATE INDEX IF NOT EXISTS idx_posts_category_region
+  ON public.posts (category, created_at DESC)
+  WHERE category = '지역1km';

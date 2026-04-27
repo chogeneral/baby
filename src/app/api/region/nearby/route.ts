@@ -40,11 +40,16 @@ function parseHeading(body: unknown): number | null {
  * heading 이 있으면 직선 1km 이면서 진행 방향 ±55° 부채꼴 안만 남긴다.
  */
 export async function POST(req: NextRequest) {
-  const body = (await req.json()) as {
+  let body: {
     latitude?: unknown;
     longitude?: unknown;
     headingDegrees?: unknown;
   };
+  try {
+    body = (await req.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ message: "요청 본문이 올바른 JSON이 아닙니다." }, { status: 400 });
+  }
 
   const lat = typeof body.latitude === "number" ? body.latitude : Number(body.latitude);
   const lng = typeof body.longitude === "number" ? body.longitude : Number(body.longitude);
@@ -79,47 +84,54 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(base);
   }
 
-  const [
-    addressLine,
-    pediatric,
-    nightPed,
-    nightPhrase,
-    pedAdol,
-    kidsCafe,
-    kidsCafeSpaced,
-    daycare,
-    kindergarten,
-  ] = await Promise.all([
-    kakaoCoordToAddressLine(lng, lat, restKey),
-    kakaoKeywordSearch("소아과", lng, lat, RADIUS_M, restKey),
-    kakaoKeywordSearch("야간소아과", lng, lat, RADIUS_M, restKey),
-    kakaoKeywordSearch("소아과야간", lng, lat, RADIUS_M, restKey),
-    /* 병원 표기가 ‘소아청소년과’ 인 곳까지 한 번 더 잡아 합친다 */
-    kakaoKeywordSearch("소아청소년과", lng, lat, RADIUS_M, restKey),
-    kakaoKeywordSearch("키즈카페", lng, lat, RADIUS_M, restKey),
-    kakaoKeywordSearch("키즈 카페", lng, lat, RADIUS_M, restKey),
-    kakaoKeywordSearch("어린이집", lng, lat, RADIUS_M, restKey),
-    kakaoKeywordSearch("유치원", lng, lat, RADIUS_M, restKey),
-  ]);
+  try {
+    const [
+      addressLine,
+      pediatric,
+      nightPed,
+      nightPhrase,
+      pedAdol,
+      kidsCafe,
+      kidsCafeSpaced,
+      daycare,
+      kindergarten,
+    ] = await Promise.all([
+      kakaoCoordToAddressLine(lng, lat, restKey),
+      kakaoKeywordSearch("소아과", lng, lat, RADIUS_M, restKey),
+      kakaoKeywordSearch("야간소아과", lng, lat, RADIUS_M, restKey),
+      kakaoKeywordSearch("소아과야간", lng, lat, RADIUS_M, restKey),
+      kakaoKeywordSearch("소아청소년과", lng, lat, RADIUS_M, restKey),
+      kakaoKeywordSearch("키즈카페", lng, lat, RADIUS_M, restKey),
+      kakaoKeywordSearch("키즈 카페", lng, lat, RADIUS_M, restKey),
+      kakaoKeywordSearch("어린이집", lng, lat, RADIUS_M, restKey),
+      kakaoKeywordSearch("유치원", lng, lat, RADIUS_M, restKey),
+    ]);
 
-  const applyCone = (list: NearbyPlace[]) =>
-    filterByForwardCone(list, lat, lng, headingDeg, RADIUS_M, FORWARD_HALF_ANGLE_DEG);
+    const applyCone = (list: NearbyPlace[]) =>
+      filterByForwardCone(list, lat, lng, headingDeg, RADIUS_M, FORWARD_HALF_ANGLE_DEG);
 
-  let hospitals = mergeKakaoDocumentsById([pediatric, nightPed, nightPhrase, pedAdol]);
-  hospitals = applyCone(hospitals);
+    let hospitals = mergeKakaoDocumentsById([pediatric, nightPed, nightPhrase, pedAdol]);
+    hospitals = applyCone(hospitals);
 
-  let kidsCafes = applyCone(mergeKakaoDocumentsById([kidsCafe, kidsCafeSpaced]).slice(0, 15));
-  let daycares = applyCone(mergeKakaoDocumentsById([daycare]).slice(0, 15));
-  let kindergartens = applyCone(mergeKakaoDocumentsById([kindergarten]).slice(0, 15));
+    const kidsCafes = applyCone(mergeKakaoDocumentsById([kidsCafe, kidsCafeSpaced]).slice(0, 15));
+    const daycares = applyCone(mergeKakaoDocumentsById([daycare]).slice(0, 15));
+    const kindergartens = applyCone(mergeKakaoDocumentsById([kindergarten]).slice(0, 15));
 
-  hospitals = hospitals.slice(0, 20);
+    hospitals = hospitals.slice(0, 20);
 
-  return NextResponse.json({
-    ...base,
-    addressLine,
-    hospitals,
-    kidsCafes,
-    daycares,
-    kindergartens,
-  } satisfies NearbyResponse);
+    return NextResponse.json({
+      ...base,
+      addressLine,
+      hospitals,
+      kidsCafes,
+      daycares,
+      kindergartens,
+    } satisfies NearbyResponse);
+  } catch (err) {
+    console.error("[api/region/nearby] Kakao 호출 실패", err);
+    return NextResponse.json(
+      { message: "주변 정보를 가져오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요." },
+      { status: 503 },
+    );
+  }
 }

@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   appendPost,
+  describeAppendPostFailure,
   getPostsByAuthorEmail,
   getPostsByBoardKind,
   type PostRecord,
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
 
   if (requestedKind === "kokkoma") {
     const placeholderYear = getPrimaryChildBirthYear(user) ?? new Date().getFullYear();
-    const post = await appendPost({
+    const outcome = await appendPost({
       title: title.trim(),
       content: content.trim(),
       authorEmail: user.email,
@@ -91,10 +92,13 @@ export async function POST(req: NextRequest) {
       boardKind: "kokkoma",
       ...(trimmedEditPw ? { editPassword: trimmedEditPw } : {}),
     });
-    if (!post) {
-      return NextResponse.json({ message: "글 등록에 실패했습니다." }, { status: 500 });
+    if (!outcome.ok) {
+      return NextResponse.json(
+        { message: describeAppendPostFailure(outcome.supabase) },
+        { status: 500 },
+      );
     }
-    return NextResponse.json(post, { status: 201 });
+    return NextResponse.json(outcome.post, { status: 201 });
   }
 
   const primaryYear = getPrimaryChildBirthYear(user);
@@ -105,7 +109,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const post = await appendPost({
+  const outcome = await appendPost({
     title: title.trim(),
     content: content.trim(),
     authorEmail: user.email,
@@ -115,8 +119,11 @@ export async function POST(req: NextRequest) {
     ...(prefix ? { prefix } : {}),
     ...(trimmedEditPw ? { editPassword: trimmedEditPw } : {}),
   });
-  if (!post) {
-    return NextResponse.json({ message: "글 등록에 실패했습니다." }, { status: 500 });
+  if (!outcome.ok) {
+    return NextResponse.json(
+      { message: describeAppendPostFailure(outcome.supabase) },
+      { status: 500 },
+    );
   }
-  return NextResponse.json(post, { status: 201 });
+  return NextResponse.json(outcome.post, { status: 201 });
 }

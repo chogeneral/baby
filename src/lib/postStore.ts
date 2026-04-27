@@ -4,6 +4,8 @@ import {
   type StoredCommunityBoardKind,
   effectiveBoardKind,
 } from "@/lib/communityRoom";
+import { haversineDistanceM } from "@/lib/haversineDistanceM";
+import { regionBoardRadiusM } from "@/lib/regionBoardConstants";
 
 export type PostRecord = {
   id: string;
@@ -17,7 +19,13 @@ export type PostRecord = {
   prefix?: string;
   viewCount?: number;
   editPassword?: string;
+  /** `boardKind === regionNearby` 일 때만 — 작성 시점 위경도(목록 필터·표시용) */
+  latitude?: number;
+  longitude?: number;
 };
+
+/** 아기이야기·꼬꼬마·SQL 카테고리명과 동기화(지역1km 는 지역 전용) */
+const REGION_POST_CATEGORY = "지역1km" as const;
 
 // boardKind → Supabase posts.category 컬럼값 매핑
 const BOARD_KIND_TO_CATEGORY: Record<string, string> = {
@@ -26,17 +34,22 @@ const BOARD_KIND_TO_CATEGORY: Record<string, string> = {
   toddler: "아기이야기",
   preschool: "아기이야기",
   kokkoma: "꼬꼬마",
+  regionNearby: REGION_POST_CATEGORY,
 };
 
 // Supabase posts.category → boardKind 매핑
 const CATEGORY_TO_BOARD_KIND: Record<string, StoredCommunityBoardKind> = {
   "아기이야기": "babyStory",
   "꼬꼬마": "kokkoma",
+  [REGION_POST_CATEGORY]: "regionNearby",
 };
 
-const COMMUNITY_CATEGORIES = ["아기이야기", "꼬꼬마"];
+/** 마이페이지·사이트맵 등 `posts` 커뮤니티 전체(아기이야기·꼬꼬마·지역1km) */
+const ALL_COMMUNITY_POST_CATEGORIES = ["아기이야기", "꼬꼬마", REGION_POST_CATEGORY] as const;
 
 function rowToPost(row: Record<string, unknown>): PostRecord {
+  const lat = row.latitude;
+  const lng = row.longitude;
   return {
     id: String(row.id),
     title: row.title as string,
@@ -49,6 +62,8 @@ function rowToPost(row: Record<string, unknown>): PostRecord {
     prefix: (row.prefix as string) ?? undefined,
     viewCount: (row.view_count as number) ?? undefined,
     editPassword: (row.edit_password as string) ?? undefined,
+    ...(typeof lat === "number" && Number.isFinite(lat) ? { latitude: lat } : {}),
+    ...(typeof lng === "number" && Number.isFinite(lng) ? { longitude: lng } : {}),
   };
 }
 
@@ -57,7 +72,7 @@ export async function getPostsByAuthorEmail(authorEmail: string): Promise<PostRe
     .from("posts")
     .select("*")
     .eq("author_email", authorEmail)
-    .in("category", COMMUNITY_CATEGORIES)
+    .in("category", [...ALL_COMMUNITY_POST_CATEGORIES])
     .order("created_at", { ascending: false });
   if (error || !data) return [];
   return (data as Record<string, unknown>[]).map(rowToPost);
@@ -100,7 +115,7 @@ export async function getCommunityPostByIdForSeo(
     .from("posts")
     .select("*")
     .eq("id", numId)
-    .in("category", COMMUNITY_CATEGORIES)
+    .in("category", [...ALL_COMMUNITY_POST_CATEGORIES])
     .maybeSingle();
   if (error || !data) return undefined;
   return rowToPost(data as Record<string, unknown>);
@@ -113,7 +128,7 @@ export async function listCommunityPostIdsForSitemap(): Promise<
   const { data, error } = await supabase
     .from("posts")
     .select("id, created_at")
-    .in("category", COMMUNITY_CATEGORIES)
+    .in("category", [...ALL_COMMUNITY_POST_CATEGORIES])
     .order("id", { ascending: true });
   if (error || !data) return [];
   return (data as { id: number; created_at: string | null }[]).map((r) => ({
@@ -121,6 +136,43 @@ export async function listCommunityPostIdsForSitemap(): Promise<
     createdAt: r.created_at,
   }));
 }
+
+/**
+ * `appendPost` 가 Supabase insert 에서 실패했을 때 API 응답용 짧은 한글 안내.
+ * — 외부에 내부 경로·원시 SQL 을 노출하지 않고, 흔한 원인(컬럼 미적용·RLS)만 구체화한다.
+ */
+export function describeAppendPostFailure(err: { message: string; code?: string }): string {
+  const m = err.message.toLowerCase();
+  const code = err.code ?? "";
+
+  if (
+    code === "42703" ||
+    m.includes("latitude") ||
+    m.includes("longitude") ||
+    (m.includes("column") && (m.includes("does not exist") || m.includes("unknown")))
+  ) {
+    return (
+      "데이터베이스에 지역 글용 위치(위도·경도) 컬럼이 없거나 스키마가 맞지 않습니다. " +
+      "Supabase에서 `20260427120000_posts_latitude_longitude.sql` 마이그레이션을 적용했는지 확인해 주세요."
+    );
+  }
+  if (
+    m.includes("permission denied") ||
+    m.includes("row-level security") ||
+    m.includes("new row violates row-level security") ||
+    m.includes("rls")
+  ) {
+    return "게시물 저장이 정책(보안)에 의해 거절되었습니다. Supabase RLS 설정을 확인해 주세요.";
+  }
+  if (m.includes("check constraint") || m.includes("violates check constraint")) {
+    return "저장된 카테고리·형식이 데이터베이스 제약과 맞지 않습니다. 관리자에게 문의해 주세요.";
+  }
+  return "글 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
+export type AppendPostOutcome =
+  | { ok: true; post: PostRecord }
+  | { ok: false; supabase: { message: string; code?: string } };
 
 export async function incrementViewCount(id: string): Promise<void> {
   const numId = Number(id);
@@ -143,7 +195,10 @@ export async function appendPost(post: {
   boardKind?: StoredCommunityBoardKind;
   prefix?: string;
   editPassword?: string;
-}): Promise<PostRecord | null> {
+  /** `regionNearby` 전용 — 작성 직전 지도(클라이언트)가 보낸 위경도 */
+  latitude?: number;
+  longitude?: number;
+}): Promise<AppendPostOutcome> {
   const category = post.boardKind ? (BOARD_KIND_TO_CATEGORY[post.boardKind] ?? null) : null;
   const { data, error } = await supabase
     .from("posts")
@@ -157,11 +212,32 @@ export async function appendPost(post: {
       prefix: post.prefix ?? null,
       edit_password: post.editPassword ?? null,
       view_count: 0,
+      ...(post.boardKind === "regionNearby" &&
+      typeof post.latitude === "number" &&
+      Number.isFinite(post.latitude) &&
+      typeof post.longitude === "number" &&
+      Number.isFinite(post.longitude)
+        ? { latitude: post.latitude, longitude: post.longitude }
+        : {}),
     })
     .select()
     .single();
-  if (error || !data) return null;
-  return rowToPost(data as Record<string, unknown>);
+  if (error) {
+    // 서버 로그 — 클라이언트에는 `describeAppendPostFailure` 만 넘기는 것을 권장
+    console.error("[appendPost] Supabase insert failed", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+  }
+  if (error || !data) {
+    return {
+      ok: false,
+      supabase: { message: error?.message ?? "insert returned no data", code: error?.code },
+    };
+  }
+  return { ok: true, post: rowToPost(data as Record<string, unknown>) };
 }
 
 export async function updateCommunityPost(
@@ -186,7 +262,10 @@ export async function updateCommunityPost(
     title: fields.title.trim(),
     content: fields.content.trim(),
   };
-  if (kind !== "kokkoma" && fields.prefix !== undefined) {
+  if (
+    (kind === "babyStory" || kind === "regionNearby") &&
+    fields.prefix !== undefined
+  ) {
     updates.prefix = fields.prefix;
   }
 
@@ -230,8 +309,37 @@ export async function getAllPosts(): Promise<PostRecord[]> {
   const { data, error } = await supabase
     .from("posts")
     .select("*")
-    .in("category", COMMUNITY_CATEGORIES)
+    .in("category", [...ALL_COMMUNITY_POST_CATEGORIES])
     .order("created_at", { ascending: false });
   if (error || !data) return [];
   return (data as Record<string, unknown>[]).map(rowToPost);
+}
+
+/**
+ * `지역1km` 글만 가져온 뒤, (centerLat, centerLng) 기준 반경 `radiusM` 안만 남긴다(거리 오름차순 옵션).
+ * — Supabase PostGIS 없이 앱에서 Haversine 필터(게시 수가 많아지면 RPC·bbox 인덱스로 전환).
+ */
+export async function listRegionBoardPostsWithinRadius(
+  centerLat: number,
+  centerLng: number,
+  radiusM: number = regionBoardRadiusM,
+): Promise<PostRecord[]> {
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("category", REGION_POST_CATEGORY)
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+  const rows = (data as Record<string, unknown>[]).map(rowToPost);
+  return rows
+    .filter((p) => {
+      if (p.latitude == null || p.longitude == null) return false;
+      return (
+        haversineDistanceM(centerLat, centerLng, p.latitude, p.longitude) <= radiusM
+      );
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
 }

@@ -11,6 +11,15 @@ type FieldErrors = {
   password?: string;
 };
 
+/**
+ * `?next=` 는 **같은 사이트 내부 경로**만 허용(오픈 리다이렉트 방지).
+ */
+function getSafeNextPath(raw: string | null): string | null {
+  if (raw == null || raw.length === 0) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -82,7 +91,8 @@ export function LoginForm() {
         childBirthDates: data.childBirthDates,
         primaryChildIndex: data.primaryChildIndex,
       });
-      router.push("/");
+      const nextPath = getSafeNextPath(searchParams.get("next"));
+      router.push(nextPath ?? "/");
       router.refresh();
     } finally {
       setIsSubmitting(false);

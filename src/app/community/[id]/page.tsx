@@ -275,7 +275,11 @@ export default function PostDetailPage({
          * 아기이야기: 내부 고정 리드 / 꼬꼬마: communityRoomLabels 의 subtext(비밀 우체통 안내)를
          * h1 바로 아래에 둬서 게시판 성격을 한눈에 전한다
          */}
-        {!anonymousMode ? (
+        {postRoom === "regionNearby" ? (
+          <p className={nestForm.nestLead} style={{ marginBottom: "0.75rem" }}>
+            {communityRoomLabels.regionNearby.ageHint}
+          </p>
+        ) : !anonymousMode ? (
           <p className={nestForm.nestLead} style={{ marginBottom: "0.75rem" }}>
             우리 아이들의 이야기를 함께 나누고 공유해요
           </p>

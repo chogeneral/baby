@@ -1,6 +1,32 @@
 /**
- * 지역 페이지 — 현재 위치 텍스트·1km 주변 목록(병원·키즈카페·어린이집·유치원) 레이아웃.
+ * 지역 페이지 — `지역` 제목 옆 탭(헤더) + **지도** + **현재 위치** + 그 아래 **동네 1km 목록** + **모달 안** 주변.
  */
+
+/* 한 줄: `지역`(좌) + 소아과·키즈카페·… pill 탭(우) — 제목 `contentTitle` 과 세로 가운데 정렬. */
+.regionPageTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/**
+ * 탭 묶음 — 오른쪽 정렬(우측 끝에 붙이기). 래퍼가 줄을 바꾸면 두 번째 줄도 오른쪽으로 모인다.
+ */
+.regionNearbyHeaderTabList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem; /* 8px */
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
 
 .regionNearbyRoot {
   margin-top: 2rem;
@@ -36,27 +62,97 @@
   color: #2d2926;
 }
 
+
 /**
- * 주변 시설 한 묶음(제목·부제·목록)을 카드처럼 묶는다.
- * 연한 배경으로 본문·지도와 구분하고, radius·그림자로 살짝 떠 있는 느낌을 준다.
+ * 기본(비활성) 탭: 흰 배경 + 옅은 회색 테 두리 + 진한 글자 — 선택 탭은 아래 `regionNearbyTabActive` 가 덮는다.
+ * 활성 탭은 solid 갈색·흰 글자라, 비활성과 대비가 선명히 나온다.
  */
-.regionNearbySection {
-  margin-top: 1.25rem;
-  padding: 1rem 1.15rem 1.05rem;
-  border-radius: 0.75rem;
-  /* 흰 배경: 그림자·테두리로 카드만 구분한다 */
+.regionNearbyTab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0;
+  /* pill 을 길게 보이게 좌우 패딩을 넉넉히 — 참고 캡처의 ‘조용우/호랑이’ pill 과 비슷한 비율 */
+  padding: 0.5rem 1.05rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  font-weight: 500;
+  color: #2d2926;
+  cursor: pointer;
   background: #ffffff;
-  border: 1px solid rgba(45, 41, 38, 0.06);
-  box-shadow: 0 4px 14px rgba(45, 41, 38, 0.07), 0 1px 3px rgba(45, 41, 38, 0.04);
+  border: 1px solid #d8d4d0;
+  border-radius: 999px;
+  box-shadow: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.regionNearbySectionTitle {
-  /* 이전엔 제목·부제(키워드 설명) 사이 여백이 있었는데, 부제를 뺀 뒤에도 본문과 간격이 비슷하도록 맞춤 */
-  margin: 0 0 0.75rem;
-  font-family: var(--font-serif);
-  font-size: 1.05rem;
+.regionNearbyTab:hover {
+  background: #f7f5f3;
+  border-color: #cbc6c0;
+}
+
+.regionNearbyTab:focus-visible {
+  outline: 2px solid #5c4033;
+  outline-offset: 2px;
+}
+
+/**
+ * 선택됨: 진한 갈색 단색 배경, 글자는 흰색 — 테두리는 배경과 같아 보이게 맞춤(캡처의 ‘조용우’ 쪽).
+ * 프로젝트에 이미 쓰는 갈색(#5c4033)과 맞춘다.
+ */
+.regionNearbyTabActive {
   font-weight: 600;
-  color: #2d2926;
+  color: #ffffff;
+  background: #5c4033;
+  border-color: #5c4033;
+}
+
+.regionNearbyTabActive:hover {
+  background: #4d362c;
+  border-color: #4d362c;
+}
+
+.regionNearbyTabActive:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #5c4033;
+}
+
+.regionNearbyTabLabel {
+  white-space: nowrap;
+}
+
+/**
+ * 탭 옆 건수 배지: 비활성은 연한 캡슬, 활성 탭(갈색 배경)은 밝은 반투명 캡슬로 숫자만 구분.
+ */
+.regionNearbyTabCount {
+  min-width: 1.2rem;
+  padding: 0 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.3rem;
+  text-align: center;
+  color: #4a4540;
+  border-radius: 999px;
+  background: rgba(45, 41, 38, 0.08);
+}
+
+.regionNearbyTabActive .regionNearbyTabCount {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/**
+ * 모달 안 `PlaceList` 의 `<section>` — 시각적 제목은 모달 h2가 대신하므로, 래퍼는 `aria-label` 용.
+ */
+.regionNearbyListSection {
+  margin: 0;
+  padding: 0;
 }
 
 .regionNearbyList {
@@ -76,6 +172,25 @@
 
 .regionNearbyItem:last-child {
   border-bottom: none;
+}
+
+/**
+ * 목록 본문(이름·거리·주소)을 한 덩어리로 누르면 카카오맵이 새 탭에서 열리게 한다.
+ * 전화번호는 `tel:` 로 따로 두어 앵커 중첩을 막는다(접근성·유효 HTML).
+ */
+.regionNearbyMapLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 0.3rem;
+  margin: 0 0 0.1rem;
+  outline-offset: 2px;
+  transition: background-color 0.12s ease;
+}
+
+.regionNearbyMapLink:hover,
+.regionNearbyMapLink:focus-visible {
+  background-color: rgba(45, 41, 38, 0.05);
 }
 
 .regionNearbyPlaceName {
@@ -112,4 +227,86 @@
   margin: 0;
   font-size: 0.8125rem;
   color: #8b4513;
+}
+
+/* 전면 반투명 + 중앙 다이얼로그 — 목록 스크롤은 `regionNearbyModalBody` 안에서만. */
+.regionNearbyModalRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 12, 10, 0.45);
+  box-sizing: border-box;
+}
+
+.regionNearbyModalDialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 28rem;
+  max-height: min(85vh, 40rem);
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  border: 1px solid rgba(45, 41, 38, 0.08);
+  box-shadow: 0 1.25rem 3.125rem rgba(0, 0, 0, 0.2);
+}
+
+.regionNearbyModalHeader {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(45, 41, 38, 0.08);
+}
+
+.regionNearbyModalTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2d2926;
+  line-height: 1.35;
+}
+
+/* 닫기 — 충분한 hit 영역(터치) + 둥근 hover 영역. */
+.regionNearbyModalClose {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #4a4540;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 0.4rem;
+  transition: background-color 0.12s ease;
+}
+
+.regionNearbyModalClose:hover {
+  background: rgba(45, 41, 38, 0.07);
+}
+
+.regionNearbyModalClose:focus-visible {
+  outline: 2px solid #5c4033;
+  outline-offset: 2px;
+}
+
+.regionNearbyModalBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.5rem 1rem 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
