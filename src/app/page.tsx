@@ -2,14 +2,20 @@ import type { Metadata } from "next";
 import { HomeMain } from "@/components/HomeMain";
 import { getHomeLatestPostPreviews } from "@/lib/homeLatestPosts";
 
+/**
+ * 홈만: 제목 중복(`육아박사 | 육아박사`) 방지 + 대표 URL(canonical·og:url) 고정.
+ * — `description` 은 루트 `layout` 의 `defaultSiteDescription` 과 동일하게 두고 중복 정의하지 않는다.
+ */
 export const metadata: Metadata = {
   title: { absolute: "육아박사" },
-  description:
-    "완벽한 부모보다 행복한 부모를 꿈꾸는 육아박사. 신생아 발달 정보, 부모 교육, 우리 동네 육아 소식까지 한 번에 확인하세요.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
+    /* metadataBase 기준 절대 URL로 풀림 — 소셜 스크래퍼가 공유 링크를 한 URL로 묶기 쉽다 */
+    url: "/",
     title: "육아박사",
-    description: "행복한 부모를 위한 내일의 응원",
-    images: ["/og-image.png"],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "육아박사" }],
   },
 };
 
