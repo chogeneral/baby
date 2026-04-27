@@ -145,18 +145,10 @@ export function ContentTopicEditForm({ id, topic }: Props) {
 
   return (
     <main className={nestForm.nestPage}>
-      <p className={nestForm.nestTag}>글 수정</p>
+      <p className={nestForm.nestTag}>수정</p>
       <h1 className={nestForm.nestTitle}>{info.title}</h1>
 
-      <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
-        글 수정 안내
-      </p>
 
-      <div className={nestForm.nestNotice}>
-        <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>
-          본문 서식은 다시 저장할 때까지 그대로 유지돼요. 저장하면 상세 화면에 바로 반영돼요.
-        </p>
-      </div>
 
       <form onSubmit={handleSubmit} className={nestForm.nestForm}>
         <div>
