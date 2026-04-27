@@ -5,7 +5,10 @@ import { listCommunityPostIdsForSitemap } from "@/lib/postStore";
 import { getSiteUrl } from "@/lib/siteUrl";
 
 /**
- * /sitemap.xml — 정적 경로 + Supabase 기반 **공개 글** URL(커뮤니티, 부모이야기, 정보).
+ * /sitemap.xml — Next.js 가 빌드·요청 시 XML 을 내보낸다(별도 public 파일 불필요).
+ * - Google Search Console·네이버 서치어드바이저 제출 URL: `https://(배포도메인)/sitemap.xml`
+ * - `NEXT_PUBLIC_SITE_URL` 을 운영 도메인에 맞추면 sitemap·robots 의 절대 URL 이 일치한다.
+ * 정적 경로 + Supabase 기반 **공개 글** URL(커뮤니티, 부모이야기, 정보).
  * 글이 많아지면 `generateSitemaps`·청크 분할이 필요할 수 있음(현재 5만 URL 미만 가정).
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -15,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "",
     "contact",
     "region",
+    "region/write",
     "parent-stories",
     "info",
     "community/baby-story",
