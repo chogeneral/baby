@@ -15,7 +15,6 @@ const heroImageSrc = "/hero-baby-summer.png";
 type HomeMainProps = {
   latest: {
     babyStory: HomeLatestPostPreview[];
-    parentStories: HomeLatestPostPreview[];
     kokkoma: HomeLatestPostPreview[];
     info: HomeLatestPostPreview[];
   };
@@ -114,12 +113,6 @@ export function HomeMain({ latest }: HomeMainProps) {
               title="아기이야기"
               items={latest.babyStory}
               hrefForId={(id) => `/community/${id}`}
-              showAuthor
-            />
-            <HomeLatestSectionBlock
-              title="부모이야기"
-              items={latest.parentStories}
-              hrefForId={(id) => contentTopicDetailPath("부모이야기", id)}
               showAuthor
             />
             <HomeLatestSectionBlock

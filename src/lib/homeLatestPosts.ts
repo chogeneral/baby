@@ -83,19 +83,17 @@ export async function getHomeLatestPostPreviews() {
       "[homeLatestPosts] Supabase env 없음 — 최신 글 없이 홈을 렌더합니다. " +
         "NEXT_PUBLIC_SUPABASE_URL / ANON_KEY 를 Vercel 에 설정하세요.",
     );
-    return { babyStory: [], parentStories: [], kokkoma: [], info: [] };
+    return { babyStory: [], kokkoma: [], info: [] };
   }
 
-  const [babyStory, parentStories, kokkoma, info] = await Promise.all([
+  const [babyStory, kokkoma, info] = await Promise.all([
     fetchLatestByCategory("아기이야기"),
-    fetchLatestContentTopic("부모이야기"),
     fetchLatestByCategory("꼬꼬마"),
     fetchLatestContentTopic("정보"),
   ]);
 
   return {
     babyStory,
-    parentStories,
     kokkoma,
     info,
   };
