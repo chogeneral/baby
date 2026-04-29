@@ -1,0 +1,2038 @@
+/**
+ * 패턴 기록 — 종류 칩: 한 줄 `overflow-x: auto` (터치 스와이프).
+ * 클래스명은 camelCase.
+ */
+
+.chipRowWrap {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  /* `nestStack`의 `gap`에 더해 서브텍스트(`nestLead`)와 칩 행이 한 박자 떨어져 보이게 함 */
+  margin-top: 1rem;
+}
+
+.chipScroll {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.2rem 0.15rem 0.4rem 0;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-inline: 0 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(45, 41, 38, 0.22) transparent;
+}
+
+.chipScroll::-webkit-scrollbar {
+  height: 5px;
+}
+
+.chipScroll::-webkit-scrollbar-thumb {
+  background: rgba(45, 41, 38, 0.18);
+  border-radius: 99px;
+}
+
+button.chip {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.chip {
+  pointer-events: auto;
+  display: inline-flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2.45rem;
+  padding: 0.4rem 0.65rem 0.4rem 0.55rem;
+  border: 1.5px solid;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+  color: #3d342d;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
+  font: inherit;
+}
+
+.chip:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-0.5px);
+}
+
+.chip:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.chipIcon {
+  display: block;
+  flex-shrink: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+/* —— 16 종류: 테두리·배경·**아이콘 color** 를 서로 다르게 —— */
+
+.chipMoyu {
+  border-color: #fbcfe8;
+  background: linear-gradient(180deg, #fff 0%, #fdf2f8 100%);
+}
+
+.chipMoyu .chipIcon {
+  color: #ec4899;
+}
+
+.chipBunyu {
+  border-color: #bfdbfe;
+  background: linear-gradient(180deg, #fff 0%, #eff6ff 100%);
+}
+
+.chipBunyu .chipIcon {
+  color: #2563eb;
+}
+
+.chipWeaning {
+  border-color: #fed7aa;
+  background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+}
+
+.chipWeaning .chipIcon {
+  color: #ea580c;
+}
+
+.chipDiaper {
+  border-color: #e9d5ff;
+  background: linear-gradient(180deg, #fff 0%, #faf5ff 100%);
+}
+
+.chipDiaper .chipIcon {
+  color: #a855f7;
+}
+
+.chipSleep {
+  border-color: #c7d2fe;
+  background: linear-gradient(180deg, #fff 0%, #eef2ff 100%);
+}
+
+.chipSleep .chipIcon {
+  color: #6366f1;
+}
+
+/* 유축수유 — 수유+펌프 톤(장미) */
+.chipPumpFeed {
+  border-color: #fecdd3;
+  background: linear-gradient(180deg, #fff 0%, #fff1f2 100%);
+}
+
+.chipPumpFeed .chipIcon {
+  color: #e11d48;
+}
+
+/* 유축(단독) — 더 진한 빨강 계열로 구분 */
+.chipPump {
+  border-color: #fecaca;
+  background: linear-gradient(180deg, #fef2f2 0%, #fff5f5 100%);
+}
+
+.chipPump .chipIcon {
+  color: #b91c1c;
+}
+
+.chipBath {
+  border-color: #a5f3fc;
+  background: linear-gradient(180deg, #fff 0%, #ecfeff 100%);
+}
+
+.chipBath .chipIcon {
+  color: #06b6d4;
+}
+
+.chipHospital {
+  border-color: #fecaca;
+  background: linear-gradient(180deg, #fff 0%, #fef2f2 100%);
+}
+
+.chipHospital .chipIcon {
+  color: #ef4444;
+}
+
+.chipTemp {
+  border-color: #fed7aa;
+  background: linear-gradient(180deg, #fffbeb 0%, #fff7ed 100%);
+}
+
+.chipTemp .chipIcon {
+  color: #d97706;
+}
+
+.chipMed {
+  border-color: #bbf7d0;
+  background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%);
+}
+
+.chipMed .chipIcon {
+  color: #16a34a;
+}
+
+.chipSnack {
+  border-color: #fde68a;
+  background: linear-gradient(180deg, #fff 0%, #fffbeb 100%);
+}
+
+.chipSnack .chipIcon {
+  color: #ca8a04;
+}
+
+/* 우유(가축/팩) — 분유와 다른 청록·크림 */
+.chipMilk {
+  border-color: #bae6fd;
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.chipMilk .chipIcon {
+  color: #0284c7;
+}
+
+/* 놀이 */
+.chipPlay {
+  border-color: #a7f3d0;
+  background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+.chipPlay .chipIcon {
+  color: #059669;
+}
+
+.chipTummy {
+  border-color: #f5d0fe;
+  background: linear-gradient(180deg, #fff 0%, #faf5ff 100%);
+}
+
+.chipTummy .chipIcon {
+  color: #c026d3;
+}
+
+.chipOther {
+  border-color: #e2e8f0;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+}
+
+/* —— ‘오늘’ 월·일·요일: 베이지 배경 위 **글자만** — `baby-records` 날짜 h2(0.875rem·진갈색)과 동일 톤 —— */
+.logTodayHeaderRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logTodayHeader {
+  margin: 0.9rem 0 0.6rem;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: #5c4033;
+}
+
+.logTodayHeader time {
+  font: inherit;
+}
+
+
+/* 클릭으로 쌓는 타임로그 — 흰 카드(베이지 바닥 위에 떠 있게 은은한 그림자) */
+.logPanel {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(45, 41, 38, 0.08);
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(45, 41, 38, 0.06);
+  overflow: hidden;
+}
+
+.logEmpty {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #78716c;
+}
+
+.logList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.logRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-height: 3.1rem;
+  padding: 0.5rem 0.6rem 0.45rem 0.7rem;
+  border-bottom: 1px solid rgba(45, 41, 38, 0.06);
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.logRow:hover {
+  background: #fdf8f4;
+}
+
+.logRow:last-child {
+  border-bottom: none;
+}
+
+.logTime {
+  flex: 0 0 auto;
+  min-width: 3.4rem;
+  padding-top: 0.1rem;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  color: #3f3f46;
+}
+
+.logTimeWake {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #a1a1aa;
+  letter-spacing: -0.01em;
+  margin-top: 0.08rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.logTimeMain {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.logTimePeriod {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #a1a1aa;
+  letter-spacing: 0.02em;
+}
+
+.logMain {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.logTitleLine {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.logDot {
+  flex-shrink: 0;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+}
+
+.logRowMedIcon {
+  flex-shrink: 0;
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.logLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.logSub {
+  margin: 0;
+  padding:0.2rem 0; 
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #a1a1aa;
+}
+
+.logDeleteBtn {
+  flex: 0 0 auto;
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #d4d4d8;
+  cursor: pointer;
+  transition: color 0.13s ease, background 0.13s ease;
+}
+
+.logDeleteBtn:hover {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.logChevWrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  color: #d4d4d8;
+}
+
+.logRowChevron {
+  display: block;
+  width: 0.45rem;
+  height: 0.65rem;
+}
+
+/* —— 시간 수정 모달 —— */
+
+.timeEditOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9000;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.timeEditModal {
+  width: 100%;
+  max-width: 22rem;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  padding: 1.4rem 1.3rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.timeEditHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.timeEditTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #3d342d;
+  letter-spacing: -0.02em;
+}
+
+.timeEditSubLabel {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+}
+
+/* 유축: 시각 패널과 아래 상세 블록 사이 시각적 구분선 */
+.pumpModalSectionRule {
+  margin: 0;
+  border: none;
+  height: 1px;
+  background: rgba(45, 41, 38, 0.14);
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/*
+ * 모달 공통 ‘시간’ 패널(유축 전용 아님) — 캡처: 연한 배경, 월·일 → −1h / 큰 시각 / ~종료 → 슬라이더.
+ * 클래스 접두사 pump 는 초기 도입 시 이름만 남긴 것.
+ */
+.pumpTimePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.85rem 0.75rem 0.75rem;
+  background: #eef4fb;
+  border-radius: 12px;
+  border: 1px solid rgba(61, 90, 138, 0.12);
+}
+
+.pumpTimeRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.pumpTimeMinusHour {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 auto;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.pumpTimeMinusHour:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.pumpTimeMain {
+  margin: 0;
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2b4b8c;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.pumpTimeTildeEnd {
+  margin: 0;
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #2b4b8c;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0.92;
+}
+
+.pumpOffsetSliderWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 0.15rem;
+}
+
+.pumpOffsetSlider {
+  width: 100%;
+  accent-color: #3d5a8a;
+  cursor: pointer;
+}
+
+.pumpOffsetTicks {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 1px;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— 스크롤 픽커 —— */
+
+.pickerWrap {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 150px; /* 5 * 40px */
+  border-radius: 12px;
+  background: #f5f0eb;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 중앙 선택 행 하이라이트 */
+.pickerHighlight {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 6px;
+  right: 6px;
+  height: 40px;
+  background: rgba(92, 64, 51, 0.12);
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 상하 페이드 */
+.pickerFadeTop,
+.pickerFadeBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 80px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.pickerFadeTop {
+  top: 0;
+  background: linear-gradient(to bottom, #f5f0eb 10%, transparent 100%);
+}
+
+.pickerFadeBottom {
+  bottom: 0;
+  background: linear-gradient(to top, #f5f0eb 10%, transparent 100%);
+}
+
+.pickerColWrap {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.pickerColWrapSm {
+  flex: 0 0 64px;
+}
+
+.pickerColon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 시·분 사이 콜론: 행 높이(40px)에 맞춰 픽커 글자와 동일 톤으로 약간만 작게 */
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #3d342d;
+  padding: 0 1px;
+  position: relative;
+  z-index: 4;
+}
+
+.pickerCol {
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.pickerCol::-webkit-scrollbar {
+  display: none;
+}
+
+.pickerSpacer {
+  height: 80px; /* 2 * 40px */
+  flex-shrink: 0;
+}
+
+.pickerItem {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 모달 픽커 가독성 유지하면서 전체적으로 한 단계 작게(이전 1.2rem) */
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #3d342d;
+  scroll-snap-align: center;
+  flex-shrink: 0;
+  letter-spacing: -0.01em;
+}
+
+/* —— 가슴 선택 섹션 (모유·유축수유 전용) —— */
+
+.breastSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.9rem 0.85rem;
+  background: #eef2f8;
+  border-radius: 12px;
+}
+
+.breastHead {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.breastHeadTitle {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #3d342d;
+  letter-spacing: -0.01em;
+}
+
+.breastHeadBadge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #3d5a8a;
+  background: #dde7f5;
+  border-radius: 999px;
+  padding: 0.18rem 0.6rem;
+}
+
+.breastDoneBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  border: 1.5px solid #b0c4de;
+  background: #fff;
+  color: #3d5a8a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.13s ease;
+}
+
+.breastDoneBtn:hover {
+  background: #dde7f5;
+}
+
+.breastBtnRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.breastBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1;
+  padding: 0.32rem 0.4rem;
+  border-radius: 999px;
+  border: 1.5px solid #c4d0e3;
+  background: #fff;
+  color: #4a5568;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition: background 0.13s ease, border-color 0.13s ease, color 0.13s ease;
+}
+
+.breastBtnActive {
+  background: #3d5a8a;
+  border-color: #3d5a8a;
+  color: #fff;
+}
+
+.breastConnector {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  letter-spacing: -0.05em;
+}
+
+.breastDurationDisplay {
+  margin: 0;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #3d5a8a;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.breastSliderWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.breastSlider {
+  width: 100%;
+  accent-color: #3d5a8a;
+  cursor: pointer;
+}
+
+.breastSliderTicks {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 2px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+/* —— 분유 먹은 양 섹션 —— */
+
+.mlSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem 0.85rem 0.8rem;
+  background: #eef2f8;
+  border-radius: 12px;
+}
+
+.mlHead {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mlHeadTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #3d342d;
+  letter-spacing: -0.01em;
+}
+
+.mlGoalLabel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  user-select: none;
+}
+
+.mlToggle {
+  display: inline-flex;
+  align-items: center;
+  width: 2.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: #cbd5e1;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  outline: none;
+}
+
+.mlToggle:focus-visible {
+  box-shadow: 0 0 0 2px #3d5a8a;
+}
+
+.mlToggleOn {
+  background: #3d5a8a;
+}
+
+.mlToggleThumb {
+  position: absolute;
+  left: 0.15rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease;
+}
+
+.mlToggleOn .mlToggleThumb {
+  transform: translateX(1rem);
+}
+
+.mlDisplay {
+  margin: 0;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #3d5a8a;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.mlSliderWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.mlSlider {
+  width: 100%;
+  accent-color: #3d5a8a;
+  cursor: pointer;
+}
+
+.mlSliderTicks {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 2px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+/* —— 이유식·기저귀 모달 블록 —— */
+
+.weaningSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.9rem 0.85rem;
+  background: #fff7ed;
+  border-radius: 12px;
+  border: 1px solid rgba(234, 88, 12, 0.18);
+}
+
+.weaningSectionTitle {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #9a3412;
+  letter-spacing: -0.01em;
+}
+
+.weaningInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.65rem;
+  border: 1.5px solid rgba(234, 88, 12, 0.28);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font: inherit;
+  color: #3d342d;
+  background: #fff;
+  outline: none;
+}
+
+.weaningInput:focus {
+  border-color: #ea580c;
+}
+
+.diaperSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.9rem 0.85rem;
+  background: #faf5ff;
+  border-radius: 12px;
+  border: 1px solid rgba(168, 85, 247, 0.18);
+}
+
+.diaperSectionHead {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.diaperSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #6b21a8;
+  letter-spacing: -0.01em;
+}
+
+.diaperBtnRow {
+  display: flex;
+  flex-direction: row;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.diaperBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1;
+  min-width: 4rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 999px;
+  border: 1.5px solid #e9d5ff;
+  background: #fff;
+  color: #7c3aed;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition: background 0.13s ease, border-color 0.13s ease, color 0.13s ease;
+}
+
+.diaperBtnActive {
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #fff;
+}
+
+.logWeaningTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #ffedd5;
+  color: #c2410c;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.logDiaperTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #f3e8ff;
+  color: #7e22ce;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* —— 수면 타입(밤잠/낮잠) — 캡처: 연한 블록 + 타입 제목·구분선 + 알약 토글 —— */
+
+.sleepTypeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.15rem;
+  padding: 0.95rem 0.9rem 0.9rem;
+  background: #f3f4f6;
+  border-radius: 12px;
+}
+
+.sleepTypeHead {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.sleepTypeTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #2b4b8c;
+  letter-spacing: -0.02em;
+}
+
+.sleepTypeDivider {
+  width: 100%;
+  height: 1px;
+  background: rgba(43, 75, 140, 0.18);
+  margin-top: -0.1rem;
+}
+
+.sleepTypeBtnRow {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.sleepTypeBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1;
+  padding: 0.62rem 0.5rem;
+  border-radius: 999px;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  color: #d1d5db;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.sleepTypeBtn:hover {
+  border-color: #c7d2fe;
+  color: #94a3b8;
+}
+
+.sleepTypeBtnActive {
+  border-color: #93c5fd;
+  background: #fff;
+  color: #2b4b8c;
+  font-weight: 700;
+  box-shadow:
+    0 0 0 1px rgba(147, 197, 253, 0.9),
+    0 4px 14px rgba(43, 75, 140, 0.12);
+}
+
+.sleepTypeBtnActive:hover {
+  border-color: #93c5fd;
+  color: #2b4b8c;
+}
+
+.logMlTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #dde7f5;
+  color: #3d5a8a;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* —— 유축 양 섹션 —— */
+
+.pumpMlSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.9rem 0.85rem;
+  background: #eef2f8;
+  border-radius: 12px;
+}
+
+.pumpMlHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pumpMlTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #3d342d;
+  letter-spacing: -0.01em;
+}
+
+.pumpMlToggleLabel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pumpMlToggleText {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.pumpMlSingleRow {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.pumpMlSingleInput {
+  width: 5rem;
+  border: none;
+  background: transparent;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #3d5a8a;
+  letter-spacing: -0.03em;
+  text-align: right;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  font: inherit;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #3d5a8a;
+  -moz-appearance: textfield;
+}
+
+.pumpMlSingleInput::-webkit-outer-spin-button,
+.pumpMlSingleInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pumpMlSingleUnit {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3d5a8a;
+}
+
+.pumpMlSeparateRow {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+}
+
+.pumpMlSide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.pumpMlSideLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.pumpMlSideInputRow {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.2rem;
+}
+
+.pumpMlSideInput {
+  width: 4rem;
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #3d5a8a;
+  letter-spacing: -0.03em;
+  text-align: right;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #3d5a8a;
+  -moz-appearance: textfield;
+}
+
+.pumpMlSideInput::-webkit-outer-spin-button,
+.pumpMlSideInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pumpMlSideUnit {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #3d5a8a;
+}
+
+.pumpMlSideDivider {
+  width: 1px;
+  background: rgba(61, 90, 138, 0.15);
+  margin: 0 0.5rem;
+  align-self: stretch;
+}
+
+/* —— 수면 얼마 동안 섹션 —— */
+
+.sleepDurationSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.95rem 0.9rem 0.9rem;
+  background: #f3f4f6;
+  border-radius: 12px;
+}
+
+.sleepDurationHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sleepDurationTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #3d342d;
+  letter-spacing: -0.01em;
+}
+
+.sleepDurationBtnGroup {
+  display: flex;
+  flex-direction: row;
+  gap: 0.35rem;
+}
+
+.sleepDurationResetBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1.5px solid #d1d5db;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.13s ease;
+}
+
+.sleepDurationResetBtn:hover {
+  background: #d1d5db;
+}
+
+.sleepDurationNowBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1.5px solid #b0c4de;
+  background: #fff;
+  color: #3d5a8a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.13s ease;
+}
+
+.sleepDurationNowBtn:hover {
+  background: #dde7f5;
+}
+
+.sleepDurationDisplay {
+  margin: 0;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2b4b8c;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.sleepSliderGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.sleepSliderItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sleepSliderLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: -0.01em;
+}
+
+.timeEditMemo {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.65rem 0.75rem;
+  border: 1.5px solid rgba(92, 64, 51, 0.22);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #3d342d;
+  background: #fdfaf7;
+  outline: none;
+  resize: none;
+  font: inherit;
+  line-height: 1.5;
+  transition: border-color 0.15s ease;
+}
+
+.timeEditMemo:focus {
+  border-color: #5c4033;
+}
+
+.timeEditMemo::placeholder {
+  color: #b8a99a;
+}
+
+.logMemo {
+  margin: 0;
+  padding:0.2rem 0; 
+  font-size: 0.7rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: #a1a1aa;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.logBreastRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.15rem 0 0;
+}
+
+.logBreastTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #dde7f5;
+  color: #3d5a8a;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* 수면 칩 톤과 맞춘 타입 뱃지(목록 행) */
+.logSleepWakeTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.logSleepTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #e0e7ff;
+  color: #4338ca;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.timeEditActions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.timeEditBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.13s ease, color 0.13s ease;
+}
+
+.timeEditBtnCancel {
+  border-color: rgba(45, 41, 38, 0.18);
+  background: #fff;
+  color: #78716c;
+}
+
+.timeEditBtnCancel:hover {
+  background: #f5f0eb;
+}
+
+.timeEditBtnSave {
+  border-color: #5c4033;
+  background: #5c4033;
+  color: #fffaf5;
+}
+
+.timeEditBtnSave:hover {
+  background: #7c5244;
+  border-color: #7c5244;
+}
+
+/* —— 병원 섹션 —— */
+
+.hospitalSection {
+  display: flex;
+  flex-direction: column;
+  background: #fff5f5;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  overflow: hidden;
+}
+
+.hospitalTypeArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem 0.9rem 0.8rem;
+}
+
+.hospitalSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #991b1b;
+  letter-spacing: -0.01em;
+}
+
+.hospitalTypeBtnRow {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.hospitalTypeBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1;
+  padding: 0.62rem 0.5rem;
+  border-radius: 999px;
+  border: 2px solid #fecaca;
+  background: #fff;
+  color: #fca5a5;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hospitalTypeBtnActive {
+  border-color: #ef4444;
+  color: #ef4444;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.5), 0 4px 14px rgba(239, 68, 68, 0.1);
+}
+
+.hospitalRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.72rem 0.9rem;
+  border-top: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.hospitalRowLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  flex-shrink: 0;
+  min-width: 4.5rem;
+}
+
+.hospitalRowInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.82rem;
+  color: #374151;
+  text-align: right;
+  outline: none;
+  font: inherit;
+}
+
+.hospitalRowInput::placeholder {
+  color: #9ca3af;
+}
+
+.hospitalNoteArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.72rem 0.9rem 0.85rem;
+  border-top: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.hospitalNoteTitleRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hospitalNoteTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.hospitalNoteTime {
+  font-size: 0.72rem;
+  color: #9ca3af;
+}
+
+.hospitalNoteInput {
+  border: none;
+  background: transparent;
+  font-size: 0.82rem;
+  color: #374151;
+  outline: none;
+  font: inherit;
+  width: 100%;
+  padding: 0;
+}
+
+.hospitalNoteInput::placeholder {
+  color: #9ca3af;
+}
+
+/* 병원 목록 태그 */
+.logHospitalTypeTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.logHospitalNameTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.logHospitalNote {
+  margin: 0.15rem 0 0;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #a1a1aa;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* —— 체온 섹션 —— */
+
+.tempSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.9rem 0.85rem;
+  background: #fffbeb;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 119, 6, 0.18);
+}
+
+.tempSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #92400e;
+  letter-spacing: -0.01em;
+}
+
+.tempDisplay {
+  margin: 0;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #b45309;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tempUnit {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #b45309;
+}
+
+.tempSliderWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tempSlider {
+  width: 100%;
+  accent-color: #d97706;
+  cursor: pointer;
+}
+
+.tempSliderTicks {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 0.1rem;
+  font-size: 0.65rem;
+  color: #a16207;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 체온 목록 태그 */
+.logTempTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— 투약 섹션 —— */
+
+.medSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem 0.85rem;
+  background: #f0fdf4;
+  border-radius: 12px;
+  border: 1px solid rgba(22, 163, 74, 0.18);
+}
+
+.medSectionHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.medSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #14532d;
+  letter-spacing: -0.01em;
+}
+
+.medNameInput {
+  width: 100%;
+  border: none;
+  border-bottom: 1.5px solid rgba(22, 163, 74, 0.25);
+  background: transparent;
+  font-size: 0.9rem;
+  color: #15803d;
+  outline: none;
+  font: inherit;
+  padding: 0.3rem 0;
+}
+
+.medNameInput::placeholder {
+  color: #86efac;
+}
+
+/* 투약 목록 태그 */
+.logMedNameTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* —— 간식 섹션 —— */
+
+.snackNameSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem 0.85rem;
+  background: #fefce8;
+  border-radius: 12px;
+  border: 1px solid rgba(202, 138, 4, 0.18);
+}
+
+.snackAmountSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.9rem 0.85rem;
+  background: #fefce8;
+  border-radius: 12px;
+  border: 1px solid rgba(202, 138, 4, 0.18);
+}
+
+.snackSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #713f12;
+  letter-spacing: -0.01em;
+}
+
+.snackAmountHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.snackUnitToggle {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #a16207;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.snackAmountDisplay {
+  margin: 0;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #a16207;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.snackAmountUnit {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.snackSliderWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.snackSlider {
+  width: 100%;
+  accent-color: #ca8a04;
+  cursor: pointer;
+}
+
+.snackSliderTicks {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 0.1rem;
+  font-size: 0.65rem;
+  color: #a16207;
+  font-variant-numeric: tabular-nums;
+}
+
+.snackNameInput {
+  width: 100%;
+  border: none;
+  border-bottom: 1.5px solid rgba(202, 138, 4, 0.25);
+  background: transparent;
+  font-size: 0.9rem;
+  color: #713f12;
+  outline: none;
+  font: inherit;
+  padding: 0.3rem 0;
+}
+
+.snackNameInput::placeholder {
+  color: #d97706;
+  opacity: 0.5;
+}
+
+/* 간식 목록 태그 */
+.logSnackTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #fef9c3;
+  color: #a16207;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* —— 놀이 섹션 —— */
+
+.playNameSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem 0.85rem;
+  background: #f0fdf4;
+  border-radius: 12px;
+  border: 1px solid rgba(5, 150, 105, 0.18);
+}
+
+.playSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #064e3b;
+  letter-spacing: -0.01em;
+}
+
+.playNameInput {
+  width: 100%;
+  border: none;
+  border-bottom: 1.5px solid rgba(5, 150, 105, 0.25);
+  background: transparent;
+  font-size: 0.9rem;
+  color: #065f46;
+  outline: none;
+  font: inherit;
+  padding: 0.3rem 0;
+}
+
+.playNameInput::placeholder {
+  color: #6ee7b7;
+}
+
+.playReactionSection {
+  padding: 0.75rem 0.85rem;
+  background: #f0fdf4;
+  border-radius: 12px;
+  border: 1px solid rgba(5, 150, 105, 0.18);
+}
+
+.playReactionBtnRow {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.playReactionBtn {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  border: 2px solid #a7f3d0;
+  background: #fff;
+  color: #a7f3d0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font: inherit;
+  transition: color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.playReactionBtnActive {
+  border-color: #059669;
+  color: #059669;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.4), 0 4px 14px rgba(5, 150, 105, 0.1);
+}
+
+/* 놀이 목록 태그 */
+.logPlayTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #d1fae5;
+  color: #065f46;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* —— 마지막 기저귀·수유·잠 요약 바 —— */
+
+.lastSummaryBar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(45, 41, 38, 0.08);
+  box-shadow: 0 2px 8px rgba(45, 41, 38, 0.06);
+  overflow: hidden;
+  margin-top: 0.75rem;
+}
+
+.lastSummaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  padding: 0.65rem 0.6rem 0.6rem;
+  border-right: 1px solid rgba(45, 41, 38, 0.07);
+}
+
+.lastSummaryCard:last-child {
+  border-right: none;
+}
+
+.lastSummaryTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #a8a29e;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  margin-bottom: 0.18rem;
+}
+
+.lastSummaryTime {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #5c4033;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.lastSummarySubLabel {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #a8a29e;
+  margin-top: 0.1rem;
+}
+
+.lastSummaryNone {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #d4d4d8;
+  margin-top: 0.15rem;
+}
+
+.lastSummaryFeedRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.12rem;
+}
+
+.lastSummaryFeedDot {
+  flex-shrink: 0;
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+}
+
