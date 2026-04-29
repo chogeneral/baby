@@ -1,12 +1,14 @@
 -- ============================================================================
--- baby01 — Supabase 전체 스키마 + 커뮤니티 정렬 + RLS(anon) 한 번에 적용
+-- baby01 — Supabase 전체 스키마 + 커뮤니티 정렬 + RLS(anon) 한 번에 적용 (최종본)
 -- ============================================================================
--- 이 파일 = 다음 **다섯** 마이그레이션을 **순서대로** 합친 것이다.
+-- * 최종본 정리: posts.latitude/longitude 중복 ADD COLUMN 제거, pattern_logs·요약 조회 주석 보강.
+-- 이 파일 = 다음 **여섯** 마이그레이션을 **순서대로** 합친 것이다.
 --   20260225120000_app_domain_tables.sql
 --   20260225140000_align_community_posts_comments.sql
 --   20260225150000_rls_app_domain_anon.sql
 --   20260225160000_content_topic_korean.sql  (topic 한글·기존 영문 데이터 치환 — 아래 [1a]에 편입)
 --   20260427120000_posts_latitude_longitude.sql  (지역 게시판: posts.latitude/longitude + 인덱스)
+--   20260429130000_pattern_logs.sql  (패턴 기록 pattern_logs — 요약 바 category_id 규칙 동일)
 -- SQL Editor에 **위→아래 한 번** 붙여넣어 실행하면 된다(이미 적용한 대상은 IF NOT EXISTS
 -- / DROP IF EXISTS 덕에 대부분 멱등).
 --
@@ -16,8 +18,8 @@
 -- ============================================================================
 
 -- ---- [1/3] 회원 · 부모이야기·정보 · 토픽 댓글 · 아이기록 ----
--- [1a] content_topic_posts.topic: 아래 [1a 끝] 에서 CHECK 한 번으로 부모이야기|정보만 허용한다.
---     CREATE 절에 CHECK 를 넣지 않는 이유 — 신규 DB 에서 CREATE 직후 DROP/ADD 를 반복할 필요를 없애기 위함.
+-- [1a] content_topic_posts.topic: 아래에서 CHECK 를 잠시 제거한 뒤 영문 topic 을 한글로 치환하고,
+--      다시 부모이야기|정보만 허용하도록 CHECK 를 붙인다(기존 DB·신규 DB 공통 멱등 절차).
 
 CREATE TABLE IF NOT EXISTS public.app_users (
   email text PRIMARY KEY,
@@ -58,8 +60,7 @@ CREATE INDEX IF NOT EXISTS idx_content_topic_posts_author
   ON public.content_topic_posts (author_email);
 
 -- [1a 끝] topic CHECK + 기존 영문 값 치환(마이그레이션 20260225160000 와 동일)
--- * 기존 DB 에 parentStories|info CHECK 가 있으면 먼저 뗀 뒤 UPDATE 해야 한글로 바뀐다.
--- * 신규 DB 는 아래 CHECK 가 곧 topic 제약이 된다(위 CREATE 에는 topic CHECK 를 넣지 않음).
+-- * 기존 DB 에 parentStories|info 가 있으면 아래 UPDATE 로 한글로 맞춘다.
 
 ALTER TABLE public.content_topic_posts
   DROP CONSTRAINT IF EXISTS content_topic_posts_topic_check;
@@ -144,6 +145,9 @@ ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS created_at timestamptz;
 -- 지역 1km 게시판: 작성 시점 좌표(목록은 독자 위치 기준 반경 필터 — postStore)
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS latitude double precision;
 ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS longitude double precision;
+
+COMMENT ON COLUMN public.posts.latitude IS '지역1km 게시글일 때 작성 위치 위도';
+COMMENT ON COLUMN public.posts.longitude IS '지역1km 게시글일 때 작성 위치 경도';
 
 ALTER TABLE public.posts
   ALTER COLUMN child_birth_year SET DEFAULT 0;
@@ -277,21 +281,140 @@ CREATE POLICY "content_topic_comments_all_anon" ON public.content_topic_comments
 DROP POLICY IF EXISTS "baby_records_all_anon" ON public.baby_records;
 CREATE POLICY "baby_records_all_anon" ON public.baby_records FOR ALL USING (true) WITH CHECK (true);
 
--- ---- +지역 게시판(지역1km) — `posts` 한 테이블로 목록(별도 테이블 없음, 마이그레이션 20260427120000) ----
+-- ---- +지역 게시판(지역1km) — `posts` 한 테이블(마이그레이션 20260427120000 요약) ----
 -- * 앱: `src/lib/postStore.ts` — 지역 글은 `category = '지역1km'`, `prefix` 에 유형(고민·정보공유…).
--- * 지역 **목록** API/화면: 위에서 가져온 뒤 **클라이언트 위치** 기준 1km 이내만 남기므로( Haversine ),
---   DB 쪽에는 아래 `latitude`·`longitude` + 부분 인덱스로 조회·정렬에만 도움을 준다.
--- * SQL Editor 에서 수동으로 지역 글만 보려면 예:
---   SELECT id, title, category, prefix, latitude, longitude, created_at
+-- * `latitude`·`longitude` 컬럼은 위 [2/3] posts 절에서 한 번만 ADD COLUMN 한다(중복 없음).
+-- * 목록은 클라이언트 위치 기준 1km 필터(Haversine); DB 는 부분 인덱스로 조회에만 보조.
+-- * SQL Editor 예: SELECT id, title, category, prefix, latitude, longitude, created_at
 --   FROM public.posts WHERE category = '지역1km' ORDER BY created_at DESC;
-
--- 지역 페이지 1km 반경 게시판: 글 작성 시점의 위·경도 저장(목록은 독자 위치 기준 1km 필터)
-ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS latitude double precision;
-ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS longitude double precision;
-
-COMMENT ON COLUMN public.posts.latitude IS '지역1km 게시글일 때 작성 위치 위도';
-COMMENT ON COLUMN public.posts.longitude IS '지역1km 게시글일 때 작성 위치 경도';
 
 CREATE INDEX IF NOT EXISTS idx_posts_category_region
   ON public.posts (category, created_at DESC)
   WHERE category = '지역1km';
+
+-- ---- 패턴 기록(pattern_logs) — 마이그레이션 20260429130000_pattern_logs.sql 과 동일 ----
+CREATE TABLE IF NOT EXISTS public.pattern_logs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_email text NOT NULL,
+  log_id text NOT NULL,
+  category_id text NOT NULL,
+  label text NOT NULL,
+  at_ms bigint NOT NULL,
+  child_index smallint NOT NULL DEFAULT 0 CHECK (child_index >= 0 AND child_index <= 4),
+  memo text,
+  breast text CHECK (breast IS NULL OR breast IN ('left', 'right', 'both')),
+  duration_min numeric,
+  ml_amount numeric,
+  weaning_type text,
+  diaper_type text CHECK (diaper_type IS NULL OR diaper_type IN ('pee', 'poo', 'both')),
+  sleep_type text CHECK (sleep_type IS NULL OR sleep_type IN ('night', 'nap')),
+  pump_ml_left numeric,
+  pump_ml_right numeric,
+  hospital_type text CHECK (hospital_type IS NULL OR hospital_type IN ('checkup', 'illness')),
+  hospital_name text,
+  hospital_doctor text,
+  hospital_note text,
+  temp_c numeric,
+  med_name text,
+  snack_name text,
+  snack_amount numeric,
+  snack_unit text CHECK (snack_unit IS NULL OR snack_unit IN ('ml', 'g')),
+  play_name text,
+  play_reaction text CHECK (
+    play_reaction IS NULL OR play_reaction IN ('like', 'less-interest')
+  ),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT pattern_logs_log_id_key UNIQUE (log_id)
+);
+
+COMMENT ON TABLE public.pattern_logs IS
+  '패턴 기록 — 앱 PatternLogEntry(logId→log_id, atMs→at_ms, authorEmail→user_email)';
+COMMENT ON COLUMN public.pattern_logs.log_id IS '앱 문자열 logId — 유일(같은 기록 수정·재전송 시 충돌 방지)';
+COMMENT ON COLUMN public.pattern_logs.at_ms IS '기록 시각 epoch ms — UI “N분 전” 과 동일 기준';
+COMMENT ON COLUMN public.pattern_logs.category_id IS
+  '앱 categoryId 영문 키 — 헤더 칩: diaper|weaning|sleep|moyu|bunyu|pumpFeed|milk 등; 요약 바(마지막 기저귀·수유·잠)는 diaper / (moyu,pumpFeed) / (bunyu,milk) / sleep';
+
+CREATE INDEX IF NOT EXISTS idx_pattern_logs_user_child_at
+  ON public.pattern_logs (user_email, child_index, at_ms DESC);
+
+CREATE INDEX IF NOT EXISTS idx_pattern_logs_user_child_cat_at
+  ON public.pattern_logs (user_email, child_index, category_id, at_ms DESC);
+
+ALTER TABLE public.pattern_logs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "pattern_logs_all_anon" ON public.pattern_logs;
+CREATE POLICY "pattern_logs_all_anon"
+  ON public.pattern_logs
+  FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+-- ---- pattern_logs: 조회 예시 ----
+-- * 실행용 전체: `supabase/pattern_logs_last_summary.sql`
+-- * :user_email, :child_index 는 바인딩하거나 문자열·숫자 리터럴로 치환.
+-- * 요약 바(패턴 기록 화면): 모유·유축 줄 moyu+pumpFeed, 분유·유즙 줄 bunyu+milk.
+-- * 네비 헤더 “수유” 칩만 쿼리할 때: category_id IN ('pumpFeed','milk') 최신 1건(앱 Navbar 와 동일).
+
+-- [단건] 마지막 기저귀
+-- SELECT log_id, at_ms, diaper_type, memo
+-- FROM public.pattern_logs
+-- WHERE user_email = :user_email AND child_index = :child_index AND category_id = 'diaper'
+-- ORDER BY at_ms DESC
+-- LIMIT 1;
+
+-- [단건] 마지막 모유·유축(moyu / pumpFeed 중 더 최근)
+-- SELECT log_id, category_id, at_ms, breast, duration_min, memo
+-- FROM public.pattern_logs
+-- WHERE user_email = :user_email AND child_index = :child_index
+--   AND category_id IN ('moyu', 'pumpFeed')
+-- ORDER BY at_ms DESC
+-- LIMIT 1;
+
+-- [단건] 마지막 분유·유즙(bunyu / milk 중 더 최근)
+-- SELECT log_id, category_id, at_ms, ml_amount, memo
+-- FROM public.pattern_logs
+-- WHERE user_email = :user_email AND child_index = :child_index
+--   AND category_id IN ('bunyu', 'milk')
+-- ORDER BY at_ms DESC
+-- LIMIT 1;
+
+-- [단건] 마지막 잠
+-- SELECT log_id, at_ms, sleep_type, duration_min, memo
+-- FROM public.pattern_logs
+-- WHERE user_email = :user_email AND child_index = :child_index AND category_id = 'sleep'
+-- ORDER BY at_ms DESC
+-- LIMIT 1;
+
+-- [한 번에] 요약 바 4슬롯(JSON 컬럼 4개 — API 한 방 응답용)
+-- WITH p AS (
+--   SELECT 'user@example.com'::text AS user_email, 0::smallint AS child_index
+-- )
+-- SELECT
+--   (SELECT row_to_json(t) FROM (
+--     SELECT log_id, category_id, at_ms, diaper_type, memo
+--     FROM public.pattern_logs r, p
+--     WHERE r.user_email = p.user_email AND r.child_index = p.child_index
+--       AND r.category_id = 'diaper'
+--     ORDER BY r.at_ms DESC LIMIT 1
+--   ) t) AS last_diaper,
+--   (SELECT row_to_json(t) FROM (
+--     SELECT log_id, category_id, at_ms, breast, duration_min, memo
+--     FROM public.pattern_logs r, p
+--     WHERE r.user_email = p.user_email AND r.child_index = p.child_index
+--       AND r.category_id IN ('moyu', 'pumpFeed')
+--     ORDER BY r.at_ms DESC LIMIT 1
+--   ) t) AS last_feed_moyu_pump,
+--   (SELECT row_to_json(t) FROM (
+--     SELECT log_id, category_id, at_ms, ml_amount, memo
+--     FROM public.pattern_logs r, p
+--     WHERE r.user_email = p.user_email AND r.child_index = p.child_index
+--       AND r.category_id IN ('bunyu', 'milk')
+--     ORDER BY r.at_ms DESC LIMIT 1
+--   ) t) AS last_feed_bunyu_milk,
+--   (SELECT row_to_json(t) FROM (
+--     SELECT log_id, category_id, at_ms, sleep_type, duration_min, memo
+--     FROM public.pattern_logs r, p
+--     WHERE r.user_email = p.user_email AND r.child_index = p.child_index
+--       AND r.category_id = 'sleep'
+--     ORDER BY r.at_ms DESC LIMIT 1
+--   ) t) AS last_sleep;
