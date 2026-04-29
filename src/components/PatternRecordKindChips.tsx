@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "@/components/patternRecordKindChips.module.css";
 import {
+  dispatchPatternLogAdded,
+  dispatchPatternLogDeleted,
   loadPatternLogs,
   savePatternLogs,
   type PatternLogEntry,
@@ -626,22 +628,24 @@ export function PatternRecordKindChips({
   }, []);
 
   const deleteLog = useCallback((logId: string) => {
-    setLogs((prev) => {
-      const next = prev.filter((l) => l.logId !== logId);
-      savePatternLogs(next);
-      return next;
-    });
-  }, []);
+    // logs를 직접 참조해 콜백 밖에서 처리 — savePatternLogs(UPDATED)와 dispatchPatternLogDeleted(DELETED) 순서 충돌 방지
+    const deleted = logs.find((l) => l.logId === logId);
+    const next = logs.filter((l) => l.logId !== logId);
+    savePatternLogs(next);
+    setLogs(next);
+    if (deleted) dispatchPatternLogDeleted({ categoryId: deleted.categoryId });
+  }, [logs]);
 
   const onChip = useCallback(
     (categoryId: string, label: string) => {
+      const atMs = Date.now();
       setLogs((prev) => {
         const next: PatternLogEntry[] = [
           {
             logId: newLogId(),
             categoryId,
             label,
-            atMs: Date.now(),
+            atMs,
             childIndex: activeChildIndex,
             /* 새 수면 기록은 캡처 UI 기본값과 같이 ‘낮잠’으로 시작(목록·저장 모두 일관). */
             ...(categoryId === "sleep" ? { sleepType: "nap" as const } : {}),
@@ -651,6 +655,7 @@ export function PatternRecordKindChips({
         savePatternLogs(next);
         return next;
       });
+      dispatchPatternLogAdded({ categoryId, atMs, childIndex: activeChildIndex });
     },
     [activeChildIndex],
   );

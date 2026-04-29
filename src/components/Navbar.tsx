@@ -6,6 +6,35 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getNavPrimaryChildAgeLabel } from "@/lib/primaryChildAgeLabel";
 import { clearLoginSession, readLoginSession } from "@/lib/loginSession";
+import {
+  PATTERN_RECORD_ACTIVE_CHILD_CHANGED_EVENT,
+  readPatternRecordActiveChildIndex,
+} from "@/lib/patternRecordActiveChild";
+import {
+  PATTERN_LOG_ADDED_EVENT,
+  PATTERN_LOG_DELETED_EVENT,
+  PATTERN_LOGS_UPDATED_EVENT,
+  type PatternLogAddedDetail,
+  loadPatternLogs,
+} from "@/lib/patternRecordLogStorage";
+
+const FEED_COLOR: Record<string, string> = {
+  moyu: "#ec4899",
+  bunyu: "#2563eb",
+  pumpFeed: "#e11d48",
+  milk: "#0284c7",
+  weaning: "#ea580c",
+};
+
+function formatElapsed(atMs: number): string {
+  const diff = Date.now() - atMs;
+  if (diff < 60000) return "방금 전";
+  const totalMin = Math.floor(diff / 60000);
+  if (totalMin < 60) return `${totalMin}분 전`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m > 0 ? `${h}시간 ${m}분 전` : `${h}시간 전`;
+}
 
 function readSessionNickname(): string | null {
   const session = readLoginSession();
@@ -44,6 +73,16 @@ export function Navbar() {
   const [nickname, setNickname] = useState<string | null>(null);
   /** session에 있는 기준 아이 datepicker(YYYY-MM-DD)로 둔 나이 — ‘아이기록’ 링크 왼쪽 */
   const [primaryChildAgeLabel, setPrimaryChildAgeLabel] = useState<string | null>(null);
+  /** 패턴 기록 입력 시 해당 종류 칩을 표시 — 사라지지 않고 유지 */
+  const [flashChips, setFlashChips] = useState<{
+    diaper?: { key: number; atMs: number };
+    moyu?: { key: number; atMs: number };
+    bunyu?: { key: number; atMs: number };
+    weaning?: { key: number; atMs: number };
+    pumpFeed?: { key: number; atMs: number };
+    feed?: { key: number; atMs: number; categoryId: string };
+    sleep?: { key: number; atMs: number };
+  }>({});
   /**
    * 1024px 미만(lg 미만)에서만 쓰는 풀스크린형 사이드 메뉴 — 햄버거로 열고,
    * 배경 딤·Escape·경로 이동 시 닫혀 뒤 콘텐츠와 충돌을 줄인다.
@@ -87,6 +126,108 @@ export function Navbar() {
         : null,
     );
   }, [pathname]);
+
+  /* 패턴 기록 추가·삭제·수정 이벤트 → 칩 동기화, 마운트 시 localStorage에서 복원 */
+  useEffect(() => {
+    if (!nickname) {
+      setFlashChips({});
+      return;
+    }
+    const feedIds = new Set(["pumpFeed", "milk"]);
+
+    /** 네비 칩에 쓸 아이 인덱스 — 패턴 기록 탭이 있으면 그 값, 없으면 마이 기준 아이(기본 0) */
+    function resolveChipChildIndex(): number {
+      const fromPatternPage = readPatternRecordActiveChildIndex();
+      if (fromPatternPage != null) return fromPatternPage;
+      const s = readLoginSession();
+      return s?.primaryChildIndex ?? 0;
+    }
+
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+    // localStorage 현재 상태로 flashChips 재계산 (마운트·삭제·수정 시 공통 사용)
+    function syncFromStorage() {
+      const childIdx = resolveChipChildIndex();
+      const now = Date.now();
+      const logs = loadPatternLogs().filter(
+        (l) => (l.childIndex ?? 0) === childIdx && now - l.atMs < ONE_DAY_MS,
+      );
+      logs.sort((a, b) => b.atMs - a.atMs);
+      const next: {
+        diaper?: { key: number; atMs: number };
+        moyu?: { key: number; atMs: number };
+        bunyu?: { key: number; atMs: number };
+        weaning?: { key: number; atMs: number };
+        feed?: { key: number; atMs: number; categoryId: string };
+        sleep?: { key: number; atMs: number };
+      } = {};
+      for (const log of logs) {
+        if (!next.diaper && log.categoryId === "diaper")
+          next.diaper = { key: log.atMs, atMs: log.atMs };
+        if (!next.moyu && log.categoryId === "moyu")
+          next.moyu = { key: log.atMs, atMs: log.atMs };
+        if (!next.bunyu && log.categoryId === "bunyu")
+          next.bunyu = { key: log.atMs, atMs: log.atMs };
+        if (!next.weaning && log.categoryId === "weaning")
+          next.weaning = { key: log.atMs, atMs: log.atMs };
+        if (!next.feed && feedIds.has(log.categoryId))
+          next.feed = { key: log.atMs, atMs: log.atMs, categoryId: log.categoryId };
+        if (!next.sleep && log.categoryId === "sleep")
+          next.sleep = { key: log.atMs, atMs: log.atMs };
+      }
+      setFlashChips(next);
+    }
+
+    // 초기 복원 (새로고침·로그인 후에도 태그 유지)
+    syncFromStorage();
+
+    // 새 기록 추가 시 이벤트로 즉시 업데이트
+    const onAdded = (e: Event) => {
+      const { categoryId, atMs, childIndex: addedChild } = (e as CustomEvent<PatternLogAddedDetail>).detail;
+      const chipChild = resolveChipChildIndex();
+      if (addedChild != null && addedChild !== chipChild) return;
+      const chipType: "diaper" | "moyu" | "bunyu" | "weaning" | "feed" | "sleep" | null =
+        categoryId === "diaper" ? "diaper" :
+        categoryId === "sleep" ? "sleep" :
+        categoryId === "moyu" ? "moyu" :
+        categoryId === "bunyu" ? "bunyu" :
+        categoryId === "weaning" ? "weaning" :
+        feedIds.has(categoryId) ? "feed" : null;
+      if (!chipType) return;
+      const ct = chipType;
+      setFlashChips((prev) => ({
+        ...prev,
+        [ct]: { key: Date.now(), atMs, ...(ct === "feed" ? { categoryId } : {}) },
+      }));
+    };
+
+    // 삭제 시 저장소 기준으로 칩을 다시 계산(같은 종류의 이전 기록이 있으면 칩 유지, childIndex 도 반영)
+    const onDeleted = () => {
+      syncFromStorage();
+    };
+
+    const onLogsUpdated = () => {
+      syncFromStorage();
+    };
+    const onActiveChildChanged = () => {
+      syncFromStorage();
+    };
+
+    // 1분마다 24시간 만료 태그 자동 정리
+    const expireInterval = setInterval(syncFromStorage, 60 * 1000);
+
+    window.addEventListener(PATTERN_LOG_ADDED_EVENT, onAdded);
+    window.addEventListener(PATTERN_LOG_DELETED_EVENT, onDeleted);
+    window.addEventListener(PATTERN_LOGS_UPDATED_EVENT, onLogsUpdated);
+    window.addEventListener(PATTERN_RECORD_ACTIVE_CHILD_CHANGED_EVENT, onActiveChildChanged);
+    return () => {
+      clearInterval(expireInterval);
+      window.removeEventListener(PATTERN_LOG_ADDED_EVENT, onAdded);
+      window.removeEventListener(PATTERN_LOG_DELETED_EVENT, onDeleted);
+      window.removeEventListener(PATTERN_LOGS_UPDATED_EVENT, onLogsUpdated);
+      window.removeEventListener(PATTERN_RECORD_ACTIVE_CHILD_CHANGED_EVENT, onActiveChildChanged);
+    };
+  }, [nickname]);
 
   /* 세션에 childBirthDates가 없어도 서버(마이/가입 저장)에는 있을 수 있으므로 /api/me 로 보강 — 마이페이지 저장 직후에도 갱신 */
   useEffect(() => {
@@ -247,7 +388,7 @@ export function Navbar() {
   /**
    * 메인 GNB(연령방·부모이야기·발달·꼬꼬마·정보·지역 — 홈은 로고 링크로만 이동) — 1024px(lg) 이상은 1행 절대배치 가운데.
    * 1024px 미만은 상단 1행(로고+햄버거) + 다크톤 사이드 메뉴(유틸·GNB)로 동일 링크를 옮겨
-   * 뷰를 넓게 쓰고 터치 탭을 더 크게 잡는다(우하단 퀵 메뉴 z 40, 패널은 z 50).
+   * 뷰를 넓게 쓰고 터치 탭을 더 크게 잡는다. 퀵 메뉴는 z-20(Navbar z-30·전면 사이드보다 아래).
    */
   const mainNavItems = (
     <>
@@ -280,6 +421,7 @@ export function Navbar() {
   );
 
   /**
+
    * 사이드 메뉴 전용 GNB — 데스크톱과 동일한 href·활성 판정을 쓰되,
    * 터치·가독성을 위해 큰 탭 영역·밝은 텍스트(다크 패널 대비)로 다시 쓴다.
    */
@@ -324,6 +466,7 @@ export function Navbar() {
 
   return (
     <nav
+      id="siteNavbar"
       className={`w-full shrink-0 border-b border-[#2d2926]/[0.06] bg-[#faf9f6] px-4 sm:px-6 sticky top-0 z-30 transition-shadow duration-200 ${isScrolled ? "shadow-[0_2px_16px_rgba(45,41,38,0.09)]" : ""}`}
       style={{
         /* 전역 @theme --font-sans(로컬 Pretendard) — 로고 링크만 `font-serif`로 덮어씀 */
@@ -331,7 +474,7 @@ export function Navbar() {
       }}
     >
       {/*
-        모든 화면에서 `sticky` — `z-30` 은 `RightQuickMenu` z-40, 전면 사이드 z-50 아래.
+        모든 화면에서 `sticky` — `z-30` 으로 퀵 메뉴(z-20) 위에 GNB·모바일 전면 사이드를 올린다(자식 z-50 은 이 스택 안에서만 유효).
       */}
       <div className="relative mx-auto flex max-w-6xl flex-col gap-3 py-4 lg:gap-0">
         <div className="relative flex min-h-[2.5rem] items-center justify-between gap-2 sm:gap-3 md:gap-6">
@@ -480,10 +623,82 @@ export function Navbar() {
             </button>
           </div>
         </div>
+
+        {/* 패턴 기록 입력 직후만 표시되는 플래시 칩 */}
+        {nickname && (flashChips.diaper != null || flashChips.moyu != null || flashChips.bunyu != null || flashChips.weaning != null || flashChips.feed != null || flashChips.sleep != null) && (
+          <Link
+            href="/pattern-record"
+            className="flex flex-wrap gap-2 pb-0.5"
+            aria-label="패턴 기록 이동"
+          >
+            {flashChips.diaper != null && (
+              <span
+                key={`diaper-${flashChips.diaper.key}`}
+                className="navChipFlash inline-flex items-center gap-1.5 rounded-full border border-[#a855f7]/30 bg-[#a855f7]/5 px-3 py-1.5 text-[0.75rem] font-semibold text-[#a855f7]"
+              >
+                기저귀
+                <span className="font-normal text-[0.6875rem] opacity-70">{formatElapsed(flashChips.diaper.atMs)}</span>
+              </span>
+            )}
+            {flashChips.weaning != null && (
+              <span
+                key={`weaning-${flashChips.weaning.key}`}
+                className="navChipFlash inline-flex items-center gap-1.5 rounded-full border border-[#ea580c]/30 bg-[#ea580c]/5 px-3 py-1.5 text-[0.75rem] font-semibold text-[#ea580c]"
+              >
+                이유식
+                <span className="font-normal text-[0.6875rem] opacity-70">{formatElapsed(flashChips.weaning.atMs)}</span>
+              </span>
+            )}
+            {flashChips.feed != null && (
+              <span
+                key={`feed-${flashChips.feed.key}`}
+                className="navChipFlash inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.75rem] font-semibold"
+                style={{
+                  borderWidth: "1px",
+                  borderStyle: "solid",
+                  borderColor: `${FEED_COLOR[flashChips.feed.categoryId] ?? "#c57b67"}4d`,
+                  backgroundColor: `${FEED_COLOR[flashChips.feed.categoryId] ?? "#c57b67"}0d`,
+                  color: FEED_COLOR[flashChips.feed.categoryId] ?? "#c57b67",
+                }}
+              >
+                수유
+                <span style={{ fontSize: "0.6875rem", opacity: 0.7, fontWeight: 400 }}>{formatElapsed(flashChips.feed.atMs)}</span>
+              </span>
+            )}
+            {flashChips.moyu != null && (
+              <span
+                key={`moyu-${flashChips.moyu.key}`}
+                className="navChipFlash inline-flex items-center gap-1.5 rounded-full border border-[#ec4899]/30 bg-[#ec4899]/5 px-3 py-1.5 text-[0.75rem] font-semibold text-[#ec4899]"
+              >
+                모유
+                <span className="font-normal text-[0.6875rem] opacity-70">{formatElapsed(flashChips.moyu.atMs)}</span>
+              </span>
+            )}
+            {flashChips.bunyu != null && (
+              <span
+                key={`bunyu-${flashChips.bunyu.key}`}
+                className="navChipFlash inline-flex items-center gap-1.5 rounded-full border border-[#2563eb]/30 bg-[#2563eb]/5 px-3 py-1.5 text-[0.75rem] font-semibold text-[#2563eb]"
+              >
+                분유
+                <span className="font-normal text-[0.6875rem] opacity-70">{formatElapsed(flashChips.bunyu.atMs)}</span>
+              </span>
+            )}
+            {flashChips.sleep != null && (
+              <span
+                key={`sleep-${flashChips.sleep.key}`}
+                className="navChipFlash inline-flex items-center gap-1.5 rounded-full border border-[#6366f1]/30 bg-[#6366f1]/5 px-3 py-1.5 text-[0.75rem] font-semibold text-[#6366f1]"
+              >
+                수면
+                <span className="font-normal text-[0.6875rem] opacity-70">{formatElapsed(flashChips.sleep.atMs)}</span>
+              </span>
+            )}
+          </Link>
+        )}
       </div>
 
       {/*
-        RightQuickMenu 가 z-40 이므로 50에 두고, `lg:hidden`으로 데스크톱에서는 포털·포커스 루프를 타지 않게 한다.
+        전면 래퍼는 `z-50` 이지만 부모가 `sticky z-30` 이라 body 레벨 비교는 30뿐 — 퀵 메뉴를 z-20 으로 두면 이 패널이 위에 온다.
+        `lg:hidden` 으로 데스크톱에서는 포털·포커스 루프를 타지 않게 한다.
         패널을 뷰포트 100% 갈색으로 쓸 때는 별도 딤을 두지 않고(전면이 곧 메뉴) 닫기는 상단 X·Escape·경로 이동에 맡긴다.
       */}
       {isSideMenuMounted ? (

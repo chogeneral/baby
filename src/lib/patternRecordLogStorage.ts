@@ -78,10 +78,41 @@ export function loadPatternLogs(): PatternLogEntry[] {
   }
 }
 
+export const PATTERN_LOGS_UPDATED_EVENT = "patternLogsUpdated";
+export const PATTERN_LOG_ADDED_EVENT = "patternLogAdded";
+export const PATTERN_LOG_DELETED_EVENT = "patternLogDeleted";
+
+export type PatternLogAddedDetail = {
+  categoryId: string;
+  atMs: number;
+  /** 기록 시 선택된 아이 — 네비 칩이 같은 아이만 반영하도록 쓴다 */
+  childIndex?: number;
+  diaperType?: "pee" | "poo" | "both";
+  sleepType?: "night" | "nap";
+};
+
+export type PatternLogDeletedDetail = {
+  categoryId: string;
+};
+
+export function dispatchPatternLogAdded(detail: PatternLogAddedDetail): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent<PatternLogAddedDetail>(PATTERN_LOG_ADDED_EVENT, { detail }));
+}
+
+export function dispatchPatternLogDeleted(detail: PatternLogDeletedDetail): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent<PatternLogDeletedDetail>(PATTERN_LOG_DELETED_EVENT, { detail }));
+}
+
 export function savePatternLogs(list: PatternLogEntry[]): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(key(), JSON.stringify(list));
+    // setTimeout으로 React 렌더 단계 완료 후 dispatch — setLogs 콜백 내부에서 호출 시 "update while rendering" 오류 방지
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent(PATTERN_LOGS_UPDATED_EVENT));
+    }, 0);
   } catch {
     /* ignore */
   }
