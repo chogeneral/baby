@@ -131,9 +131,16 @@ export default function BabyRecordsPage() {
           <h1 className={nestForm.nestTitle}>아이 기록</h1>
         </div>
 
-        {/* 아이 탭 — 2명 이상일 때만 표시 */}
+        {/* 아이 탭 — 2명 이상일 때만 표시; 하단 0.6rem은 아래 기록 영역과 구분 */}
         {showTabs && (
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              flexWrap: "wrap",
+              margin: "0 0 1rem",
+            }}
+          >
             {childLabels.map((label, i) => (
               <button
                 key={i}
@@ -166,7 +173,8 @@ export default function BabyRecordsPage() {
               : "아직 저장된 기록이 없어요."}
           </p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          // 날짜 구역(섹션) 사이 세로 간격 — 스크린샷과 같이 블록 간 여백은 1rem 으로 통일
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {sortedDates.map((dateKey) => (
               <section key={dateKey}>
                 <h2

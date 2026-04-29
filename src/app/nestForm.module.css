@@ -21,10 +21,14 @@
   }
 }
 
+/* 패턴 기록 전용: 목록 스크린과 같이 날짜는 베이지 위·기록은 흰 카드 — `--colorCream` 보다 살짝 붉은 베이지 */
+.nestPagePatternRecord {
+  background: #f8f5f2;
+}
+
 .nestStack {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
 }
 
 /* 마이페이지·자녀 한 덩어리 — nestStack(2.5rem)은 너무 벌어지고, 0.4rem은 촘촘해 보일 때 0.55rem 정도로 살짝만 띄움 */
@@ -66,7 +70,7 @@
 /* 페이지 제목 h1 — Pretendard(전역 --fontH1) */
 .nestTitle {
   margin: 0;
-  padding-bottom: 10px;
+  padding-bottom: 1rem;
   font-family: var(--fontH1);
   font-size: clamp(1.35rem, 3.5vw, 1.75rem);
   font-weight: 700;
@@ -75,7 +79,7 @@
 }
 
 .nestLead {
-  margin: 0.5rem 0 0;
+ 
   font-size: 0.9375rem;
   line-height: 1.6;
   color: var(--colorMuted);
@@ -593,10 +597,9 @@
   border-top: 1px solid rgba(45, 41, 38, 0.35);
 }
 
-/* 댓글 목록 — 카드형 행으로 리스트를 나눈다 */
+/* 댓글 목록 — 카드형 행으로 리스트를 나눈다(하단 바깥 여백은 페이지/섹션에서 맞추므로 여기서는 margin 없음) */
 .nestCommentList {
   list-style: none;
-  margin: 0 0 1.25rem;
   padding: 0;
   display: flex;
   flex-direction: column;

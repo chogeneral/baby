@@ -197,11 +197,7 @@ function CommunityPostEditInner({
     <main className={nestForm.nestPage}>
       <h1 className={nestForm.nestTitle}>{roomLabel}</h1>
 
-      <p className={nestForm.nestLead} style={{ marginBottom: "1.25rem" }}>
-        {roomKind === "regionNearby"
-          ? communityRoomLabels.regionNearby.ageHint
-          : "글 수정 안내"}
-      </p>
+     
 
       <div className={nestForm.nestNotice}>
         <p className={nestForm.nestNoticeSub} style={{ margin: 0 }}>

@@ -47,7 +47,7 @@ button.rightQuickMenuItem {
   -webkit-appearance: none;
 }
 
-/* 단일 액션 버튼: 흰 배경 + 갈색 stroke 아이콘 — 본문 톤과 맞추고 위에서 떠 보이게 그림자만 살짝 둔다. */
+/* 액션 버튼 공통 골격: `rightQuickMenuItemBrown` 을 붙이면 갈색 그라, 없으면 흰 칩(예: 맨 위로). */
 .rightQuickMenuItem {
   pointer-events: auto;
   display: flex;
@@ -58,6 +58,7 @@ button.rightQuickMenuItem {
   padding: 0.5rem;
   border: 1px solid rgba(45, 30, 22, 0.2);
   border-radius: 14px;
+  /* `rightQuickMenuItemBrown` 이 없을 때(맨 위로 등) */
   background: #fff;
   color: #4a3228;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -71,6 +72,7 @@ button.rightQuickMenuItem {
 }
 
 .rightQuickMenuItem:hover {
+  /* 갈색 변형이 아닌 단독 사용 시에만 — 갈색 항목은 `rightQuickMenuItemBrown:hover`가 덮는다. */
   background: #faf7f3;
   color: #3d2820;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
@@ -81,7 +83,7 @@ button.rightQuickMenuItem {
   transform: translateY(0) scale(0.98);
 }
 
-/* 연필(글쓰기) 전용: nestBtnPrimary 계열 갈색 그라데이션 + 밝은 아이콘. 맨 위로(흰 칩)와 역할이 달라 시각적 구분을 둔다. */
+/* 퀵 메뉴 기본 룩: nestBtnPrimary 계열 갈색 그라데이션 + 밝은 아이콘(시계·기록·맨 위로 공통). */
 .rightQuickMenuItem.rightQuickMenuItemBrown {
   border: 1px solid rgba(45, 30, 22, 0.45);
   background: linear-gradient(145deg, #8b5c3a 0%, #5c3d2e 55%, #4a3228 100%);
@@ -96,8 +98,11 @@ button.rightQuickMenuItem {
   box-shadow: 0 6px 20px rgba(74, 50, 40, 0.42);
 }
 
-/* 터치 44px 이상 권고에 맞춰 최소 탭 영역을 확보한다 */
+/* 터치 44px 이상 권고에 맞춰 최소 탭 영역을 확보한다.
+ * 아이콘 자체는 이전 26px보다 눈에 잘 띄도록 2rem(기본 32px)로 키움 — `viewBox` 스케일에 맡긴다. */
 .rightQuickMenuIcon {
   display: block;
   flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
 }

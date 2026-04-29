@@ -11,8 +11,6 @@ function pencilIcon() {
   return (
     <svg
       className={styles.rightQuickMenuIcon}
-      width="26"
-      height="26"
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -30,14 +28,43 @@ function pencilIcon() {
 }
 
 /**
+ * 시계 — 원·시·분침만 stroke 로 그리고 연필·맨 위로 와 굵기를 맞췄다.
+ * 맨 위 링크는 **패턴 기록**(`/pattern-record`) — 시계 아이콘과 맞춘 루틴·시간 기록 진입.
+ */
+function clockIcon() {
+  return (
+    <svg
+      className={styles.rightQuickMenuIcon}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="7.5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+      />
+      <path
+        d="M12 12V8.25M12 12l3 2.25"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/**
  * 위로 가기(맨 위로 스크롤) — 쉐브론 두 줄로 “위 방향”을 직관적으로 표시하고 연필 아이콘과 동일한 stroke 톤을 맞췄다.
  */
 function scrollToTopIcon() {
   return (
     <svg
       className={styles.rightQuickMenuIcon}
-      width="26"
-      height="26"
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -135,6 +162,14 @@ export function RightQuickMenu() {
       aria-label="빠른 메뉴"
     >
       <Link
+        href="/pattern-record"
+        className={`${styles.rightQuickMenuItem} ${styles.rightQuickMenuItemBrown}`}
+        title="패턴 기록"
+        aria-label="패턴 기록 — 수면·수유 등 아이 루틴"
+      >
+        {clockIcon()}
+      </Link>
+      <Link
         href="/record"
         className={`${styles.rightQuickMenuItem} ${styles.rightQuickMenuItemBrown}`}
         title="아기 기록 입력"
@@ -142,6 +177,7 @@ export function RightQuickMenu() {
       >
         {pencilIcon()}
       </Link>
+      {/* ‘맨 위로’는 보조 액션이라 흰 배경·갈색 stroke 아이콘(연필 갈색 칩과 구분). */}
       <button
         type="button"
         className={styles.rightQuickMenuItem}
