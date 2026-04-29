@@ -51,8 +51,8 @@
   --btnShadowHover: 0 10px 28px rgba(45, 41, 38, 0.14);
   --fontH1: "PretendardB", sans-serif;
   /**
-   * 상단 GNB( Navbar: py-4 + 로고 h-16 )에 맞춘 값 — BoardRichTextEditor 툴바 `sticky` 의 `top` 과 동기.
-   * 레이아웃이 바뀌면 이 값·Navbar 를 함께 맞출 것.
+   * 런타임에 `SiteHeaderInset` 가 `<nav id="siteNavbar">` 높이를 재서 px 로 덮어쓴다 —
+   * 리치 에디터 툴바 `sticky` 의 `top` 과 맞춘다(고정 6rem 과 실제 GNB 높이 차이 방지).
    */
   --siteHeaderToolbarOffset: 6rem;
 }
@@ -71,6 +71,15 @@
   --font-sans: "Pretendard", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
   --font-serif: "Pretendard", "Malgun Gothic", "맑은 고딕", "Georgia", serif;
   --font-mono: ui-monospace, "Cascadia Code", "Malgun Gothic", monospace;
+}
+
+/* 패턴 기록 입력 직후 nav 칩 등장 */
+@keyframes navChipFadeIn {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.navChipFlash {
+  animation: navChipFadeIn 0.25s ease-out forwards;
 }
 
 /* 앵커·`scrollTo` 이동 시 부드럽게 — 감쇠 모션이 켜진 환경에서만(시스템 ‘움직임 줄이기’ 존중) */

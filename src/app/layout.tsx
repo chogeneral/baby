@@ -4,6 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { RightQuickMenu } from "@/components/RightQuickMenu";
 import { GlobalScrollReveal } from "@/components/GlobalScrollReveal";
+import { SiteHeaderInset } from "@/components/SiteHeaderInset";
 import { getSiteUrl } from "@/lib/siteUrl";
 import "./globals.css";
 
@@ -60,6 +61,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-sans">
         {/* 기존 컴포넌트들 유지 */}
         <GlobalScrollReveal />
+        <SiteHeaderInset />
         <Navbar />
         <main className="grow">{children}</main>
         <RightQuickMenu />

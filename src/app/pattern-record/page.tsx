@@ -8,6 +8,7 @@ import {
   PatternRecordKindChips,
   type PatternRecordKindChipsProps,
 } from "@/components/PatternRecordKindChips";
+import { writePatternRecordActiveChildIndex } from "@/lib/patternRecordActiveChild";
 
 type MePayload = {
   childCount?: number;
@@ -60,6 +61,14 @@ export default function PatternRecordPage() {
     };
   }, [router]);
 
+  /*
+   * 탭 인덱스를 sessionStorage에만 반영해 Navbar 의 칩이 `loadPatternLogs` 전체가 아니라
+   * 현재 고른 아이(childIndex)와 같은 로그만 보게 한다(새로고침 후에도 목록과 불일치 방지).
+   */
+  useEffect(() => {
+    writePatternRecordActiveChildIndex(activeTab);
+  }, [activeTab]);
+
   if (isLoading) {
     return (
       <main className={`${nestForm.nestPage} ${nestForm.nestPagePatternRecord}`}>
@@ -84,6 +93,7 @@ export default function PatternRecordPage() {
     <main className={`${nestForm.nestPage} ${nestForm.nestPagePatternRecord}`}>
       <div className={nestForm.nestStack}>
         <h1 className={nestForm.nestTitle}>패턴 기록</h1>
+
         <p className={nestForm.nestLead}>
           수면·수유·기상 등 아이의 시간 흐름을 여기에 남길 수 있어요. 자녀가 여럿이면 아래에서 아이를
           골라 각각 기록을 볼 수 있어요.

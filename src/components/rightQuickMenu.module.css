@@ -3,12 +3,18 @@
  * 푸터가 뷰포트에 들어올 때는 JS 가 --qm-bottom CSS 변수를 인라인으로 설정해 푸터 바로 위까지 올린다.
  * bottom 속성은 CSS 에만 존재하므로 !important 없이도 미디어 쿼리가 자연스럽게 적용된다.
  * 클래스명은 camelCase.
+ *
+ * z-index 는 Navbar 의 `sticky z-30` 보다 낮게 둔다.
+ * 모바일 사이드 메뉴는 같은 `<nav>` 안에 `fixed z-50` 이지만, 부모 `z-30` 스택 안에만 적용되어
+ * 퀵 메뉴를 GNB( z-30 )보다 높게 두면 body 레벨에서 전체 네비보다 위에 그려져 사이드가 퀵 메뉴 뒤로 가린다.
+ * 퀵 메뉴를 30 미만으로 두면 GNB·전면 사이드가 한 덩어리(z-30)로 퀵 메뉴 위에 올라온다.
  */
 
 /* 퀵 메뉴 래퍼: 오른쪽 아래에만 붙이고, 인쇄 시에는 숨긴다 */
 .rightQuickMenu {
   position: fixed;
-  z-index: 40;
+  /* GNB sticky z-30 · 모바일 전면 사이드( nav 내부 fixed )보다 아래 — 본문(기본 0)보다는 위 */
+  z-index: 20;
   right: max(10rem, env(safe-area-inset-right, 0px));
   /* JS 가 --qm-bottom 을 설정하면 그 값을, 없으면 --qm-base-bottom 의 기본값을 사용 */
   --qm-base-bottom: calc(max(1rem, env(safe-area-inset-bottom, 0px)) + 50px);

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import nestForm from "@/app/nestForm.module.css";
 import { formatKoreanPhoneInput, onlyDigits } from "@/lib/formatKoreanPhone";
+import { maskEmail, maskPhone } from "@/lib/maskPrivacy";
 import { readLoginSession, saveLoginSession } from "@/lib/loginSession";
 import { formatDate } from "@/lib/formatDate";
 import { isIsoDateInRange } from "@/lib/birthDateParts";
@@ -93,6 +94,7 @@ export default function MyPage() {
   const [infoError, setInfoError] = useState("");
   const [infoSuccess, setInfoSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [phoneEditing, setPhoneEditing] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -281,6 +283,7 @@ export default function MyPage() {
         primaryChildIndex: me.primaryChildIndex ?? primaryIdx,
       });
 
+      setPhoneEditing(false);
       setInfoSuccess("정보가 수정되었습니다.");
     } finally {
       setIsSaving(false);
@@ -342,7 +345,7 @@ export default function MyPage() {
           <form onSubmit={handleInfoSave} className={nestForm.nestForm}>
             <div>
               <span className={nestForm.nestLabel}>이메일</span>
-              <p className={nestForm.nestReadonly}>{info?.email}</p>
+              <p className={nestForm.nestReadonly}>{maskEmail(info?.email ?? "")}</p>
             </div>
 
             <div>
@@ -360,17 +363,33 @@ export default function MyPage() {
             </div>
 
             <div>
-              <label htmlFor="myPhone" className={nestForm.nestLabel}>
-                휴대폰 번호
-              </label>
-              <input
-                id="myPhone"
-                type="tel"
-                inputMode="numeric"
-                value={phone}
-                onChange={(e) => setPhone(formatKoreanPhoneInput(e.target.value))}
-                className={nestForm.nestInput}
-              />
+              <span className={nestForm.nestLabel}>휴대폰 번호</span>
+              {phoneEditing ? (
+                <input
+                  id="myPhone"
+                  type="tel"
+                  inputMode="numeric"
+                  autoFocus
+                  value={phone}
+                  onChange={(e) => setPhone(formatKoreanPhoneInput(e.target.value))}
+                  onBlur={() => { if (!phone) setPhoneEditing(false); }}
+                  className={nestForm.nestInput}
+                />
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <p className={nestForm.nestReadonly} style={{ flex: 1, margin: 0 }}>
+                    {phone ? maskPhone(phone) : "미입력"}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setPhoneEditing(true)}
+                    className={nestForm.nestBtnNeutral}
+                    style={{ padding: "0.25rem 0.75rem", fontSize: "0.8rem" }}
+                  >
+                    수정
+                  </button>
+                </div>
+              )}
             </div>
 
             <hr className={nestForm.nestMypageDivider} aria-hidden="true" />

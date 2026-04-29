@@ -1,10 +1,16 @@
 /* 본문 에디터 아래 ‘하단 사진’ 영역(다중 첨부) — nestForm 톤에 맞춤 */
 .section {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
   margin-top: 0.35rem;
   padding: 0.85rem 1rem;
   border-radius: 14px;
   border: 1px dashed rgba(45, 41, 38, 0.18);
-  background: rgba(255, 250, 245, 0.65);
+  background: rgba(255, 250, 245, 0.96);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 -2px 16px rgba(45, 41, 38, 0.07);
 }
 
 .sectionLabel {
