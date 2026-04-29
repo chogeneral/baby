@@ -8,6 +8,7 @@ import {
   dispatchPatternLogAdded,
   dispatchPatternLogDeleted,
   loadPatternLogs,
+  PATTERN_LOGS_UPDATED_EVENT,
   savePatternLogs,
   type PatternLogEntry,
 } from "@/lib/patternRecordLogStorage";
@@ -473,6 +474,20 @@ export function PatternRecordKindChips({
     const s = loadPatternLogs();
     s.sort((a, b) => b.atMs - a.atMs);
     setLogs(s);
+  }, []);
+
+  /*
+   * Navbar 에서 pullPatternLogsForSession 이 끝나면 savePatternLogs 가 이 이벤트를 쏜다.
+   * 패턴 기록 화면이 이미 열려 있을 때 목록·요약 바가 서버 데이터와 맞도록 로컬을 다시 읽는다.
+   */
+  useEffect(() => {
+    const onUpdated = () => {
+      const s = loadPatternLogs();
+      s.sort((a, b) => b.atMs - a.atMs);
+      setLogs(s);
+    };
+    window.addEventListener(PATTERN_LOGS_UPDATED_EVENT, onUpdated);
+    return () => window.removeEventListener(PATTERN_LOGS_UPDATED_EVENT, onUpdated);
   }, []);
 
   // 모달 열기

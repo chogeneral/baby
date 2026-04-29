@@ -1,4 +1,5 @@
 import { readLoginSession } from "@/lib/loginSession";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 /**
  * 패턴 기록 클릭 로그 — `localStorage` (계정/게스트 키 분리).
@@ -41,7 +42,7 @@ function key(): string {
   return `${PREFIX}_${encodeURIComponent(id)}`;
 }
 
-function isEntry(x: unknown): x is PatternLogEntry {
+export function isPatternLogEntry(x: unknown): x is PatternLogEntry {
   if (x == null || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
   if (
@@ -63,6 +64,10 @@ function isEntry(x: unknown): x is PatternLogEntry {
     return false;
   }
   return true;
+}
+
+function isEntry(x: unknown): x is PatternLogEntry {
+  return isPatternLogEntry(x);
 }
 
 export function loadPatternLogs(): PatternLogEntry[] {
@@ -105,7 +110,10 @@ export function dispatchPatternLogDeleted(detail: PatternLogDeletedDetail): void
   window.dispatchEvent(new CustomEvent<PatternLogDeletedDetail>(PATTERN_LOG_DELETED_EVENT, { detail }));
 }
 
-export function savePatternLogs(list: PatternLogEntry[]): void {
+export function savePatternLogs(
+  list: PatternLogEntry[],
+  options?: { skipRemotePush?: boolean },
+): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(key(), JSON.stringify(list));
@@ -115,5 +123,63 @@ export function savePatternLogs(list: PatternLogEntry[]): void {
     }, 0);
   } catch {
     /* ignore */
+  }
+
+  /*
+   * Supabase 가 설정되어 있고 로그인된 경우에만 서버에 스냅샷을 올린다.
+   * skipRemotePush 로 채운 데이터를 다시 PUT 하면 불필요한 왕복이 생기므로 생략한다.
+   */
+  if (options?.skipRemotePush) {
+    return;
+  }
+  const session = readLoginSession();
+  const email = session?.email?.trim();
+  if (!email || !isSupabaseConfigured()) {
+    return;
+  }
+  void fetch("/api/pattern-logs", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ authorEmail: email, logs: list }),
+  })
+    .then(async (res) => {
+      if (res.ok) return;
+      const text = await res.text().catch(() => "");
+      /* 브라우저 콘솔에서 401(미가입)·500(DB·RLS)·400 검증 실패 등을 바로 볼 수 있게 한다 */
+      console.warn("[pattern-logs] 동기화 실패:", res.status, text.slice(0, 300));
+    })
+    .catch(() => {});
+}
+
+/**
+ * 서버(Supabase)에서 패턴 로그를 내려받아 localStorage에 반영한다.
+ * - 서버에 한 건도 없고 로컬만 있으면 로컬을 한 번 올려 마이그레이션한다(기존 단일 기기 사용자).
+ * - 로그인·NEXT_PUBLIC Supabase 가 없으면 아무 것도 하지 않는다.
+ */
+export async function pullPatternLogsForSession(): Promise<void> {
+  if (typeof window === "undefined") return;
+  const session = readLoginSession();
+  const email = session?.email?.trim();
+  if (!email || !isSupabaseConfigured()) {
+    return;
+  }
+  try {
+    const res = await fetch(`/api/pattern-logs?authorEmail=${encodeURIComponent(email)}`);
+    if (!res.ok) return;
+    const remoteRaw = (await res.json()) as unknown;
+    if (!Array.isArray(remoteRaw)) return;
+    const parsed: PatternLogEntry[] = remoteRaw.filter(isEntry);
+    const local = loadPatternLogs();
+    if (parsed.length === 0 && local.length > 0) {
+      await fetch("/api/pattern-logs", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ authorEmail: email, logs: local }),
+      });
+      return;
+    }
+    savePatternLogs(parsed, { skipRemotePush: true });
+  } catch {
+    /* 오프라인·오류 시 로컬 유지 */
   }
 }

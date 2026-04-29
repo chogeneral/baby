@@ -45,6 +45,8 @@ COMMENT ON TABLE public.pattern_logs IS
 COMMENT ON COLUMN public.pattern_logs.log_id IS '앱에서 쓰는 문자열 logId — 저장·수정 시 충돌 방지용 유일 키';
 COMMENT ON COLUMN public.pattern_logs.category_id IS
   '앱 categoryId 영문 키 — 헤더 칩: diaper|weaning|sleep|moyu|bunyu|pumpFeed|milk 등; 요약 바: diaper / (moyu,pumpFeed) / (bunyu,milk) / sleep';
+
+CREATE INDEX IF NOT EXISTS idx_pattern_logs_user_child_at
   ON public.pattern_logs (user_email, child_index, at_ms DESC);
 
 CREATE INDEX IF NOT EXISTS idx_pattern_logs_user_child_cat_at

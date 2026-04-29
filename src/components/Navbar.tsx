@@ -16,6 +16,7 @@ import {
   PATTERN_LOGS_UPDATED_EVENT,
   type PatternLogAddedDetail,
   loadPatternLogs,
+  pullPatternLogsForSession,
 } from "@/lib/patternRecordLogStorage";
 
 const FEED_COLOR: Record<string, string> = {
@@ -181,6 +182,16 @@ export function Navbar() {
     // 초기 복원 (새로고침·로그인 후에도 태그 유지)
     syncFromStorage();
 
+    let cancelled = false;
+    void (async () => {
+      /*
+       * 로그인 + Supabase 환경이면 서버에서 내려받아 localStorage를 맞춘 뒤 칩을 다시 그린다.
+       * 모바일/PC 각자 로컬만 쓰던 문제를 DB 스냅샷으로 통일한다.
+       */
+      await pullPatternLogsForSession();
+      if (!cancelled) syncFromStorage();
+    })();
+
     // 새 기록 추가 시 이벤트로 즉시 업데이트
     const onAdded = (e: Event) => {
       const { categoryId, atMs, childIndex: addedChild } = (e as CustomEvent<PatternLogAddedDetail>).detail;
@@ -221,6 +232,7 @@ export function Navbar() {
     window.addEventListener(PATTERN_LOGS_UPDATED_EVENT, onLogsUpdated);
     window.addEventListener(PATTERN_RECORD_ACTIVE_CHILD_CHANGED_EVENT, onActiveChildChanged);
     return () => {
+      cancelled = true;
       clearInterval(expireInterval);
       window.removeEventListener(PATTERN_LOG_ADDED_EVENT, onAdded);
       window.removeEventListener(PATTERN_LOG_DELETED_EVENT, onDeleted);
