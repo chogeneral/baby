@@ -48,13 +48,17 @@ export async function getPostsByTopic(
 export async function getPostById(
   id: string,
 ): Promise<ContentTopicPostRecord | undefined> {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
-  if (error || !data) return undefined;
-  return rowToPost(data as Record<string, unknown>);
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error || !data) return undefined;
+    return rowToPost(data as Record<string, unknown>);
+  } catch {
+    return undefined;
+  }
 }
 
 export async function incrementViewCount(id: string): Promise<void> {

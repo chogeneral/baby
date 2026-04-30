@@ -111,14 +111,18 @@ export async function getCommunityPostByIdForSeo(
 ): Promise<PostRecord | undefined> {
   const numId = Number(id);
   if (isNaN(numId)) return undefined;
-  const { data, error } = await supabase
-    .from("posts")
-    .select("*")
-    .eq("id", numId)
-    .in("category", [...ALL_COMMUNITY_POST_CATEGORIES])
-    .maybeSingle();
-  if (error || !data) return undefined;
-  return rowToPost(data as Record<string, unknown>);
+  try {
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("id", numId)
+      .in("category", [...ALL_COMMUNITY_POST_CATEGORIES])
+      .maybeSingle();
+    if (error || !data) return undefined;
+    return rowToPost(data as Record<string, unknown>);
+  } catch {
+    return undefined;
+  }
 }
 
 /** sitemap: 커뮤니티 글 id·갱신 시각(= created_at) */

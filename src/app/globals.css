@@ -24,7 +24,6 @@
   font-display: swap;
   src:
     local("Pretendard Bold"),
-    url("/font/Pretendard-Bold.woff2") format("woff2"),
     url("/font/Pretendard-Bold.woff") format("woff");
 }
 
