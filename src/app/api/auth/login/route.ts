@@ -12,11 +12,13 @@ export async function POST(req: NextRequest) {
 
   const user = await findByEmail(email);
   if (!user) {
+    console.warn("[login] 사용자 없음 또는 DB 오류:", email);
     return NextResponse.json({ message: "이메일 또는 비밀번호가 올바르지 않습니다." }, { status: 401 });
   }
 
   const matched = await bcrypt.compare(password, user.passwordHash);
   if (!matched) {
+    console.warn("[login] 비밀번호 불일치:", email);
     return NextResponse.json({ message: "이메일 또는 비밀번호가 올바르지 않습니다." }, { status: 401 });
   }
 

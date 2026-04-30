@@ -49,13 +49,22 @@ function rowToUser(row: Record<string, unknown>): UserRecord {
 export async function findByEmail(
   email: string,
 ): Promise<UserRecord | undefined> {
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("*")
-    .eq("email", email.toLowerCase().trim())
-    .maybeSingle();
-  if (error || !data) return undefined;
-  return rowToUser(data as Record<string, unknown>);
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("*")
+      .eq("email", email.toLowerCase().trim())
+      .maybeSingle();
+    if (error) {
+      console.warn("[userStore] findByEmail Supabase 오류:", error.message);
+      return undefined;
+    }
+    if (!data) return undefined;
+    return rowToUser(data as Record<string, unknown>);
+  } catch (err) {
+    console.warn("[userStore] findByEmail 예외:", err);
+    return undefined;
+  }
 }
 
 export async function findByPhone(phone: string): Promise<UserRecord | undefined> {
