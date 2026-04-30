@@ -27,7 +27,7 @@ function rowToPost(row: Record<string, unknown>): ContentTopicPostRecord {
     content: String(row.content ?? ""),
     authorEmail: String(row.author_email ?? ""),
     authorNickname: String(row.author_nickname ?? ""),
-    createdAt: row.created_at as string,
+    createdAt: String(row.created_at ?? ""),
     viewCount: (row.view_count as number) ?? undefined,
     password: (row.password as string) ?? undefined,
   };

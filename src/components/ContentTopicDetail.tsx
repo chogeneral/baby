@@ -40,7 +40,7 @@ export async function ContentTopicDetail({ id, topic }: Props) {
             <span aria-hidden>·</span>
           </>
         ) : null}
-        <span>{post.createdAt.slice(0, 10)}</span>
+        <span>{(post.createdAt ?? "").slice(0, 10)}</span>
         <span aria-hidden>·</span>
         <span>조회 {post.viewCount ?? 0}</span>
       </div>

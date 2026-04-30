@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /*
+   * 서버에서는 dompurify·jsdom 을 번들 안에서 풀패키지로 끌고 오지 않도록 외부 패키지로 둔다.
+   */
+  serverExternalPackages: ["dompurify", "jsdom"],
+
   async redirects() {
     return [
       {

@@ -25,9 +25,11 @@ export function htmlToPlainText(html: string): string {
 /**
  * 과거에 textarea 로 저장된 순수 텍스트 글은 태그가 없다.
  * 상세 화면에서 줄바꿈(pre-wrap)을 유지할지, sanitize HTML 로 렌더할지 나눌 때 쓴다.
+ * — DB 에서 본문이 NULL 인 행이 있으면 `raw.trim()` 이 TypeError 를 내고 Vercel SSR 이 500이 된다.
  */
-export function looksLikeHtmlPostBody(raw: string): boolean {
-  return /<[a-z][\s\S]*>/i.test(raw.trim());
+export function looksLikeHtmlPostBody(raw: string | undefined | null): boolean {
+  if (raw == null || !String(raw).trim()) return false;
+  return /<[a-z][\s\S]*>/i.test(String(raw).trim());
 }
 
 /**

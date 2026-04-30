@@ -52,12 +52,12 @@ function rowToPost(row: Record<string, unknown>): PostRecord {
   const lng = row.longitude;
   return {
     id: String(row.id),
-    title: row.title as string,
-    content: row.content as string,
+    title: String(row.title ?? ""),
+    content: String(row.content ?? ""),
     authorEmail: (row.author_email as string) ?? "",
     authorNickname: (row.nickname as string) ?? "",
     childBirthYear: (row.child_birth_year as number) ?? 0,
-    createdAt: row.created_at as string,
+    createdAt: String(row.created_at ?? ""),
     boardKind: CATEGORY_TO_BOARD_KIND[row.category as string] ?? undefined,
     prefix: (row.prefix as string) ?? undefined,
     viewCount: (row.view_count as number) ?? undefined,
