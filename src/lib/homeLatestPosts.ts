@@ -27,52 +27,62 @@ function dateLabelFromCreatedAt(createdAt: unknown): string {
 
 /** 슈파베이스 `posts` — category 가 아기이야기·꼬꼬마 인 커뮤니티 글 */
 async function fetchLatestByCategory(category: string): Promise<HomeLatestPostPreview[]> {
-  const { data, error } = await supabase
-    .from("posts")
-    .select("id, title, created_at, nickname")
-    .eq("category", category)
-    .order("created_at", { ascending: false })
-    .limit(previewLimit);
+  try {
+    const { data, error } = await supabase
+      .from("posts")
+      .select("id, title, created_at, nickname")
+      .eq("category", category)
+      .order("created_at", { ascending: false })
+      .limit(previewLimit);
 
-  if (error) {
-    console.error(`[homeLatestPosts] "${category}" 로드 실패:`, error.message, error);
+    if (error) {
+      console.warn(`[homeLatestPosts] "${category}" 로드 실패:`, error.message);
+      return [];
+    }
+
+    if (!data) return [];
+
+    return data.map((p) => ({
+      id: String(p.id),
+      title: typeof p.title === "string" && p.title.trim() !== "" ? p.title : "제목 없음",
+      dateLabel: dateLabelFromCreatedAt(p.created_at),
+      authorLabel: (typeof p.nickname === "string" && p.nickname.trim() !== "" ? p.nickname : null) || "—",
+    }));
+  } catch (err) {
+    console.warn(`[homeLatestPosts] "${category}" 네트워크 오류:`, err);
     return [];
   }
-
-  if (!data) return [];
-
-  return data.map((p) => ({
-    id: String(p.id),
-    title: typeof p.title === "string" && p.title.trim() !== "" ? p.title : "제목 없음",
-    dateLabel: dateLabelFromCreatedAt(p.created_at),
-    authorLabel: (typeof p.nickname === "string" && p.nickname.trim() !== "" ? p.nickname : null) || "—",
-  }));
 }
 
 /** 부모이야기·정보 — public.content_topic_posts (topic 키로 구분, posts.category 와 별도) */
 async function fetchLatestContentTopic(topic: ContentTopicKind): Promise<HomeLatestPostPreview[]> {
-  const { data, error } = await supabase
-    .from("content_topic_posts")
-    .select("id, title, created_at, author_nickname")
-    .eq("topic", topic)
-    .order("created_at", { ascending: false })
-    .limit(previewLimit);
+  try {
+    const { data, error } = await supabase
+      .from("content_topic_posts")
+      .select("id, title, created_at, author_nickname")
+      .eq("topic", topic)
+      .order("created_at", { ascending: false })
+      .limit(previewLimit);
 
-  if (error) {
-    console.error(`[homeLatestPosts] content_topic topic=${topic}:`, error.message, error);
+    if (error) {
+      console.warn(`[homeLatestPosts] content_topic topic=${topic}:`, error.message);
+      return [];
+    }
+    if (!data) return [];
+
+    return data.map((p) => ({
+      id: String(p.id),
+      title: typeof p.title === "string" && p.title.trim() !== "" ? p.title : "제목 없음",
+      dateLabel: dateLabelFromCreatedAt(p.created_at),
+      authorLabel:
+        (typeof p.author_nickname === "string" && p.author_nickname.trim() !== ""
+          ? p.author_nickname
+          : null) || "—",
+    }));
+  } catch (err) {
+    console.warn(`[homeLatestPosts] content_topic topic=${topic} 네트워크 오류:`, err);
     return [];
   }
-  if (!data) return [];
-
-  return data.map((p) => ({
-    id: String(p.id),
-    title: typeof p.title === "string" && p.title.trim() !== "" ? p.title : "제목 없음",
-    dateLabel: dateLabelFromCreatedAt(p.created_at),
-    authorLabel:
-      (typeof p.author_nickname === "string" && p.author_nickname.trim() !== ""
-        ? p.author_nickname
-        : null) || "—",
-  }));
 }
 
 /** 메인 페이지에서 호출하는 함수 */
