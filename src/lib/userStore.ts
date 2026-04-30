@@ -42,6 +42,34 @@ function rowToUser(row: Record<string, unknown>): UserRecord {
   };
 }
 
+type FetchUserRowByEmailResult =
+  | { ok: true; row: Record<string, unknown> | null }
+  | { ok: false; errorMessage: string };
+
+/**
+ * 이메일로 app_users 행을 한 번만 조회한다.
+ * — findByEmail / 로그인 전용 lookup 가 같은 쿼리를 공유해 RLS·네트워크 오류 처리를 일관되게 한다.
+ */
+async function fetchUserRowByEmail(email: string): Promise<FetchUserRowByEmailResult> {
+  const normalized = email.toLowerCase().trim();
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("*")
+      .eq("email", normalized)
+      .maybeSingle();
+    if (error) {
+      console.warn("[userStore] fetchUserRowByEmail Supabase 오류:", error.message);
+      return { ok: false, errorMessage: error.message };
+    }
+    return { ok: true, row: data as Record<string, unknown> | null };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn("[userStore] fetchUserRowByEmail 예외:", err);
+    return { ok: false, errorMessage: msg };
+  }
+}
+
 /**
  * supabase public.app_users 기준.
  * (구 users.json 는 더 이상 읽지 않는다 — DB 마이그레이션/시드는 별도)
@@ -49,22 +77,26 @@ function rowToUser(row: Record<string, unknown>): UserRecord {
 export async function findByEmail(
   email: string,
 ): Promise<UserRecord | undefined> {
-  try {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select("*")
-      .eq("email", email.toLowerCase().trim())
-      .maybeSingle();
-    if (error) {
-      console.warn("[userStore] findByEmail Supabase 오류:", error.message);
-      return undefined;
-    }
-    if (!data) return undefined;
-    return rowToUser(data as Record<string, unknown>);
-  } catch (err) {
-    console.warn("[userStore] findByEmail 예외:", err);
-    return undefined;
-  }
+  const r = await fetchUserRowByEmail(email);
+  if (!r.ok) return undefined;
+  if (!r.row) return undefined;
+  return rowToUser(r.row);
+}
+
+/**
+ * 로그인 API 전용: Supabase 조회 실패(키·RLS·네트워크)와 "해당 이메일 없음"을 분리한다.
+ * — 전자는 401로 숨기면 로컬 개발 시 원인(환경변수·마이그레이션 미적용)을 찾기 어렵기 때문이다.
+ */
+export type LoginLookupResult =
+  | { status: "ok"; user: UserRecord }
+  | { status: "not_found" }
+  | { status: "db_error"; message: string };
+
+export async function lookupUserForLogin(email: string): Promise<LoginLookupResult> {
+  const r = await fetchUserRowByEmail(email);
+  if (!r.ok) return { status: "db_error", message: r.errorMessage };
+  if (!r.row) return { status: "not_found" };
+  return { status: "ok", user: rowToUser(r.row) };
 }
 
 export async function findByPhone(phone: string): Promise<UserRecord | undefined> {

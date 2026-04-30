@@ -1,5 +1,5 @@
 // src/app/layout.tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { RightQuickMenu } from "@/components/RightQuickMenu";
@@ -18,6 +18,14 @@ const metadataBase = new URL(getSiteUrl());
 const defaultSiteDescription =
   "완벽한 부모보다 행복한 부모를 꿈꾸는 육아박사. 신생아 발달 정보, 부모 교육, 우리 동네 육아 소식까지 한 번에 확인하세요.";
 
+/**
+ * 테마색은 더 이상 `metadata` 에 두지 않는다(App Router 변경).
+ * `viewport` 로 분리해야 `/login` 등 모든 세그먼트에서 unsupported metadata 경고가 나지 않는다.
+ */
+export const viewport: Viewport = {
+  themeColor: "#faf7f2",
+};
+
 export const metadata: Metadata = {
   metadataBase,
   title: {
@@ -26,8 +34,6 @@ export const metadata: Metadata = {
   },
   description: defaultSiteDescription,
   applicationName: "육아박사",
-  /* 모바일 브라우저 UI 톤 — globals 배경과 맞춘 밝은 베이지 */
-  themeColor: "#faf7f2",
   icons: {
     icon: "/brand-icon.png",
     apple: "/brand-icon.png",

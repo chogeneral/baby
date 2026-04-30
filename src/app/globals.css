@@ -22,8 +22,10 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
+  /* woff2 를 우선: Light 블록과 동일한 순서 유지(Bold woff2 는 공식 바이너리가 깨져 있으면 브라우저 OTS 파싱 에러 발생) */
   src:
     local("Pretendard Bold"),
+    url("/font/Pretendard-Bold.woff2") format("woff2"),
     url("/font/Pretendard-Bold.woff") format("woff");
 }
 

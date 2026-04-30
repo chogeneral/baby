@@ -161,6 +161,22 @@ export function SignupForm() {
     return Object.keys(next).length === 0;
   }
 
+  /**
+   * `res.ok` 가 아닐 때 본문이 비어 있거나 Next 500 HTML 이면 `res.json()` 이 SyntaxError 를 낸다.
+   * — text → JSON.parse 를 한 번만 시도하고, 실패 시 메시지 없음으로 두어 기본 문구로 폴백한다.
+   */
+  async function readApiErrorMessage(res: Response): Promise<string | undefined> {
+    const raw = await res.text();
+    const trimmed = raw.trim();
+    if (!trimmed) return undefined;
+    try {
+      const obj = JSON.parse(trimmed) as { message?: unknown };
+      return typeof obj.message === "string" ? obj.message : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!validate()) return;
@@ -189,12 +205,12 @@ export function SignupForm() {
       });
 
       if (!res.ok) {
-        const data = (await res.json()) as { message?: string };
+        const message = await readApiErrorMessage(res);
         if (res.status === 409) {
-          setFieldErrors({ email: data.message ?? "이미 사용 중인 이메일입니다." });
+          setFieldErrors({ email: message ?? "이미 사용 중인 이메일입니다." });
         } else {
           setFieldErrors({});
-          setSubmitError(data.message ?? "회원가입에 실패했습니다.");
+          setSubmitError(message ?? "회원가입에 실패했습니다.");
         }
         return;
       }
